@@ -24,7 +24,12 @@ summary 필드
                 "> 인용"                 -> callout
                 빈 줄로 나뉜 덩어리      -> p
               (본문 안의 **굵게** 표기는 그대로 유지된다)
-    publishedAt / duration / kind / url  선택
+    publishedAt / duration / thumbnail / kind / url  선택
+      publishedAt  업로드 시각. 유튜브 표기 그대로("2026-11-17T14:01:14+09:00", "...Z",
+                   "2026-11-17 14:01") — 시간대가 없으면 KST로 보고, 저장은 KST ISO로 맞춘다.
+      duration     영상 길이. 초(147) 또는 "2:27" / "1:12:22" 모두 받아 초로 저장한다.
+      thumbnail    썸네일 주소. 비우면 https://i.ytimg.com/vi/{videoId}/hqdefault.jpg 를 채운다.
+                   (화면은 maxresdefault → 넣은 주소 → mqdefault → hqdefault 순으로 시도한다)
 
 동작
     - data/YYYY-MM-DD.json 에 요약을 뒤에 붙이고(같은 videoId는 건너뜀),
@@ -53,6 +58,8 @@ CATEGORY_LABELS = {
     "etc": "기타",
 }
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
+KST = dt.timezone(dt.timedelta(hours=9))
+DEFAULT_THUMB = "https://i.ytimg.com/vi/%s/hqdefault.jpg"
 
 
 def now_kst():
@@ -116,6 +123,49 @@ def text_to_blocks(text):
     return blocks
 
 
+def norm_published(v):
+    """업로드 시각을 KST ISO 문자열로 맞춘다. 알아볼 수 없는 표기는 그대로 돌려준다."""
+    if not v:
+        return None
+    raw = str(v).strip()
+    if not raw:
+        return None
+    txt = raw.replace("Z", "+00:00")
+    try:
+        d = dt.datetime.fromisoformat(txt)
+    except ValueError:
+        d = None
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+            try:
+                d = dt.datetime.strptime(raw, fmt)
+                break
+            except ValueError:
+                continue
+        if d is None:
+            return raw
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=KST)
+    return d.astimezone(KST).isoformat(timespec="seconds")
+
+
+def norm_duration(v):
+    """영상 길이를 초 단위 정수로. 147 / \"2:27\" / \"1:12:22\" 모두 받는다."""
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return int(round(v)) if v > 0 else None
+    t = str(v).strip()
+    if not t:
+        return None
+    if re.fullmatch(r"\d+", t):
+        return int(t) or None
+    m = re.fullmatch(r"(?:(\d+):)?(\d{1,3}):(\d{2})", t)
+    if m:
+        sec = int(m.group(1) or 0) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+        return sec or None
+    return None
+
+
 def normalize(item, date_str, stamp):
     vid = (item.get("videoId") or item.get("id") or "").strip()
     if not vid:
@@ -129,9 +179,16 @@ def normalize(item, date_str, stamp):
         "categoryLabel": (item.get("categoryLabel") or "").strip()
         or CATEGORY_LABELS.get((item.get("category") or "etc").strip(), "기타"),
         "title": (item.get("title") or "").strip(),
-        "addedAt": item.get("addedAt") or stamp,
     }
-    for k in ("publishedAt", "duration", "kind", "channelId"):
+    published = norm_published(item.get("publishedAt"))
+    if published:
+        s["publishedAt"] = published
+    duration = norm_duration(item.get("duration"))
+    if duration:
+        s["duration"] = duration
+    s["thumbnail"] = (item.get("thumbnail") or "").strip() or (DEFAULT_THUMB % vid)
+    s["addedAt"] = item.get("addedAt") or stamp
+    for k in ("kind", "channelId"):
         if item.get(k):
             s[k] = item[k]
 

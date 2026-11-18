@@ -18,6 +18,9 @@
 | 읽음 표시 | 카드마다 `읽음/안 읽음` 토글, `localStorage['yts.read']`에 videoId 배열로 저장.
 `안 읽은 것만` 필터와 `모두 읽음` 버튼, 제목 줄에 안 읽음 개수 표시 |
 | 접기/펼치기 | 카드 머리(또는 제목)를 누르면 접힘. `모두 접기` 상태는 `yts.collapsedAll`에 저장 |
+| 썸네일 | 카드마다 영상 썸네일. 펼치면 16:9 배너, 접으면 제목 옆의 작은 그림. 누르면 유튜브 원문이 새 탭으로 열림.
+이미지는 `maxresdefault → thumbnail 필드 → mqdefault → hqdefault` 순으로 시도하고, 전부 실패하면 그림 없이 글만 보여 줍니다 |
+| 업로드 시각·길이 | 메타 줄에 `📅 11.17 14:01`(한국시간)과 `⏱ 1시간 12분`. 길이는 썸네일 오른쪽 아래에 `12:22` 배지로도 표시 |
 | 목차 | 현재 화면에 보이는 요약의 목차(60편 이하일 때) |
 | 출처 | 카드마다 `▶ 유튜브에서 보기` 원문 링크 |
 
@@ -78,7 +81,9 @@ scripts/add_summaries.py   요약 추가 도구 (아래 참고)
       "categoryLabel": "증시·매크로",
       "title": "[속보] 발빠른 드러켄밀러, 반도체 미리 다 팔았나",
       "kind": "video",
-      "publishedAt": "2026-11-17T21:00:00+09:00",
+      "publishedAt": "2026-11-17T14:01:14+09:00",
+      "duration": 147,
+      "thumbnail": "https://i.ytimg.com/vi/B9wFQa1x82w/maxresdefault.jpg",
       "addedAt": "2026-11-17T21:10:00+09:00",
       "blocks": [
         { "type": "h", "text": "🏃‍♂️ 외부 일정 중 짧은 속보: …" },
@@ -96,7 +101,18 @@ scripts/add_summaries.py   요약 추가 도구 (아래 참고)
 - `blocks` — 본문. `type`은 `h`(소제목), `p`(문단), `ul`(불릿), `callout`(강조 상자).
 본문 텍스트의 `**굵게**`만 서식으로 변환되고 나머지는 그대로 출력됩니다(HTML 태그 무시).
 - `summaries` 배열 순서가 화면 순서입니다. 그날 안에서는 도착 순서대로 뒤에 붙입니다.
-- 선택 필드: `kind`(`video`/`short`/`live`), `duration`, `publishedAt`, `channelId`.
+- 선택 필드: `kind`(`video`/`short`/`live`), `channelId`, `publishedAt`, `duration`, `thumbnail`.
+
+### 업로드 시각 · 길이 · 썸네일
+
+| 필드 | 형식 | 화면 표시 |
+| --- | --- | --- |
+| `publishedAt` | 유튜브 표기 그대로. `2026-11-17T14:01:14+09:00`, `...Z`, `2026-11-17 14:01` | `📅 11.17 14:01` (항상 한국시간으로 환산, 해가 다르면 연도까지) |
+| `duration` | 초 단위 정수(`147`) 또는 시계 표기(`2:27`, `1:12:22`) | 썸네일 배지 `2:27`, 메타 줄 `⏱ 2분 27초` / `⏱ 1시간 12분` |
+| `thumbnail` | 이미지 주소. 비우면 `https://i.ytimg.com/vi/{videoId}/hqdefault.jpg` | 카드 상단(펼침) / 옆(접힘) 썸네일 |
+
+썸네일은 `i.ytimg.com` 주소면 `maxresdefault.jpg`를 먼저 시도하고, 없으면 `thumbnail` 값 → `mqdefault.jpg` → `hqdefault.jpg` 순으로 내려갑니다.
+다른 곳의 이미지 주소를 넣으면 그 주소를 가장 먼저 씁니다. `duration`·`publishedAt`이 없으면 그 자리는 그냥 빠지고 카드는 그대로 보입니다.
 
 ## 새 요약 붙이기 (스케줄 액션이 쓰는 방법)
 
@@ -113,6 +129,8 @@ cat > /tmp/new.json <<'JSON'
       "channel": "알상무",
       "category": "stock",
       "title": "지표추적자 1118",
+      "publishedAt": "2026-11-18T09:02:00+09:00",
+      "duration": "1:12:22",
       "text": "## 오전 시황\n안녕하세요, 11월 18일 …\n\n둘째 문단입니다. **중요한 숫자**는 이렇게.\n\n- 첫째 항목\n- 둘째 항목\n\n> 마무리 한마디"
     }
   ]
@@ -128,6 +146,8 @@ git add -A && git commit -m "요약 추가: 2026-11-18 (N편)" && git push
 
 `text` 필드 변환 규칙: `##`/`###` → 소제목, `-`/`*` → 불릿, `>` → 강조 상자, 빈 줄로 나뉜 덩어리 → 문단.
 편수·날짜 집계는 스크립트가 다시 계산하므로 손으로 `index.json`을 고칠 필요가 없습니다.
+`publishedAt`·`duration`은 형식을 맞춰 저장하고(`2026-11-17 14:01` → `2026-11-17T14:01:00+09:00`, `1:12:22` → `4342`),
+`thumbnail`을 비우면 `hqdefault.jpg` 주소를 채웁니다.
 
 수동으로 JSON을 직접 고쳐도 됩니다. 새 날짜 파일을 추가했다면 `data/index.json`의 `dates`에 항목을 넣어 주세요.
 

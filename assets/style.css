@@ -260,11 +260,88 @@ button.linkish {
   scroll-margin-top: 108px;
 }
 .card-header {
-  padding: 16px 16px 14px;
+  padding: 0;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  gap: 0;
+}
+
+/* ── 썸네일 ───────────────────────────────────────────── */
+.thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--badge-bg);
+  -webkit-tap-highlight-color: transparent;
+}
+.thumb-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+@supports not (aspect-ratio: 1) {
+  .thumb::before { content: ""; display: block; padding-top: 56.25%; }
+  .thumb-img { position: absolute; inset: 0; }
+}
+.thumb-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.thumb-play-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding-left: 3px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+.thumb:active .thumb-play-glyph { transform: scale(0.94); }
+@media (hover: hover) {
+  .thumb:hover .thumb-img { transform: scale(1.02); }
+  .thumb:hover .thumb-play-glyph { background: rgba(220, 38, 38, 0.92); transform: scale(1.06); }
+}
+.thumb-dur {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 1px 6px 2px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.2px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.card.read .thumb-img { opacity: 0.86; }
+.card.no-thumb .thumb { display: none; }
+
+.card-main {
+  padding: 14px 16px 14px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 .meta-row {
   display: flex;
@@ -317,6 +394,53 @@ button.linkish {
   font-size: 12.5px;
   color: var(--text-sub);
 }
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 10px;
+  margin-top: -2px;
+  font-size: 12.5px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+.meta-line .mi {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.meta-line .mi-pub { letter-spacing: -0.1px; }
+.meta-line .mi-dur { font-weight: 600; }
+
+/* 접힌 카드: 썸네일은 옆으로 작게, 제목은 두 줄까지 */
+.card.collapsed .card-header {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 10px;
+}
+.card.collapsed .thumb {
+  width: 116px;
+  flex: 0 0 116px;
+  border-radius: 10px;
+}
+.card.collapsed .card-main {
+  padding: 0;
+  gap: 5px;
+  flex: 1 1 auto;
+}
+.card.collapsed .video-title {
+  font-size: 15px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card.collapsed .meta-line { font-size: 12px; }
+.card.collapsed .thumb-play-glyph { width: 32px; height: 32px; font-size: 11px; }
+.card.collapsed .thumb-dur { right: 5px; bottom: 5px; font-size: 10.5px; padding: 0 5px 1px; }
 .yt-link {
   color: var(--accent);
   text-decoration: none;
@@ -426,7 +550,12 @@ strong { font-weight: 700; }
   h1 { font-size: 17px; }
   .video-title { font-size: 16px; }
   button.btn { padding: 6px 9px; }
+  .card.collapsed .thumb { width: 96px; flex: 0 0 96px; }
+  .card.collapsed .video-title { font-size: 14.5px; }
+  .card-main { padding: 12px 13px 13px; }
+  .meta-line { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   body, .top-btn { transition: none; }
+  .thumb-img, .thumb-play-glyph { transition: none; }
 }

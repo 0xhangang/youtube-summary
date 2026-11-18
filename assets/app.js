@@ -83,6 +83,83 @@
     var wd = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
     return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + wd + '요일';
   }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  // ISO 시각을 한국 시간(KST) 기준 조각으로 — 보는 사람의 시간대와 무관하게
+  function kstParts(iso) {
+    if (!iso) return null;
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    try {
+      var parts = {};
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).formatToParts(d).forEach(function (p) { parts[p.type] = p.value; });
+      return {
+        y: parts.year, m: parts.month, d: parts.day,
+        hh: parts.hour === '24' ? '00' : parts.hour, mm: parts.minute
+      };
+    } catch (e) {
+      return {
+        y: String(d.getFullYear()), m: pad2(d.getMonth() + 1), d: pad2(d.getDate()),
+        hh: pad2(d.getHours()), mm: pad2(d.getMinutes())
+      };
+    }
+  }
+  // "11.17 14:01" (해가 다르면 "2025.11.17 14:01")
+  function fmtPublished(iso) {
+    var p = kstParts(iso);
+    if (!p) return '';
+    var thisYear = String(new Date().getFullYear());
+    return (p.y === thisYear ? '' : p.y + '.') + Number(p.m) + '.' + p.d + ' ' + p.hh + ':' + p.mm;
+  }
+
+  // 초 단위 길이. 숫자(초) 또는 "1:12:22" / "12:22" 문자열을 모두 받는다
+  function durSeconds(v) {
+    if (typeof v === 'number' && isFinite(v) && v > 0) return Math.round(v);
+    if (typeof v === 'string') {
+      var t = v.trim();
+      if (/^\d+$/.test(t)) return Number(t);
+      var m = /^(?:(\d+):)?(\d{1,3}):(\d{2})$/.exec(t);
+      if (m) return Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+    }
+    return 0;
+  }
+  function fmtClock(sec) {
+    if (!sec) return '';
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return h ? h + ':' + pad2(m) + ':' + pad2(s) : m + ':' + pad2(s);
+  }
+  function fmtDurKo(sec) {
+    if (!sec) return '';
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    if (h) return h + '시간' + (m ? ' ' + m + '분' : '');
+    if (m) return m + '분' + (s ? ' ' + s + '초' : '');
+    return s + '초';
+  }
+
+  // 썸네일 후보 목록 — 앞에서부터 시도하고 실패하면 다음 것으로 넘어간다
+  function thumbChain(s, id) {
+    var out = [];
+    var t = (s.thumbnail || '').trim();
+    var isYt = /^https?:\/\/i\d?\.ytimg\.com\/vi\//.test(t);
+    if (t && !isYt) out.push(t);            // 직접 넣은 썸네일은 그대로 최우선
+    if (id && /^[A-Za-z0-9_-]{6,}$/.test(id)) {
+      out.push('https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg');
+    }
+    if (t) out.push(t);
+    if (id) {
+      out.push('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
+      out.push('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
+    }
+    var seen = Object.create(null);
+    return out.filter(function (u) {
+      if (!u || seen[u]) return false;
+      seen[u] = true;
+      return true;
+    });
+  }
 
   function fetchJSON(url) {
     return fetch(url, { cache: 'no-store' }).then(function (res) {
@@ -247,12 +324,62 @@
     if (collapseAll) card.classList.add('collapsed');
 
     var url = s.url || ('https://www.youtube.com/watch?v=' + id);
+    var dur = durSeconds(s.duration);
+    var pub = fmtPublished(s.publishedAt);
 
     var header = document.createElement('div');
     header.className = 'card-header';
     header.setAttribute('role', 'button');
     header.setAttribute('tabindex', '0');
     header.setAttribute('aria-label', '요약 접기/펼치기: ' + (s.title || ''));
+
+    // 썸네일 — 펼치면 16:9 배너, 접으면 옆의 작은 그림
+    var chain = thumbChain(s, id);
+    if (chain.length) {
+      var thumbLink = document.createElement('a');
+      thumbLink.className = 'thumb';
+      thumbLink.href = url;
+      thumbLink.target = '_blank';
+      thumbLink.rel = 'noopener';
+      thumbLink.setAttribute('aria-label', '유튜브에서 영상 열기: ' + (s.title || ''));
+
+      var img = document.createElement('img');
+      img.className = 'thumb-img';
+      img.alt = (s.title || '영상') + ' 썸네일';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      var ci = 0;
+      img.addEventListener('error', function () {
+        ci++;
+        if (ci < chain.length) { img.src = chain[ci]; return; }
+        // 모든 후보 실패 → 그림 없이 글만
+        card.classList.add('no-thumb');
+        if (thumbLink.parentNode) thumbLink.parentNode.removeChild(thumbLink);
+      });
+      img.src = chain[0];
+      thumbLink.appendChild(img);
+
+      var play = document.createElement('span');
+      play.className = 'thumb-play';
+      var glyph = document.createElement('span');
+      glyph.className = 'thumb-play-glyph';
+      glyph.textContent = '▶';
+      play.appendChild(glyph);
+      thumbLink.appendChild(play);
+
+      if (dur) {
+        var dBadge = document.createElement('span');
+        dBadge.className = 'thumb-dur';
+        dBadge.textContent = fmtClock(dur);
+        dBadge.title = fmtDurKo(dur);
+        thumbLink.appendChild(dBadge);
+      }
+      header.appendChild(thumbLink);
+    }
+
+    var main = document.createElement('div');
+    main.className = 'card-main';
 
     var meta = document.createElement('div');
     meta.className = 'meta-row';
@@ -270,12 +397,32 @@
     dot.className = 'unread-dot';
     dot.title = '안 읽음';
     meta.appendChild(dot);
-    header.appendChild(meta);
+    main.appendChild(meta);
 
     var h = document.createElement('h2');
     h.className = 'video-title';
     h.textContent = s.title || '(제목 없음)';
-    header.appendChild(h);
+    main.appendChild(h);
+
+    if (pub || dur) {
+      var line = document.createElement('div');
+      line.className = 'meta-line';
+      if (pub) {
+        var sp = document.createElement('span');
+        sp.className = 'mi mi-pub';
+        sp.textContent = '📅 ' + pub;
+        sp.title = '업로드 ' + pub + ' (한국시간)';
+        line.appendChild(sp);
+      }
+      if (dur) {
+        var sd = document.createElement('span');
+        sd.className = 'mi mi-dur';
+        sd.textContent = '⏱ ' + fmtDurKo(dur);
+        sd.title = '영상 길이 ' + fmtClock(dur);
+        line.appendChild(sd);
+      }
+      main.appendChild(line);
+    }
 
     var actions = document.createElement('div');
     actions.className = 'card-actions';
@@ -303,7 +450,8 @@
     hint.textContent = collapseAll ? '펼치기 ▼' : '접기 ▲';
     right.appendChild(hint);
     actions.appendChild(right);
-    header.appendChild(actions);
+    main.appendChild(actions);
+    header.appendChild(main);
 
     header.addEventListener('click', function (ev) {
       if (ev.target.closest('a')) return;
