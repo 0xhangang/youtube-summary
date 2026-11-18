@@ -331,6 +331,7 @@
     header.className = 'card-header';
     header.setAttribute('role', 'button');
     header.setAttribute('tabindex', '0');
+    header.setAttribute('aria-expanded', collapseAll ? 'false' : 'true');
     header.setAttribute('aria-label', '요약 접기/펼치기: ' + (s.title || ''));
 
     // 썸네일 — 펼치면 16:9 배너, 접으면 옆의 작은 그림
@@ -404,24 +405,28 @@
     h.textContent = s.title || '(제목 없음)';
     main.appendChild(h);
 
+    // 메타 줄(업로드 시각·길이)과 동작 줄을 한 줄에 묶어 카드 머리를 세 줄로 정리
+    var subRow = document.createElement('div');
+    subRow.className = 'sub-row';
+
     if (pub || dur) {
       var line = document.createElement('div');
       line.className = 'meta-line';
       if (pub) {
         var sp = document.createElement('span');
         sp.className = 'mi mi-pub';
-        sp.textContent = '📅 ' + pub;
+        sp.textContent = pub;
         sp.title = '업로드 ' + pub + ' (한국시간)';
         line.appendChild(sp);
       }
       if (dur) {
         var sd = document.createElement('span');
         sd.className = 'mi mi-dur';
-        sd.textContent = '⏱ ' + fmtDurKo(dur);
+        sd.textContent = fmtDurKo(dur);
         sd.title = '영상 길이 ' + fmtClock(dur);
         line.appendChild(sd);
       }
-      main.appendChild(line);
+      subRow.appendChild(line);
     }
 
     var actions = document.createElement('div');
@@ -431,7 +436,13 @@
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.textContent = '▶ 유튜브에서 보기';
+    a.title = '유튜브에서 보기';
+    var aIco = document.createElement('span');
+    aIco.className = 'yt-ico';
+    aIco.textContent = '▶';
+    aIco.setAttribute('aria-hidden', 'true');
+    a.appendChild(aIco);
+    a.appendChild(document.createTextNode('유튜브에서 보기'));
     actions.appendChild(a);
 
     var right = document.createElement('span');
@@ -445,22 +456,23 @@
       toggleRead(id, card, readBtn);
     });
     right.appendChild(readBtn);
-    var hint = document.createElement('span');
-    hint.className = 'toggle-hint';
-    hint.textContent = collapseAll ? '펼치기 ▼' : '접기 ▲';
-    right.appendChild(hint);
+    var chev = document.createElement('span');
+    chev.className = 'chev';
+    chev.setAttribute('aria-hidden', 'true');
+    right.appendChild(chev);
     actions.appendChild(right);
-    main.appendChild(actions);
+    subRow.appendChild(actions);
+    main.appendChild(subRow);
     header.appendChild(main);
 
     header.addEventListener('click', function (ev) {
       if (ev.target.closest('a')) return;
-      toggleCard(card, hint);
+      toggleCard(card);
     });
     header.addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
         ev.preventDefault();
-        toggleCard(card, hint);
+        toggleCard(card);
       }
     });
 
@@ -468,13 +480,15 @@
 
     var body = document.createElement('div');
     body.className = 'card-body';
+    var inner = document.createElement('div');
+    inner.className = 'body-inner';
     (s.blocks || []).forEach(function (b) {
       if (!b) return;
       if (b.type === 'h') {
         var st = document.createElement('div');
         st.className = 'section-title';
         st.innerHTML = rich(b.text || '');
-        body.appendChild(st);
+        inner.appendChild(st);
       } else if (b.type === 'ul') {
         var ulEl = document.createElement('ul');
         ulEl.className = 'bullets';
@@ -483,26 +497,27 @@
           li.innerHTML = rich(it2);
           ulEl.appendChild(li);
         });
-        body.appendChild(ulEl);
+        inner.appendChild(ulEl);
       } else if (b.type === 'callout') {
         var co = document.createElement('div');
         co.className = 'callout';
         co.innerHTML = rich(b.text || '');
-        body.appendChild(co);
+        inner.appendChild(co);
       } else {
         var p = document.createElement('p');
         p.innerHTML = rich(b.text || '');
-        body.appendChild(p);
+        inner.appendChild(p);
       }
     });
+    body.appendChild(inner);
     card.appendChild(body);
     return card;
   }
 
-  function toggleCard(card, hint) {
-    card.classList.toggle('collapsed');
-    var c = card.classList.contains('collapsed');
-    hint.textContent = c ? '펼치기 ▼' : '접기 ▲';
+  function toggleCard(card) {
+    var collapsed = card.classList.toggle('collapsed');
+    var header = card.querySelector('.card-header');
+    if (header) header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
   }
 
   function toggleRead(id, card, btn) {
@@ -706,8 +721,8 @@
       syncToggleAll();
       Array.prototype.forEach.call(document.querySelectorAll('.card'), function (c) {
         c.classList.toggle('collapsed', state.collapsedAll);
-        var hint = c.querySelector('.toggle-hint');
-        if (hint) hint.textContent = state.collapsedAll ? '펼치기 ▼' : '접기 ▲';
+        var head = c.querySelector('.card-header');
+        if (head) head.setAttribute('aria-expanded', state.collapsedAll ? 'false' : 'true');
       });
     });
 
@@ -737,13 +752,22 @@
       apply();
     });
 
-    // 맨 위로
+    // 맨 위로 + 스크롤 방향에 따라 헤더 감추기
     var topBtn = document.getElementById('topBtn');
+    var siteHeader = document.getElementById('siteHeader');
+    var lastY = window.scrollY;
     topBtn.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     window.addEventListener('scroll', function () {
-      topBtn.classList.toggle('show', window.scrollY > 600);
+      var y = window.scrollY;
+      topBtn.classList.toggle('show', y > 600);
+      if (siteHeader) {
+        if (y < 140) siteHeader.classList.remove('hide');
+        else if (y > lastY + 6) siteHeader.classList.add('hide');
+        else if (y < lastY - 6) siteHeader.classList.remove('hide');
+      }
+      lastY = y;
     }, { passive: true });
   }
 

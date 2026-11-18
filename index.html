@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="light dark" />
 <meta name="description" content="관심 유튜브 채널 자동 요약 아카이브 — 화자의 말투 그대로 옮긴 상세 요약" />
+<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)" />
 <title>📺 유튜브 상세 요약</title>
-<link rel="stylesheet" href="assets/style.css?v=20261118c" />
+<link rel="stylesheet" href="assets/style.css?v=20261119a" />
 <script>
   // 테마를 그리기 전에 먼저 결정해 깜빡임을 막는다
   (function () {
@@ -20,7 +22,7 @@
 </head>
 <body>
 <div class="container">
-  <header class="site-header">
+  <header class="site-header" id="siteHeader">
     <div class="header-top">
       <div class="title-block">
         <h1>📺 유튜브 상세 요약</h1>
@@ -31,16 +33,26 @@
         <button class="btn" id="themeBtn" type="button" title="다크 모드">🌙 다크</button>
       </div>
     </div>
-    <nav class="filters" id="dateChips" aria-label="날짜 선택"></nav>
+    <nav class="filters date-filters" id="dateChips" aria-label="날짜 선택"></nav>
   </header>
 
   <section class="toolbar" aria-label="필터와 검색">
     <div class="search-row">
       <input id="search" type="search" inputmode="search" autocomplete="off"
              placeholder="제목·채널·본문 검색" aria-label="검색" />
+      <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <circle cx="8.5" cy="8.5" r="5.5"></circle>
+        <path d="M13 13l4 4"></path>
+      </svg>
     </div>
-    <nav class="filters" id="catChips" aria-label="분류 필터"></nav>
-    <nav class="filters" id="channelChips" aria-label="채널 필터"></nav>
+    <div class="frow">
+      <span class="flabel" aria-hidden="true">분류</span>
+      <nav class="filters" id="catChips" aria-label="분류 필터"></nav>
+    </div>
+    <div class="frow">
+      <span class="flabel" aria-hidden="true">채널</span>
+      <nav class="filters" id="channelChips" aria-label="채널 필터"></nav>
+    </div>
     <div class="read-row">
       <label class="switch">
         <input type="checkbox" id="unreadOnly" />
@@ -72,6 +84,6 @@
 
 <button class="top-btn" id="topBtn" type="button" title="맨 위로" aria-label="맨 위로">↑</button>
 
-<script src="assets/app.js?v=20261118c"></script>
+<script src="assets/app.js?v=20261119a"></script>
 </body>
 </html>
