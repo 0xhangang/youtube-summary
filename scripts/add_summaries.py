@@ -257,18 +257,6 @@ def main():
         added += 1
 
     doc["updatedAt"] = stamp
-    index = rebuild_index()
-    # 이번 파일의 변경을 index에 반영
-    entry = None
-    for d in index["dates"]:
-        if d["date"] == date_str:
-            entry = d
-            break
-    if entry:
-        entry["count"] = len(sums)
-        entry["label"] = doc["label"]
-        entry["updatedAt"] = stamp
-    index["updatedAt"] = stamp
 
     print("날짜 %s · 추가 %d · 갱신 %d · 건너뜀 %d → %s (%d편)"
           % (date_str, added, replaced, skipped, os.path.relpath(path, ROOT), len(sums)))
@@ -282,6 +270,19 @@ def main():
     with open(path, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
         f.write("\n")
+
+    # 날짜 파일을 쓴 뒤에 훑어야 새 날짜가 index에 들어간다
+    index = rebuild_index()
+    entry = None
+    for d in index["dates"]:
+        if d["date"] == date_str:
+            entry = d
+            break
+    if entry:
+        entry["count"] = len(sums)
+        entry["label"] = doc["label"]
+    index["updatedAt"] = stamp
+
     with open(INDEX, "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
         f.write("\n")
