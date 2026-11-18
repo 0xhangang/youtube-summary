@@ -421,13 +421,13 @@ button.linkish {
   padding: 10px 12px 10px 10px;
 }
 .card.collapsed .thumb {
-  width: 116px;
-  flex: 0 0 116px;
+  width: clamp(112px, 24%, 168px);
+  flex: 0 0 clamp(112px, 24%, 168px);
   border-radius: 10px;
 }
 .card.collapsed .card-main {
   padding: 0;
-  gap: 5px;
+  gap: 4px;
   flex: 1 1 auto;
 }
 .card.collapsed .video-title {
@@ -550,7 +550,7 @@ strong { font-weight: 700; }
   h1 { font-size: 17px; }
   .video-title { font-size: 16px; }
   button.btn { padding: 6px 9px; }
-  .card.collapsed .thumb { width: 96px; flex: 0 0 96px; }
+  .card.collapsed .thumb { width: 104px; flex: 0 0 104px; }
   .card.collapsed .video-title { font-size: 14.5px; }
   .card-main { padding: 12px 13px 13px; }
   .meta-line { font-size: 12px; }
