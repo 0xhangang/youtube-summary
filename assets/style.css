@@ -439,7 +439,9 @@ button.linkish {
   overflow: hidden;
 }
 .card.collapsed .meta-line { font-size: 12px; }
-.card.collapsed .thumb-play-glyph { width: 32px; height: 32px; font-size: 11px; }
+.card.collapsed .meta-row { flex-wrap: nowrap; overflow: hidden; }
+.card.collapsed .cat-tag { display: none; }
+.card.collapsed .thumb-play { display: none; }
 .card.collapsed .thumb-dur { right: 5px; bottom: 5px; font-size: 10.5px; padding: 0 5px 1px; }
 .yt-link {
   color: var(--accent);
