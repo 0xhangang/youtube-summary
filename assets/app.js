@@ -458,7 +458,6 @@
     var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.favOnly || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
     if (dom.searchClear) dom.searchClear.hidden = !state.q;
-    if (dom.tabBadgeSearch) dom.tabBadgeSearch.hidden = !state.q.trim();
   }
 
   function catLabel(key, all) {
@@ -668,15 +667,13 @@
     shareBtn.addEventListener('click', function () {
       var baseUrl = window.location.href.split('#')[0].split('?')[0];
       var shareUrl = baseUrl + '?d=' + encodeURIComponent(it.date) + '&v=' + encodeURIComponent(id);
-      var labelTitle = '[' + chTitle + '] ' + (s.title || '');
+      var shareMsg = '📺 [' + chTitle + '] ' + (s.title || '') + '\n\n' + shareUrl;
       if (navigator.share) {
         navigator.share({
-          text: labelTitle,
-          url: shareUrl
+          text: shareMsg
         }).catch(function () {});
         return;
       }
-      var copyStr = labelTitle + '\n' + shareUrl;
       var done = function () {
         var lbl = shareBtn.querySelector('.share-lbl');
         shareBtn.classList.add('copied');
@@ -687,7 +684,7 @@
         }, 1500);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(copyStr).then(done).catch(done);
+        navigator.clipboard.writeText(shareMsg).then(done).catch(done);
       } else {
         done();
       }
@@ -700,13 +697,11 @@
 
   /* ── 렌더 ──────────────────────────────────────────── */
   function apply() {
-    var all = scopeOf(state.activeDate);
+    var q = state.q.trim().toLowerCase();
+    var isGlobal = state.favOnly || q !== '';
+    var all = scopeOf(isGlobal ? 'all' : state.activeDate);
     renderFilterChips(all);
 
-    var q = state.q.trim().toLowerCase();
-    if (state.favOnly) {
-      all = scopeOf('all');
-    }
     var filtered = all.filter(function (it) {
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
@@ -740,7 +735,7 @@
     var frag = document.createDocumentFragment();
     var lastDate = null;
     sorted.forEach(function (it) {
-      if ((state.activeDate === 'all' || state.favOnly) && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
+      if ((state.activeDate === 'all' || isGlobal) && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
         var div = document.createElement('div');
         div.className = 'date-divider';
         div.textContent = it.dateLabel || fmtDateLabel(it.date);
@@ -756,11 +751,16 @@
     updateSubtitle(all.length, sorted.length);
   }
 
-  function loadAllDatesForLikes() {
-    if (!state.index || !Object.keys(state.likes).length) return Promise.resolve();
+  function loadAllDates() {
+    if (!state.index) return Promise.resolve();
     return Promise.all(state.index.dates.map(function (d) {
       return loadDate(d.date).catch(function () { return null; });
     }));
+  }
+
+  function loadAllDatesForLikes() {
+    if (!state.index || !Object.keys(state.likes).length) return Promise.resolve();
+    return loadAllDates();
   }
 
   function updateFav() {
@@ -831,6 +831,8 @@
     var label;
     if (state.favOnly) {
       label = '좋아요 모아보기';
+    } else if (state.q.trim() !== '') {
+      label = '전체 검색';
     } else if (state.activeDate === 'all') {
       label = '전체 ' + state.index.dates.length + '일';
     } else {
@@ -965,13 +967,15 @@
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
     dom.tabBadgeFav = document.getElementById('tabBadgeFav');
-    dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
 
     ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
         btn.addEventListener('click', function () {
           setTab(btn.dataset.tab);
+          if (btn.dataset.tab === 'search' && state.activeTab === 'search') {
+            loadAllDates();
+          }
         });
       }
     });
@@ -1070,7 +1074,11 @@
       clearTimeout(searchTimer);
       searchTimer = setTimeout(function () {
         state.q = dom.search.value || '';
-        apply();
+        if (state.q.trim() !== '') {
+          loadAllDates().then(function () { apply(); });
+        } else {
+          apply();
+        }
       }, 120);
     });
 
