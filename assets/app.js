@@ -22,10 +22,9 @@
     channel: 'all',
     favOnly: false,
     q: '',
-    searchOpen: false,
     likes: loadLikes(),
     sort: loadSort(),
-    activeTab: null, // 'cat' | 'channel' | 'toc' | 'fav' | null
+    activeTab: null, // 'cat' | 'channel' | 'toc' | 'fav' | 'search' | null
     singleMode: null // { date, videoId }
   };
 
@@ -310,7 +309,7 @@
     });
   }
 
-  /* ── 탭 제어 (분류 · 채널 · 목차 · 좋아요) ─────────────── */
+  /* ── 탭 제어 (분류 · 채널 · 목차 · 좋아요 · 검색) ───────── */
   function setTab(tabName) {
     state.activeTab = (state.activeTab === tabName) ? null : tabName;
     syncTabs();
@@ -322,7 +321,8 @@
       { id: 'tabBtnCat', key: 'cat', pane: 'paneCat' },
       { id: 'tabBtnChannel', key: 'channel', pane: 'paneChannel' },
       { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' },
-      { id: 'tabBtnFav', key: 'fav', pane: 'paneFav' }
+      { id: 'tabBtnFav', key: 'fav', pane: 'paneFav' },
+      { id: 'tabBtnSearch', key: 'search', pane: 'paneSearch' }
     ];
     dom.tabPanel.hidden = !t;
     btns.forEach(function (b) {
@@ -335,14 +335,9 @@
       }
       if (pane) pane.hidden = !on;
     });
-  }
-
-  function syncSearchDrawer() {
-    if (!dom.searchDrawer || !dom.searchToggleBtn) return;
-    var show = state.searchOpen || state.q.trim() !== '';
-    dom.searchDrawer.hidden = !show;
-    dom.searchToggleBtn.classList.toggle('is-on', show);
-    dom.searchToggleBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
+    if (t === 'search' && dom.search) {
+      setTimeout(function () { dom.search.focus(); }, 40);
+    }
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -450,7 +445,7 @@
     var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.favOnly || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
     if (dom.searchClear) dom.searchClear.hidden = !state.q;
-    syncSearchDrawer();
+    if (dom.tabBadgeSearch) dom.tabBadgeSearch.hidden = !state.q.trim();
   }
 
   function catLabel(key, all) {
@@ -941,8 +936,6 @@
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
     dom.searchClear = document.getElementById('searchClear');
-    dom.searchDrawer = document.getElementById('searchDrawer');
-    dom.searchToggleBtn = document.getElementById('searchToggleBtn');
     dom.sortBtn = document.getElementById('sortBtn');
     dom.resetFilterBtn = document.getElementById('resetFilterBtn');
     dom.tabPanel = document.getElementById('tabPanel');
@@ -950,8 +943,9 @@
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
     dom.tabBadgeFav = document.getElementById('tabBadgeFav');
+    dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
 
-    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnFav'].forEach(function (id) {
+    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
         btn.addEventListener('click', function () {
@@ -960,16 +954,6 @@
       }
     });
     syncTabs();
-
-    if (dom.searchToggleBtn) {
-      dom.searchToggleBtn.addEventListener('click', function () {
-        state.searchOpen = !state.searchOpen;
-        syncSearchDrawer();
-        if (state.searchOpen && dom.search) {
-          setTimeout(function () { dom.search.focus(); }, 30);
-        }
-      });
-    }
 
     if (dom.favFilterChip) {
       dom.favFilterChip.addEventListener('click', function () {
@@ -1009,7 +993,6 @@
         state.channel = 'all';
         state.favOnly = false;
         state.q = '';
-        state.searchOpen = false;
         dom.search.value = '';
         apply();
       });

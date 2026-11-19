@@ -308,7 +308,7 @@ button.btn.is-on {
 .cat-etc .cat-dot { background: var(--c-etc); }
 .chip.active .cat-dot { background: currentColor; }
 
-/* ── 캡슐 세그먼트 4단 탭 바 (분류 · 채널 · 목차 · 검색) ── */
+/* ── 캡슐 세그먼트 5단 탭 바 (분류 · 채널 · 목차 · 좋아요 · 검색) ── */
 .tab-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -317,21 +317,25 @@ button.btn.is-on {
   background: var(--surface-3);
   border-radius: 13px;
 }
+.tab-bar.tab-bar-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
 .tab-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   height: 34px;
-  padding: 0 6px;
+  padding: 0 4px;
   border: none;
   border-radius: 10px;
   background: transparent;
   color: var(--text-sub);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
@@ -951,6 +955,9 @@ ul.bullets li:last-child { margin-bottom: 0; }
   .controls { gap: 4px; }
   button.btn { height: 29px; padding: 0 9px; font-size: 11.5px; gap: 4px; }
   button.btn.btn-only-icon { width: 29px; }
+  .tab-btn { font-size: 11.2px; gap: 3px; padding: 0 2px; }
+  .tab-svg { width: 12.5px; height: 12.5px; flex: 0 0 12.5px; }
+  .tab-badge { padding: 0 4px; height: 16px; font-size: 9.5px; max-width: 40px; }
 }
 
 @media (max-width: 380px) {
