@@ -642,7 +642,7 @@
       if (state.favOnly && !on) {
         apply();
       } else {
-        updateFav(scopeOf(state.activeDate));
+        updateFav();
       }
     });
     actions.appendChild(likeBtn);
@@ -691,6 +691,9 @@
     renderFilterChips(all);
 
     var q = state.q.trim().toLowerCase();
+    if (state.favOnly) {
+      all = scopeOf('all');
+    }
     var filtered = all.filter(function (it) {
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
@@ -716,14 +719,14 @@
         : '이 날짜에는 아직 요약이 없어요.';
       feed.appendChild(none);
       updateToc(sorted);
-      updateFav(all);
+      updateFav();
       updateSubtitle(all.length, sorted.length);
       return;
     }
 
     var lastDate = null;
     sorted.forEach(function (it) {
-      if (state.activeDate === 'all' && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
+      if ((state.activeDate === 'all' || state.favOnly) && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
         var div = document.createElement('div');
         div.className = 'date-divider';
         div.textContent = it.dateLabel || fmtDateLabel(it.date);
@@ -734,17 +737,25 @@
     });
 
     updateToc(sorted);
-    updateFav(all);
+    updateFav();
     updateSubtitle(all.length, sorted.length);
   }
 
-  function updateFav(allItems) {
-    var favItems = (allItems || []).filter(function (it) {
+  function loadAllDatesForLikes() {
+    if (!state.index || !Object.keys(state.likes).length) return Promise.resolve();
+    return Promise.all(state.index.dates.map(function (d) {
+      return loadDate(d.date).catch(function () { return null; });
+    }));
+  }
+
+  function updateFav() {
+    var allLoaded = scopeOf('all');
+    var favItems = allLoaded.filter(function (it) {
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
       return isLiked(id);
     });
-    var cnt = favItems.length;
+    var cnt = favItems.length || Object.keys(state.likes).length;
     if (dom.tabBadgeFav) {
       dom.tabBadgeFav.textContent = cnt;
       dom.tabBadgeFav.hidden = cnt === 0 && !state.favOnly;
@@ -758,7 +769,7 @@
     if (!favItems.length) {
       var empty = document.createElement('li');
       empty.className = 'toc-empty';
-      empty.textContent = '아직 좋아요한 요약이 없어요. 본문 아래 좋아요를 눌러 모아 보세요.';
+      empty.textContent = cnt ? '불러오는 중…' : '아직 좋아요한 요약이 없어요. 본문 아래 좋아요를 눌러 모아 보세요.';
       list.appendChild(empty);
       return;
     }
@@ -769,7 +780,7 @@
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = '#' + anchor;
-      a.addEventListener('click', function () {
+      a.addEventListener('click', function (e) {
         state.activeTab = null;
         syncTabs();
         var el = document.getElementById(anchor);
@@ -777,6 +788,10 @@
           el.classList.remove('flash');
           void el.offsetWidth;
           el.classList.add('flash');
+        } else {
+          e.preventDefault();
+          state.favOnly = false;
+          setDate(it.date, anchor);
         }
       });
       var num = document.createElement('span');
@@ -880,7 +895,7 @@
     if (rb) rb.addEventListener('click', function () { boot(); });
   }
 
-  function setDate(date) {
+  function setDate(date, scrollAnchor) {
     state.activeDate = date;
     state.cat = 'all';
     state.channel = 'all';
@@ -897,6 +912,18 @@
     job.then(function () {
       apply();
       renderFooter();
+      if (scrollAnchor) {
+        var target = document.getElementById(scrollAnchor);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          target.classList.remove('flash');
+          void target.offsetWidth;
+          target.classList.add('flash');
+        }
+      }
+      loadAllDatesForLikes().then(function () {
+        updateFav();
+      });
     }).catch(fail);
   }
 
@@ -947,7 +974,11 @@
     if (dom.favFilterChip) {
       dom.favFilterChip.addEventListener('click', function () {
         state.favOnly = !state.favOnly;
-        apply();
+        if (state.favOnly) {
+          loadAllDatesForLikes().then(function () { apply(); });
+        } else {
+          apply();
+        }
       });
     }
 
