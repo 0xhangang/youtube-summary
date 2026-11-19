@@ -572,8 +572,8 @@
       info.appendChild(line);
     }
 
-    header.appendChild(info);
     card.appendChild(header);
+    card.appendChild(info);
 
     var body = document.createElement('div');
     body.className = 'card-body';
@@ -880,11 +880,16 @@
     window.addEventListener('scroll', function () {
       var y = window.scrollY;
       topBtn.classList.toggle('show', y > 600);
-      if (siteHeader) {
-        var tabOpen = dom.tabPanel && !dom.tabPanel.hidden;
-        if (y < 140 || tabOpen) siteHeader.classList.remove('hide');
-        else if (y > lastY + 6) siteHeader.classList.add('hide');
-        else if (y < lastY - 6) siteHeader.classList.remove('hide');
+      var tabOpen = dom.tabPanel && !dom.tabPanel.hidden;
+      if (y <= 30 || tabOpen) {
+        if (siteHeader) siteHeader.classList.remove('hide');
+        document.body.classList.remove('scroll-down');
+      } else if (y > lastY + 2) {
+        if (siteHeader) siteHeader.classList.add('hide');
+        document.body.classList.add('scroll-down');
+      } else if (y < lastY - 3) {
+        if (siteHeader) siteHeader.classList.remove('hide');
+        document.body.classList.remove('scroll-down');
       }
       lastY = y;
     }, { passive: true });
