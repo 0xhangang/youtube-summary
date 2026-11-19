@@ -40,6 +40,7 @@ summary 필드
 import argparse
 import datetime as dt
 import glob
+import html
 import json
 import os
 import re
@@ -47,6 +48,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
+SHARE_DIR = os.path.join(ROOT, "s")
 INDEX = os.path.join(DATA, "index.json")
 
 CATEGORY_LABELS = {
@@ -255,13 +257,76 @@ def rebuild_index():
     return index
 
 
+def write_share_page(s, date_str):
+    """카톡 등 SNS 미리보기(OG 썸네일·제목)를 위한 정적 공유 페이지를 만든다."""
+    vid = (s.get("videoId") or s.get("id") or "").strip()
+    if not vid or not re.match(r"^[A-Za-z0-9_-]+$", vid):
+        return
+    os.makedirs(SHARE_DIR, exist_ok=True)
+    ch = (s.get("channel") or "").strip()
+    title_raw = (s.get("title") or "피클 유튜브 요약").strip()
+    og_title = f"[{ch}] {title_raw}" if ch else title_raw
+    og_desc = f"피클 유튜브 요약 · {date_str}"
+    og_img = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+    target = f"../?d={date_str}&v={vid}"
+    doc = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{html.escape(og_title)}</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="{html.escape(og_title)}" />
+<meta property="og:description" content="{html.escape(og_desc)}" />
+<meta property="og:image" content="{html.escape(og_img)}" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{html.escape(og_title)}" />
+<meta name="twitter:description" content="{html.escape(og_desc)}" />
+<meta name="twitter:image" content="{html.escape(og_img)}" />
+<meta http-equiv="refresh" content="0; url={html.escape(target)}" />
+<script>location.replace({json.dumps(target)});</script>
+</head>
+<body>
+<p>요약 페이지로 이동 중입니다… <a href="{html.escape(target)}">바로 보기</a></p>
+</body>
+</html>
+"""
+    with open(os.path.join(SHARE_DIR, vid + ".html"), "w", encoding="utf-8") as f:
+        f.write(doc)
+
+
+def rebuild_all_share_pages():
+    count = 0
+    for path in sorted(glob.glob(os.path.join(DATA, "*.json"))):
+        name = os.path.basename(path)
+        m = re.match(r"^(\d{4}-\d{2}-\d{2})\.json$", name)
+        if not m:
+            continue
+        date_str = m.group(1)
+        with open(path, encoding="utf-8") as f:
+            doc = json.load(f)
+        for s in doc.get("summaries") or []:
+            write_share_page(s, date_str)
+            count += 1
+    print(f"공유 페이지 {count}건 생성 완료 → s/")
+
+
 def main():
     ap = argparse.ArgumentParser(description="유튜브 요약을 사이트 데이터에 추가")
-    ap.add_argument("input", help="요약 JSON 파일 경로 또는 - (표준입력)")
+    ap.add_argument("input", nargs="?", help="요약 JSON 파일 경로 또는 - (표준입력)")
     ap.add_argument("--date", help="YYYY-MM-DD (입력에 없을 때)")
     ap.add_argument("--replace", action="store_true", help="같은 videoId를 덮어쓰기")
     ap.add_argument("--dry-run", action="store_true", help="파일을 쓰지 않고 결과만 출력")
+    ap.add_argument("--rebuild-share", action="store_true", help="기존 전체 요약의 공유 HTML 생성")
     args = ap.parse_args()
+
+    if args.rebuild_share:
+        rebuild_all_share_pages()
+        if not args.input:
+            return
+
+    if not args.input:
+        ap.error("input 인자 또는 --rebuild-share 가 필요합니다")
 
     if args.input == "-":
         payload = json.load(sys.stdin)
@@ -344,6 +409,8 @@ def main():
     with open(INDEX, "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
         f.write("\n")
+    for s in sums:
+        write_share_page(s, date_str)
     print("index.json 갱신: %d일 / %d편" % (len(index["dates"]),
                                           sum(d["count"] for d in index["dates"])))
 

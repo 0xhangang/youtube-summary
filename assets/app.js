@@ -673,8 +673,8 @@
     shareBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="14.5" cy="4.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="15.5" r="2"/><path d="M7.3 9l5.4-3.3M7.3 11l5.4 3.3"/></svg>' +
       '<span class="share-lbl">공유</span>';
     shareBtn.addEventListener('click', function () {
-      var baseUrl = window.location.href.split('#')[0].split('?')[0];
-      var shareUrl = baseUrl + '?d=' + encodeURIComponent(it.date) + '&v=' + encodeURIComponent(id);
+      var dirUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+      var shareUrl = dirUrl + 's/' + encodeURIComponent(id) + '.html';
       var shareMsg = '📺 [' + chTitle + '] ' + (s.title || '') + '\n\n' + shareUrl;
       if (navigator.share) {
         navigator.share({
