@@ -213,13 +213,6 @@
     return isNaN(t) ? 0 : t;
   }
 
-  function readMinutes(s) {
-    var len = summaryText(s).length;
-    if (!len) return '';
-    var min = Math.max(1, Math.round(len / 500));
-    return '읽기 약 ' + min + '분';
-  }
-
   /* ── 데이터 ────────────────────────────────────────── */
   function loadAvatars() {
     return fetchJSON(CHANNELS_URL).then(function (map) {
@@ -500,8 +493,7 @@
     h.appendChild(titleLink);
     main.appendChild(h);
 
-    var rMin = readMinutes(s);
-    if (pub || rel || rMin) {
+    if (pub || rel) {
       var line = document.createElement('div');
       line.className = 'meta-line';
       if (rel) {
@@ -515,12 +507,6 @@
         sp.className = 'mi mi-pub';
         sp.textContent = pub;
         line.appendChild(sp);
-      }
-      if (rMin) {
-        var sm = document.createElement('span');
-        sm.className = 'mi mi-dur';
-        sm.textContent = rMin;
-        line.appendChild(sm);
       }
       main.appendChild(line);
     }
