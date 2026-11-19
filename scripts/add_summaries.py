@@ -314,6 +314,7 @@ def main():
         added += 1
 
     doc["updatedAt"] = stamp
+    sums.sort(key=lambda x: x.get("publishedAt") or x.get("addedAt") or "", reverse=True)
 
     print("날짜 %s · 추가 %d · 갱신 %d · 건너뜀 %d → %s (%d편)"
           % (date_str, added, replaced, skipped, os.path.relpath(path, ROOT), len(sums)))

@@ -1,48 +1,26 @@
 /* 유튜브 상세 요약 — 정적 뷰어
  * 데이터: data/index.json + data/YYYY-MM-DD.json
- * 앱은 오직 읽기만 한다. 새 요약은 데이터 파일을 추가/수정해서 붙인다.
+ * 항상 영상 업로드 시각(publishedAt) 최신순으로 정렬하고, 모든 요약을 펼쳐 한눈에 보여준다.
  */
 (function () {
   'use strict';
 
   var INDEX_URL = 'data/index.json';
   var LS_THEME = 'yts.theme';
-  var LS_READ = 'yts.read';
-  var LS_COLLAPSED = 'yts.collapsedAll';
-
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
 
   var state = {
     index: null,
     activeDate: null,
-    cache: Object.create(null),   // date -> Promise<doc>
-    docs: Object.create(null),    // date -> doc
+    cache: Object.create(null),
+    docs: Object.create(null),
     cat: 'all',
     channel: 'all',
-    q: '',
-    unreadOnly: false,
-    read: loadRead(),
-    collapsedAll: false
+    q: ''
   };
 
   var dom = {};
   var searchTimer = null;
-
-  /* ── 저장소 ─────────────────────────────────────────── */
-  function loadRead() {
-    try {
-      var raw = localStorage.getItem(LS_READ);
-      var arr = raw ? JSON.parse(raw) : [];
-      return new Set(Array.isArray(arr) ? arr : []);
-    } catch (e) {
-      return new Set();
-    }
-  }
-  function saveRead() {
-    try {
-      localStorage.setItem(LS_READ, JSON.stringify(Array.from(state.read)));
-    } catch (e) {}
-  }
 
   /* ── 유틸 ──────────────────────────────────────────── */
   function esc(s) {
@@ -53,12 +31,10 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-  // **굵게** 만 허용하는 최소 서식
   function rich(s) {
     return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   }
   function fmtDateLabel(iso) {
-    // "2026-11-17" -> "11.17 (화)"
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
     if (!m) return iso || '';
     var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
@@ -85,7 +61,6 @@
   }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
-  // ISO 시각을 한국 시간(KST) 기준 조각으로 — 보는 사람의 시간대와 무관하게
   function kstParts(iso) {
     if (!iso) return null;
     var d = new Date(iso);
@@ -107,7 +82,6 @@
       };
     }
   }
-  // "11.17 14:01" (해가 다르면 "2025.11.17 14:01")
   function fmtPublished(iso) {
     var p = kstParts(iso);
     if (!p) return '';
@@ -115,7 +89,6 @@
     return (p.y === thisYear ? '' : p.y + '.') + Number(p.m) + '.' + p.d + ' ' + p.hh + ':' + p.mm;
   }
 
-  // 초 단위 길이. 숫자(초) 또는 "1:12:22" / "12:22" 문자열을 모두 받는다
   function durSeconds(v) {
     if (typeof v === 'number' && isFinite(v) && v > 0) return Math.round(v);
     if (typeof v === 'string') {
@@ -139,20 +112,16 @@
     return s + '초';
   }
 
-  // 썸네일 후보 목록 — 앞에서부터 시도하고 실패하면 다음 것으로 넘어간다
   function thumbChain(s, id) {
     var out = [];
     var t = (s.thumbnail || '').trim();
     var isYt = /^https?:\/\/i\d?\.ytimg\.com\/vi\//.test(t);
-    if (t && !isYt) out.push(t);            // 직접 넣은 썸네일은 그대로 최우선
+    if (t && !isYt) out.push(t);
     if (id && /^[A-Za-z0-9_-]{6,}$/.test(id)) {
-      out.push('https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg');
-    }
-    if (t) out.push(t);
-    if (id) {
       out.push('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
       out.push('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
     }
+    if (t) out.push(t);
     var seen = Object.create(null);
     return out.filter(function (u) {
       if (!u || seen[u]) return false;
@@ -176,6 +145,12 @@
       if (b.items) out.push(b.items.join(' '));
     });
     return out.join(' ');
+  }
+
+  function sortTime(s) {
+    var v = s.publishedAt || s.addedAt || '';
+    var t = Date.parse(v);
+    return isNaN(t) ? 0 : t;
   }
 
   /* ── 데이터 ────────────────────────────────────────── */
@@ -207,13 +182,16 @@
   }
 
   function scopeOf(date) {
-    // [{summary, date}] — 항상 최신 날짜 먼저, 같은 날짜에서는 파일 순서 유지
+    // 최신 날짜 먼저, 같은 날짜 내에서는 업로드 시각(publishedAt) 최신순으로 정렬
     var dates = date === 'all' ? state.index.dates.map(function (d) { return d.date; }) : [date];
     var out = [];
     dates.forEach(function (d) {
       var doc = state.docs[d];
       if (!doc) return;
-      doc.summaries.forEach(function (s) {
+      var sorted = doc.summaries.slice().sort(function (a, b) {
+        return sortTime(b) - sortTime(a);
+      });
+      sorted.forEach(function (s) {
         out.push({ s: s, date: d, dateLabel: doc.label || fmtDateLabel(d) });
       });
     });
@@ -244,7 +222,6 @@
   }
 
   function renderFilterChips(all) {
-    // 분류
     var cats = {};
     var chans = {};
     all.forEach(function (it) {
@@ -259,7 +236,7 @@
     var allChip = document.createElement('button');
     allChip.type = 'button';
     allChip.className = 'chip' + (state.cat === 'all' ? ' active' : '');
-    allChip.innerHTML = '전체 분류 <span class="n">(' + all.length + ')</span>';
+    allChip.innerHTML = '전체 <span class="n">' + all.length + '</span>';
     allChip.addEventListener('click', function () { state.cat = 'all'; apply(); });
     catBox.appendChild(allChip);
 
@@ -274,20 +251,20 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip' + (state.cat === k ? ' active' : '');
-      b.innerHTML = esc(label) + ' <span class="n">(' + cats[k] + ')</span>';
+      b.innerHTML = esc(label) + ' <span class="n">' + cats[k] + '</span>';
       b.addEventListener('click', function () { state.cat = k; apply(); });
       catBox.appendChild(b);
     });
 
-    // 채널
     var chBox = dom.channelChips;
     chBox.innerHTML = '';
     var names = Object.keys(chans).sort(function (a, b) { return chans[b] - chans[a]; });
     if (names.length > 1) {
+      dom.channelRow.hidden = false;
       var b0 = document.createElement('button');
       b0.type = 'button';
       b0.className = 'chip channel' + (state.channel === 'all' ? ' active' : '');
-      b0.innerHTML = '모든 채널 <span class="n">(' + all.length + ')</span>';
+      b0.innerHTML = '전체 <span class="n">' + all.length + '</span>';
       b0.addEventListener('click', function () { state.channel = 'all'; apply(); });
       chBox.appendChild(b0);
       names.forEach(function (n) {
@@ -298,6 +275,8 @@
         b.addEventListener('click', function () { state.channel = n; apply(); });
         chBox.appendChild(b);
       });
+    } else {
+      dom.channelRow.hidden = true;
     }
   }
 
@@ -313,28 +292,66 @@
   }
 
   /* ── 카드 ──────────────────────────────────────────── */
-  function buildCard(it, collapseAll) {
+  function buildCard(it) {
     var s = it.s;
     var id = s.videoId || s.id || (it.date + '-' + s.title);
     var card = document.createElement('article');
     card.className = 'card';
     card.id = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
     card.dataset.vid = id;
-    if (state.read.has(id)) card.classList.add('read');
-    if (collapseAll) card.classList.add('collapsed');
 
     var url = s.url || ('https://www.youtube.com/watch?v=' + id);
     var dur = durSeconds(s.duration);
-    var pub = fmtPublished(s.publishedAt);
+    var pub = fmtPublished(s.publishedAt || s.addedAt);
 
     var header = document.createElement('div');
     header.className = 'card-header';
-    header.setAttribute('role', 'button');
-    header.setAttribute('tabindex', '0');
-    header.setAttribute('aria-expanded', collapseAll ? 'false' : 'true');
-    header.setAttribute('aria-label', '요약 접기/펼치기: ' + (s.title || ''));
 
-    // 썸네일 — 펼치면 16:9 배너, 접으면 옆의 작은 그림
+    var main = document.createElement('div');
+    main.className = 'card-main';
+
+    // 상단 메타: 채널명 + 카테고리 태그 + 시간/길이
+    var meta = document.createElement('div');
+    meta.className = 'meta-row';
+    var badge = document.createElement('span');
+    badge.className = 'channel-badge';
+    badge.textContent = s.channel || '채널';
+    meta.appendChild(badge);
+
+    if (s.categoryLabel) {
+      var tag = document.createElement('span');
+      tag.className = 'cat-tag';
+      tag.dataset.cat = s.category || 'etc';
+      tag.textContent = s.categoryLabel;
+      meta.appendChild(tag);
+    }
+    main.appendChild(meta);
+
+    var h = document.createElement('h2');
+    h.className = 'video-title';
+    h.textContent = s.title || '(제목 없음)';
+    main.appendChild(h);
+
+    if (pub || dur) {
+      var line = document.createElement('div');
+      line.className = 'meta-line';
+      if (pub) {
+        var sp = document.createElement('span');
+        sp.className = 'mi mi-pub';
+        sp.textContent = pub;
+        line.appendChild(sp);
+      }
+      if (dur) {
+        var sd = document.createElement('span');
+        sd.className = 'mi mi-dur';
+        sd.textContent = fmtDurKo(dur);
+        line.appendChild(sd);
+      }
+      main.appendChild(line);
+    }
+    header.appendChild(main);
+
+    // 콤팩트 썸네일 (누르면 유튜브로 이동)
     var chain = thumbChain(s, id);
     if (chain.length) {
       var thumbLink = document.createElement('a');
@@ -354,7 +371,6 @@
       img.addEventListener('error', function () {
         ci++;
         if (ci < chain.length) { img.src = chain[ci]; return; }
-        // 모든 후보 실패 → 그림 없이 글만
         card.classList.add('no-thumb');
         if (thumbLink.parentNode) thumbLink.parentNode.removeChild(thumbLink);
       });
@@ -363,118 +379,17 @@
 
       var play = document.createElement('span');
       play.className = 'thumb-play';
-      var glyph = document.createElement('span');
-      glyph.className = 'thumb-play-glyph';
-      glyph.textContent = '▶';
-      play.appendChild(glyph);
+      play.textContent = '▶';
       thumbLink.appendChild(play);
 
       if (dur) {
         var dBadge = document.createElement('span');
         dBadge.className = 'thumb-dur';
         dBadge.textContent = fmtClock(dur);
-        dBadge.title = fmtDurKo(dur);
         thumbLink.appendChild(dBadge);
       }
       header.appendChild(thumbLink);
     }
-
-    var main = document.createElement('div');
-    main.className = 'card-main';
-
-    var meta = document.createElement('div');
-    meta.className = 'meta-row';
-    var badge = document.createElement('span');
-    badge.className = 'channel-badge';
-    badge.textContent = s.channel || '채널';
-    meta.appendChild(badge);
-    if (s.categoryLabel) {
-      var tag = document.createElement('span');
-      tag.className = 'cat-tag';
-      tag.textContent = s.categoryLabel;
-      meta.appendChild(tag);
-    }
-    var dot = document.createElement('span');
-    dot.className = 'unread-dot';
-    dot.title = '안 읽음';
-    meta.appendChild(dot);
-    main.appendChild(meta);
-
-    var h = document.createElement('h2');
-    h.className = 'video-title';
-    h.textContent = s.title || '(제목 없음)';
-    main.appendChild(h);
-
-    // 메타 줄(업로드 시각·길이)과 동작 줄을 한 줄에 묶어 카드 머리를 세 줄로 정리
-    var subRow = document.createElement('div');
-    subRow.className = 'sub-row';
-
-    if (pub || dur) {
-      var line = document.createElement('div');
-      line.className = 'meta-line';
-      if (pub) {
-        var sp = document.createElement('span');
-        sp.className = 'mi mi-pub';
-        sp.textContent = pub;
-        sp.title = '업로드 ' + pub + ' (한국시간)';
-        line.appendChild(sp);
-      }
-      if (dur) {
-        var sd = document.createElement('span');
-        sd.className = 'mi mi-dur';
-        sd.textContent = fmtDurKo(dur);
-        sd.title = '영상 길이 ' + fmtClock(dur);
-        line.appendChild(sd);
-      }
-      subRow.appendChild(line);
-    }
-
-    var actions = document.createElement('div');
-    actions.className = 'card-actions';
-    var a = document.createElement('a');
-    a.className = 'yt-link';
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.title = '유튜브에서 보기';
-    var aIco = document.createElement('span');
-    aIco.className = 'yt-ico';
-    aIco.textContent = '▶';
-    aIco.setAttribute('aria-hidden', 'true');
-    a.appendChild(aIco);
-    a.appendChild(document.createTextNode('유튜브에서 보기'));
-    actions.appendChild(a);
-
-    var right = document.createElement('span');
-    right.className = 'actions-right';
-    var readBtn = document.createElement('button');
-    readBtn.type = 'button';
-    readBtn.className = 'read-btn';
-    readBtn.textContent = state.read.has(id) ? '✓ 읽음' : '안 읽음';
-    readBtn.addEventListener('click', function (ev) {
-      ev.stopPropagation();
-      toggleRead(id, card, readBtn);
-    });
-    right.appendChild(readBtn);
-    var chev = document.createElement('span');
-    chev.className = 'chev';
-    chev.setAttribute('aria-hidden', 'true');
-    right.appendChild(chev);
-    actions.appendChild(right);
-    subRow.appendChild(actions);
-    main.appendChild(subRow);
-    header.appendChild(main);
-
-    header.addEventListener('click', function (ev) {
-      if (ev.target.closest('a')) return;
-      toggleCard(card);
-    });
-    header.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
-        ev.preventDefault();
-        toggleCard(card);
-      }
-    });
 
     card.appendChild(header);
 
@@ -514,28 +429,9 @@
     return card;
   }
 
-  function toggleCard(card) {
-    var collapsed = card.classList.toggle('collapsed');
-    var header = card.querySelector('.card-header');
-    if (header) header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-  }
-
-  function toggleRead(id, card, btn) {
-    if (state.read.has(id)) state.read.delete(id);
-    else state.read.add(id);
-    saveRead();
-    card.classList.toggle('read', state.read.has(id));
-    btn.textContent = state.read.has(id) ? '✓ 읽음' : '안 읽음';
-    if (state.unreadOnly && state.read.has(id)) apply();
-    else updateSubtitle(counts.lastScope);
-  }
-
   /* ── 렌더 ──────────────────────────────────────────── */
-  var counts = { lastScope: 0 };
-
   function apply() {
     var all = scopeOf(state.activeDate);
-    counts.lastScope = all.length;
     renderFilterChips(all);
 
     var q = state.q.trim().toLowerCase();
@@ -543,10 +439,6 @@
       var s = it.s;
       if (state.cat !== 'all' && (s.category || 'etc') !== state.cat) return false;
       if (state.channel !== 'all' && (s.channel || '기타') !== state.channel) return false;
-      if (state.unreadOnly) {
-        var id = s.videoId || s.id;
-        if (state.read.has(id)) return false;
-      }
       if (q) {
         var hay = ((s.title || '') + ' ' + (s.channel || '') + ' ' +
           (s.categoryLabel || '') + ' ' + (s.plain || summaryText(s))).toLowerCase();
@@ -565,7 +457,7 @@
         : '이 날짜에는 아직 요약이 없어요.';
       feed.appendChild(none);
       updateToc(filtered);
-      updateSubtitle(all.length);
+      updateSubtitle(all.length, filtered.length);
       return;
     }
 
@@ -578,43 +470,38 @@
         feed.appendChild(div);
         lastDate = it.date;
       }
-      feed.appendChild(buildCard(it, state.collapsedAll));
+      feed.appendChild(buildCard(it));
     });
 
     updateToc(filtered);
-    updateSubtitle(all.length);
+    updateSubtitle(all.length, filtered.length);
   }
 
-  function updateSubtitle(scopeCount) {
+  function updateSubtitle(scopeCount, filteredCount) {
     if (!state.index) return;
     var label;
     if (state.activeDate === 'all') {
-      label = '전체 아카이브 · ' + state.index.dates.length + '일';
+      label = '전체 ' + state.index.dates.length + '일';
     } else {
       var meta = null;
       state.index.dates.forEach(function (d) { if (d.date === state.activeDate) meta = d; });
       label = (meta && meta.label) || fmtDateLabel(state.activeDate);
     }
-    var unread = 0;
-    var all = scopeOf(state.activeDate);
-    all.forEach(function (it) {
-      var id = it.s.videoId || it.s.id;
-      if (!state.read.has(id)) unread++;
-    });
-    var parts = [label, (scopeCount != null ? scopeCount : all.length) + '편'];
-    if (unread) parts.push('안 읽음 ' + unread);
-    dom.subtitle.textContent = parts.join(' · ');
+    var countText = (filteredCount != null && filteredCount !== scopeCount)
+      ? filteredCount + ' / ' + scopeCount + '편'
+      : (scopeCount || 0) + '편';
+    dom.subtitle.textContent = label + ' · ' + countText + ' (최신순)';
   }
 
   function updateToc(filtered) {
     var list = dom.tocList;
     list.innerHTML = '';
-    if (!filtered || !filtered.length || filtered.length > 60) {
+    if (!filtered || !filtered.length || filtered.length > 80) {
       dom.tocBox.hidden = true;
       return;
     }
     dom.tocBox.hidden = false;
-    dom.tocTitle.textContent = '📑 목차 (' + filtered.length + '편)';
+    dom.tocTitle.textContent = '📑 목차 (' + filtered.length + '편 · 최신순)';
     filtered.forEach(function (it) {
       var s = it.s;
       var id = s.videoId || s.id;
@@ -648,10 +535,7 @@
     box.className = 'state';
     box.innerHTML = '요약 데이터를 불러오지 못했어요.<br>' +
       '<span style="font-size:12.5px;opacity:.8">' + esc(String(err && err.message || err)) + '</span>' +
-      '<br><button class="btn retry" type="button">다시 시도</button>' +
-      '<div style="font-size:12px;margin-top:14px;opacity:.75">' +
-      'index.html을 파일로 직접 열었다면 브라우저가 데이터 읽기를 막습니다. ' +
-      '인터넷 주소(https://0xhangang.github.io/youtube-summary/)로 열어 주세요.</div>';
+      '<br><button class="btn retry" type="button">다시 시도</button>';
     dom.feed.appendChild(box);
     dom.subtitle.textContent = '불러오기 실패';
     var rb = box.querySelector('.retry');
@@ -662,7 +546,6 @@
     state.activeDate = date;
     state.cat = 'all';
     state.channel = 'all';
-    dom.unreadOnly.checked = state.unreadOnly;
     renderDateChips();
     dom.subtitle.textContent = '불러오는 중…';
     dom.feed.innerHTML = '<div class="state">불러오는 중…</div>';
@@ -685,15 +568,14 @@
     dom.dateChips = document.getElementById('dateChips');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
+    dom.channelRow = document.getElementById('channelRow');
     dom.feed = document.getElementById('feed');
     dom.tocBox = document.getElementById('tocBox');
     dom.tocTitle = document.getElementById('tocTitle');
     dom.tocList = document.getElementById('tocList');
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
-    dom.unreadOnly = document.getElementById('unreadOnly');
 
-    // 테마
     var themeBtn = document.getElementById('themeBtn');
     function syncThemeBtn() {
       var dark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -708,25 +590,6 @@
       syncThemeBtn();
     });
 
-    // 모두 접기/펼치기
-    var toggleAllBtn = document.getElementById('toggleAllBtn');
-    function syncToggleAll() {
-      toggleAllBtn.textContent = state.collapsedAll ? '모두 펼치기' : '모두 접기';
-    }
-    try { state.collapsedAll = localStorage.getItem(LS_COLLAPSED) === '1'; } catch (e) {}
-    syncToggleAll();
-    toggleAllBtn.addEventListener('click', function () {
-      state.collapsedAll = !state.collapsedAll;
-      try { localStorage.setItem(LS_COLLAPSED, state.collapsedAll ? '1' : '0'); } catch (e) {}
-      syncToggleAll();
-      Array.prototype.forEach.call(document.querySelectorAll('.card'), function (c) {
-        c.classList.toggle('collapsed', state.collapsedAll);
-        var head = c.querySelector('.card-header');
-        if (head) head.setAttribute('aria-expanded', state.collapsedAll ? 'false' : 'true');
-      });
-    });
-
-    // 검색
     dom.search.addEventListener('input', function () {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(function () {
@@ -735,24 +598,6 @@
       }, 120);
     });
 
-    // 안 읽은 것만
-    dom.unreadOnly.addEventListener('change', function () {
-      state.unreadOnly = dom.unreadOnly.checked;
-      apply();
-    });
-
-    // 모두 읽음 (현재 날짜 범위)
-    document.getElementById('markAllBtn').addEventListener('click', function () {
-      var all = scopeOf(state.activeDate);
-      all.forEach(function (it) {
-        var id = it.s.videoId || it.s.id;
-        state.read.add(id);
-      });
-      saveRead();
-      apply();
-    });
-
-    // 맨 위로 + 스크롤 방향에 따라 헤더 감추기
     var topBtn = document.getElementById('topBtn');
     var siteHeader = document.getElementById('siteHeader');
     var lastY = window.scrollY;
