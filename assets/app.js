@@ -324,8 +324,19 @@
 
   /* ── 탭 제어 (분류 · 채널 · 목차 · 좋아요 · 검색) ───────── */
   function setTab(tabName) {
-    state.activeTab = (state.activeTab === tabName) ? null : tabName;
+    var next = (state.activeTab === tabName) ? null : tabName;
+    state.activeTab = next;
     syncTabs();
+    if (tabName === 'fav') {
+      state.favOnly = (next === 'fav');
+      if (state.favOnly) {
+        loadAllDatesForLikes().then(function () { apply(); });
+      } else {
+        apply();
+      }
+    } else if (tabName === 'search' && next === 'search') {
+      loadAllDates();
+    }
   }
 
   function syncTabs() {
@@ -971,6 +982,7 @@
     state.activeDate = date;
     state.cat = 'all';
     state.channel = 'all';
+    state.favOnly = false;
     renderDateChips();
     dom.subtitle.textContent = '불러오는 중…';
     dom.feed.innerHTML = '<div class="state">불러오는 중…</div>';
@@ -1008,8 +1020,6 @@
     dom.feed = document.getElementById('feed');
     dom.tocList = document.getElementById('tocList');
     dom.favList = document.getElementById('favList');
-    dom.favFilterChip = document.getElementById('favFilterChip');
-    dom.favFilterCount = document.getElementById('favFilterCount');
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
     dom.searchClear = document.getElementById('searchClear');
@@ -1029,24 +1039,10 @@
       if (btn) {
         btn.addEventListener('click', function () {
           setTab(btn.dataset.tab);
-          if (btn.dataset.tab === 'search' && state.activeTab === 'search') {
-            loadAllDates();
-          }
         });
       }
     });
     syncTabs();
-
-    if (dom.favFilterChip) {
-      dom.favFilterChip.addEventListener('click', function () {
-        state.favOnly = !state.favOnly;
-        if (state.favOnly) {
-          loadAllDatesForLikes().then(function () { apply(); });
-        } else {
-          apply();
-        }
-      });
-    }
 
     var sortSvg = document.getElementById('sortSvg');
     var sortLbl = document.getElementById('sortLbl');
