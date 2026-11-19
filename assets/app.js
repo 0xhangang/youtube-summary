@@ -502,6 +502,10 @@
 
     var info = document.createElement('div');
     info.className = 'yt-info';
+
+    var headRow = document.createElement('div');
+    headRow.className = 'yt-head-row';
+
     var avLink = document.createElement('a');
     avLink.className = 'ch-av-link';
     avLink.href = chHref;
@@ -509,7 +513,7 @@
     avLink.rel = 'noopener';
     avLink.title = chTitle + ' 채널로 이동';
     avLink.appendChild(makeAvatarEl(chTitle, false));
-    info.appendChild(avLink);
+    headRow.appendChild(avLink);
 
     var main = document.createElement('div');
     main.className = 'card-main';
@@ -542,9 +546,12 @@
     h.appendChild(titleLink);
     main.appendChild(h);
 
+    headRow.appendChild(main);
+    info.appendChild(headRow);
+
     if (pub || rel) {
       var line = document.createElement('div');
-      line.className = 'meta-line';
+      line.className = 'meta-line yt-time-row';
       if (rel) {
         var sr = document.createElement('span');
         sr.className = 'mi mi-rel';
@@ -557,10 +564,9 @@
         sp.textContent = pub;
         line.appendChild(sp);
       }
-      main.appendChild(line);
+      info.appendChild(line);
     }
 
-    info.appendChild(main);
     header.appendChild(info);
     card.appendChild(header);
 
