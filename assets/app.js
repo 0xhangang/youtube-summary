@@ -874,17 +874,28 @@
     var topBtn = document.getElementById('topBtn');
     var siteHeader = document.getElementById('siteHeader');
     var lastY = window.scrollY;
+    var upAccum = 0;
     topBtn.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     window.addEventListener('scroll', function () {
       var y = window.scrollY;
+      var dy = y - lastY;
       topBtn.classList.toggle('show', y > 600);
       if (siteHeader) {
         var tabOpen = dom.tabPanel && !dom.tabPanel.hidden;
-        if (y < 140 || tabOpen) siteHeader.classList.remove('hide');
-        else if (y > lastY + 6) siteHeader.classList.add('hide');
-        else if (y < lastY - 6) siteHeader.classList.remove('hide');
+        if (y < 40 || tabOpen) {
+          siteHeader.classList.remove('hide');
+          upAccum = 0;
+        } else if (dy > 4) {
+          siteHeader.classList.add('hide');
+          upAccum = 0;
+        } else if (dy < 0) {
+          upAccum += -dy;
+          if (upAccum > 90) {
+            siteHeader.classList.remove('hide');
+          }
+        }
       }
       lastY = y;
     }, { passive: true });
