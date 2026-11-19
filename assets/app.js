@@ -9,7 +9,7 @@
   var LS_THEME = 'yts.theme';
   var LS_SORT = 'yts.sort';
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
-  var AVATAR_COLORS = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
+  var AVATAR_COLORS = ['#10b981', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
   var state = {
     index: null,
@@ -21,7 +21,7 @@
     channel: 'all',
     q: '',
     sort: loadSort(),
-    activeTab: null // 'cat' | 'channel' | 'toc' | null(접힘)
+    activeTab: null // 'cat' | 'channel' | 'toc' | 'search' | null
   };
 
   var dom = {};
@@ -137,29 +137,6 @@
     var diffDay = Math.floor(diffHr / 24);
     if (diffDay < 7) return diffDay + '일 전';
     return '';
-  }
-
-  function durSeconds(v) {
-    if (typeof v === 'number' && isFinite(v) && v > 0) return Math.round(v);
-    if (typeof v === 'string') {
-      var t = v.trim();
-      if (/^\d+$/.test(t)) return Number(t);
-      var m = /^(?:(\d+):)?(\d{1,3}):(\d{2})$/.exec(t);
-      if (m) return Number(m[1] || 0) * 3600 + Number(m[2]) * 60 + Number(m[3]);
-    }
-    return 0;
-  }
-  function fmtClock(sec) {
-    if (!sec) return '';
-    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-    return h ? h + ':' + pad2(m) + ':' + pad2(s) : m + ':' + pad2(s);
-  }
-  function fmtDurKo(sec) {
-    if (!sec) return '';
-    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-    if (h) return h + '시간' + (m ? ' ' + m + '분' : '');
-    if (m) return m + '분' + (s ? ' ' + s + '초' : '');
-    return s + '초';
   }
 
   function thumbChain(s, id) {
@@ -304,7 +281,7 @@
     });
   }
 
-  /* ── 탭 제어 (분류 · 채널 · 목차) ─────────────────────── */
+  /* ── 탭 제어 (분류 · 채널 · 목차 · 검색) ───────────────── */
   function setTab(tabName) {
     state.activeTab = (state.activeTab === tabName) ? null : tabName;
     syncTabs();
@@ -343,7 +320,7 @@
     var all = document.createElement('button');
     all.type = 'button';
     all.className = 'chip' + (state.activeDate === 'all' ? ' active' : '');
-    all.innerHTML = '<span>전체</span><span class="n">' + total + '</span>';
+    all.innerHTML = '<span class="chip-txt">전체</span><span class="n">' + total + '</span>';
     all.addEventListener('click', function () { setDate('all'); });
     box.appendChild(all);
 
@@ -351,7 +328,7 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip' + (state.activeDate === d.date ? ' active' : '');
-      b.innerHTML = '<span>' + esc(fmtDateLabel(d.date)) + '</span><span class="n">' + Number(d.count || 0) + '</span>';
+      b.innerHTML = '<span class="chip-txt">' + esc(fmtDateLabel(d.date)) + '</span><span class="n">' + Number(d.count || 0) + '</span>';
       b.addEventListener('click', function () { setDate(d.date); });
       box.appendChild(b);
     });
@@ -497,7 +474,7 @@
 
       var play = document.createElement('span');
       play.className = 'thumb-play';
-      play.textContent = '▶';
+      play.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.5 4.5v11l9.5-5.5-9.5-5.5Z"/></svg>';
       thumbLink.appendChild(play);
       header.appendChild(thumbLink);
     }
@@ -698,7 +675,7 @@
       list.appendChild(empty);
       return;
     }
-    listItems.forEach(function (it) {
+    listItems.forEach(function (it, idx) {
       var s = it.s;
       var id = s.videoId || s.id;
       var anchor = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
@@ -715,6 +692,10 @@
           el.classList.add('flash');
         }
       });
+      var num = document.createElement('span');
+      num.className = 'toc-num';
+      num.textContent = idx + 1;
+      a.appendChild(num);
       var ch = document.createElement('span');
       ch.className = 'toc-channel';
       ch.textContent = s.channel || '';
@@ -790,7 +771,6 @@
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
     dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
 
-    // 탭 버튼 연결 (기본 접힘)
     ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
@@ -801,7 +781,6 @@
     });
     syncTabs();
 
-    // 정렬 토글 버튼 (다크 버튼과 동일 SVG+라벨 구조)
     var sortSvg = document.getElementById('sortSvg');
     var sortLbl = document.getElementById('sortLbl');
     function syncSortBtn() {
