@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0c1017" media="(prefers-color-scheme: dark)" />
 <title>피클 유튜브 요약</title>
-<link rel="stylesheet" href="assets/style.css?v=20261119d" />
+<link rel="stylesheet" href="assets/style.css?v=20261119e" />
 <script>
   (function () {
     try {
@@ -25,16 +25,23 @@
     <div class="header-top">
       <div class="brand">
         <span class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 36 36" fill="none">
-            <rect width="36" height="36" rx="11" fill="url(#pickleGrad)"/>
-            <path d="M11 11.5h14l-6.2 7.2M18 17.5l6.8 6.5M18 17.5l-6.8 6.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
-            <path d="M14.5 12.2c0-.9.98-1.45 1.75-.98l9.1 5.55c.74.45.74 1.52 0 1.97l-9.1 5.55c-.77.47-1.75-.08-1.75-.98V12.2Z" fill="#ffffff"/>
+          <svg viewBox="0 0 40 40" fill="none">
             <defs>
-              <linearGradient id="pickleGrad" x1="2" y1="2" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#22c55e"/>
-                <stop offset="1" stop-color="#15803d"/>
+              <linearGradient id="pkBg" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#10b981"/>
+                <stop offset="55%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#0f766e"/>
+              </linearGradient>
+              <linearGradient id="pkShine" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32"/>
+                <stop offset="50%" stop-color="#ffffff" stop-opacity="0"/>
               </linearGradient>
             </defs>
+            <rect x="2" y="2" width="36" height="36" rx="11" fill="url(#pkBg)"/>
+            <rect x="2" y="2" width="36" height="36" rx="11" fill="url(#pkShine)"/>
+            <rect x="2.5" y="2.5" width="35" height="35" rx="10.5" stroke="#ffffff" stroke-opacity="0.22"/>
+            <path d="M16.2 13.8c0-1.05 1.15-1.7 2.05-1.15l9.4 5.75c.85.52.85 1.78 0 2.3l-9.4 5.75c-.9.55-2.05-.1-2.05-1.15V13.8Z" fill="#ffffff"/>
+            <circle cx="29.5" cy="10.5" r="2.1" fill="#a7f3d0"/>
           </svg>
         </span>
         <div class="title-block">
@@ -66,9 +73,9 @@
         <select id="sortSelect" class="sort-select" aria-label="정렬 기준">
           <option value="newest">최신순</option>
           <option value="oldest">오래된순</option>
+          <option value="longest">분량 긴순</option>
+          <option value="shortest">분량 짧은순</option>
           <option value="channel">채널명순</option>
-          <option value="longest">긴 영상순</option>
-          <option value="shortest">짧은 영상순</option>
         </select>
       </div>
     </div>
@@ -121,6 +128,6 @@
 
 <button class="top-btn" id="topBtn" type="button" title="맨 위로" aria-label="맨 위로">↑</button>
 
-<script src="assets/app.js?v=20261119d"></script>
+<script src="assets/app.js?v=20261119e"></script>
 </body>
 </html>

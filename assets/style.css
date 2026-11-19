@@ -127,11 +127,11 @@ button, select { -webkit-tap-highlight-color: transparent; }
   min-width: 0;
 }
 .brand-icon {
-  flex: 0 0 34px;
-  width: 34px;
-  height: 34px;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
-  filter: drop-shadow(0 2px 6px rgba(22, 163, 74, 0.25));
+  filter: drop-shadow(0 3px 8px rgba(16, 185, 129, 0.28));
 }
 .brand-icon svg { width: 100%; height: 100%; display: block; }
 .title-block { min-width: 0; }
@@ -420,16 +420,14 @@ button.btn:active { transform: scale(0.97); }
 .tab-panel[hidden] { display: none; }
 .tab-pane[hidden] { display: none; }
 
-/* 목차 */
+/* 목차: 스크롤 없이 한눈에 전체 다 펼쳐서 보임 */
 .toc-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
-  max-height: 300px;
-  overflow-y: auto;
 }
 .toc-list a {
   color: var(--text-sub);
@@ -657,53 +655,60 @@ button.btn:active { transform: scale(0.97); }
 }
 .meta-line .mi-rel, .meta-line .mi-dur { font-weight: 600; color: var(--text-sub); }
 
-/* ── 본문 ─────────────────────────────────────────────── */
+/* ── 본문 (에디토리얼 가독성 & 세련된 배치) ──────────────── */
 .card-body {
-  padding: 8px 16px 20px;
+  padding: 12px 18px 24px;
   color: var(--text-body);
   font-size: 15.5px;
-  line-height: 1.82;
-  letter-spacing: -0.01em;
+  line-height: 1.86;
+  letter-spacing: -0.012em;
 }
 .body-inner { max-width: var(--measure); margin: 0 auto; }
 
 .section-title {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 22px 0 8px;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.45;
-  letter-spacing: -0.3px;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 16.5px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: -0.35px;
   color: var(--text);
   word-break: keep-all;
 }
 .section-title::before {
   content: "";
-  flex: 0 0 3px;
-  align-self: flex-start;
+  flex: 0 0 4px;
   height: 1.05em;
-  margin-top: 0.2em;
-  border-radius: 2px;
-  background: var(--accent);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
 }
-.body-inner > .section-title:first-child { margin-top: 10px; }
+.body-inner > .section-title:first-child { margin-top: 8px; }
 
 .card-body p {
-  margin: 0 0 1em;
+  margin: 0 0 1.12em;
   word-break: keep-all;
   overflow-wrap: break-word;
   text-wrap: pretty;
 }
 .card-body p:last-child { margin-bottom: 0; }
 
-ul.bullets { margin: 4px 0 1em; padding: 0; list-style: none; }
+ul.bullets {
+  margin: 6px 0 1.15em;
+  padding: 10px 12px;
+  list-style: none;
+  background: var(--surface-2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
 ul.bullets li {
   position: relative;
-  margin: 0 0 7px;
-  padding-left: 14px;
-  line-height: 1.76;
+  margin: 0 0 8px;
+  padding-left: 16px;
+  line-height: 1.78;
   word-break: keep-all;
   overflow-wrap: break-word;
 }
@@ -711,31 +716,33 @@ ul.bullets li::before {
   content: "";
   position: absolute;
   left: 3px;
-  top: 0.76em;
-  width: 4px;
-  height: 4px;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--accent);
-  opacity: 0.7;
 }
 ul.bullets li:last-child { margin-bottom: 0; }
 
 .callout {
-  margin: 12px 0 1em;
-  padding: 12px 14px;
-  border-left: 3px solid var(--accent);
-  border-radius: 4px 12px 12px 4px;
+  position: relative;
+  margin: 14px 0 1.15em;
+  padding: 13px 16px 13px 18px;
+  border-left: 3.5px solid var(--accent);
+  border-radius: 6px 14px 14px 6px;
   background: var(--accent-soft);
+  color: var(--text);
   font-size: 15px;
-  line-height: 1.72;
+  font-weight: 500;
+  line-height: 1.75;
   word-break: keep-all;
 }
 
 .card-body strong {
   font-weight: 700;
   color: var(--text);
-  background-image: linear-gradient(to top, var(--mark) 0.44em, transparent 0.44em);
-  padding: 0 1px;
+  background-image: linear-gradient(to top, var(--mark) 0.42em, transparent 0.42em);
+  padding: 0 2px;
   border-radius: 2px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;

@@ -213,6 +213,20 @@
     return isNaN(t) ? 0 : t;
   }
 
+  function volumeScore(s) {
+    var d = durSeconds(s.duration);
+    var len = summaryText(s).length;
+    // 영상 길이가 있으면 우선 반영하고, 없거나 같으면 요약 글자 수로 정렬
+    return d ? (1000000 + d * 100 + len) : len;
+  }
+
+  function readMinutes(s) {
+    var len = summaryText(s).length;
+    if (!len) return '';
+    var min = Math.max(1, Math.round(len / 500));
+    return '읽기 약 ' + min + '분';
+  }
+
   /* ── 데이터 ────────────────────────────────────────── */
   function loadAvatars() {
     return fetchJSON(CHANNELS_URL).then(function (map) {
@@ -269,15 +283,12 @@
         return ca !== 0 ? ca : (sortTime(b.s) - sortTime(a.s));
       }
       if (mode === 'longest') {
-        var da = durSeconds(a.s.duration), db = durSeconds(b.s.duration);
-        if (da !== db) return db - da;
-        return sortTime(b.s) - sortTime(a.s);
+        var va = volumeScore(a.s), vb = volumeScore(b.s);
+        return vb !== va ? (vb - va) : (sortTime(b.s) - sortTime(a.s));
       }
       if (mode === 'shortest') {
-        var sa = durSeconds(a.s.duration) || 9999999;
-        var sb = durSeconds(b.s.duration) || 9999999;
-        if (sa !== sb) return sa - sb;
-        return sortTime(b.s) - sortTime(a.s);
+        var sa = volumeScore(a.s), sb = volumeScore(b.s);
+        return sa !== sb ? (sa - sb) : (sortTime(b.s) - sortTime(a.s));
       }
       return sortTime(b.s) - sortTime(a.s);
     });
@@ -516,7 +527,8 @@
     h.appendChild(titleLink);
     main.appendChild(h);
 
-    if (pub || rel || dur) {
+    var rMin = readMinutes(s);
+    if (pub || rel || dur || rMin) {
       var line = document.createElement('div');
       line.className = 'meta-line';
       if (rel) {
@@ -536,6 +548,11 @@
         sd.className = 'mi mi-dur';
         sd.textContent = fmtDurKo(dur);
         line.appendChild(sd);
+      } else if (rMin) {
+        var sm = document.createElement('span');
+        sm.className = 'mi mi-dur';
+        sm.textContent = rMin;
+        line.appendChild(sm);
       }
       main.appendChild(line);
     }
