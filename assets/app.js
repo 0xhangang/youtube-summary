@@ -403,7 +403,7 @@
     var allChip = document.createElement('button');
     allChip.type = 'button';
     allChip.className = 'chip' + (state.cat === 'all' ? ' active' : '');
-    allChip.innerHTML = '<span class="chip-txt">전체</span><span class="n">' + all.length + '</span>';
+    allChip.innerHTML = '<span class="chip-txt">전체 보기</span><span class="n">' + all.length + '</span>';
     allChip.addEventListener('click', function () { state.cat = 'all'; apply(); });
     catBox.appendChild(allChip);
 
@@ -413,6 +413,7 @@
       if (ib < 0) ib = 99;
       return ia - ib;
     });
+    if (dom.catMeta) dom.catMeta.textContent = keys.length + '개 분류 · 영상 ' + all.length + '편';
     keys.forEach(function (k) {
       var label = catLabel(k, all);
       var b = document.createElement('button');
@@ -427,10 +428,11 @@
     var chBox = dom.channelChips;
     chBox.innerHTML = '';
     var names = Object.keys(chans).sort(function (a, b) { return chans[b] - chans[a]; });
+    if (dom.channelMeta) dom.channelMeta.textContent = names.length + '개 채널 · 영상 ' + all.length + '편';
     var b0 = document.createElement('button');
     b0.type = 'button';
     b0.className = 'chip' + (state.channel === 'all' ? ' active' : '');
-    b0.innerHTML = '<span class="chip-txt">전체 채널</span><span class="n">' + all.length + '</span>';
+    b0.innerHTML = '<span class="chip-txt">전체 보기</span><span class="n">' + all.length + '</span>';
     b0.addEventListener('click', function () { state.channel = 'all'; apply(); });
     chBox.appendChild(b0);
 
@@ -1017,6 +1019,8 @@
     dom.dateChips = document.getElementById('dateChips');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
+    dom.catMeta = document.getElementById('catMeta');
+    dom.channelMeta = document.getElementById('channelMeta');
     dom.feed = document.getElementById('feed');
     dom.tocList = document.getElementById('tocList');
     dom.favList = document.getElementById('favList');

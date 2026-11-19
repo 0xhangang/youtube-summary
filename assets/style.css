@@ -494,12 +494,15 @@ button.btn.is-on {
 [data-theme="dark"] .toc-channel { color: var(--accent); }
 .toc-title-txt { min-width: 0; color: var(--text-body); }
 .toc-empty { font-size: 13px; color: var(--text-faint); padding: 6px 4px; }
+.pane-meta,
 .search-meta {
-  margin: 10px 2px 4px;
+  margin: 2px 2px 8px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-faint);
 }
+.search-meta { margin: 10px 2px 4px; }
+.pane-meta:empty,
 .search-meta:empty { display: none; }
 
 .fav-pane-head {
