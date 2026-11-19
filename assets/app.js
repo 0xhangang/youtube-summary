@@ -884,7 +884,7 @@
       topBtn.classList.toggle('show', y > 600);
       if (siteHeader) {
         var tabOpen = dom.tabPanel && !dom.tabPanel.hidden;
-        if (y < 40 || tabOpen) {
+        if (y < 10 || tabOpen) {
           siteHeader.classList.remove('hide');
           upAccum = 0;
         } else if (dy > 4) {
@@ -892,7 +892,7 @@
           upAccum = 0;
         } else if (dy < 0) {
           upAccum += -dy;
-          if (upAccum > 90) {
+          if (upAccum > 1000) {
             siteHeader.classList.remove('hide');
           }
         }
