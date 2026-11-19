@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0c1017" media="(prefers-color-scheme: dark)" />
 <title>피클 유튜브 요약</title>
-<link rel="stylesheet" href="assets/style.css?v=20261119h" />
+<link rel="stylesheet" href="assets/style.css?v=20261119i" />
 <script>
   (function () {
     try {
@@ -21,8 +21,8 @@
 </head>
 <body>
 <div class="container">
-  <header class="site-header" id="siteHeader">
-    <div class="header-top">
+  <header class="hub-card" id="siteHeader">
+    <div class="hub-top">
       <div class="brand">
         <span class="brand-icon" aria-hidden="true">
           <svg viewBox="0 0 40 40" fill="none">
@@ -54,59 +54,64 @@
         <button class="btn btn-icon" id="themeBtn" type="button" title="테마 전환">🌙 다크</button>
       </div>
     </div>
-    <nav class="filters date-filters" id="dateChips" aria-label="날짜 선택"></nav>
+
+    <div class="hub-dates">
+      <nav class="filters date-filters" id="dateChips" aria-label="날짜 선택"></nav>
+    </div>
+
+    <div class="hub-search">
+      <div class="search-sort-row">
+        <div class="search-row">
+          <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5"></circle>
+            <path d="M13 13l4 4"></path>
+          </svg>
+          <input id="search" type="search" inputmode="search" autocomplete="off"
+                 placeholder="제목·채널·내용 검색" aria-label="검색" />
+          <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+        </div>
+        <div class="sort-wrap">
+          <label class="sr-only" for="sortSelect">정렬 기준</label>
+          <select id="sortSelect" class="sort-select" aria-label="정렬 기준">
+            <option value="newest">최신순</option>
+            <option value="oldest">오래된순</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="hub-tabs">
+      <div class="tab-bar" role="tablist" aria-label="분류, 채널, 목차 탭">
+        <button class="tab-btn" type="button" role="tab" id="tabBtnCat" data-tab="cat" aria-selected="false">
+          <span class="tab-ico">🏷️</span>
+          <span>분류</span>
+          <span class="tab-badge" id="tabBadgeCat" hidden></span>
+        </button>
+        <button class="tab-btn" type="button" role="tab" id="tabBtnChannel" data-tab="channel" aria-selected="false">
+          <span class="tab-ico">📺</span>
+          <span>채널</span>
+          <span class="tab-badge" id="tabBadgeChannel" hidden></span>
+        </button>
+        <button class="tab-btn" type="button" role="tab" id="tabBtnToc" data-tab="toc" aria-selected="false">
+          <span class="tab-ico">📑</span>
+          <span>목차</span>
+          <span class="tab-badge" id="tabBadgeToc">0</span>
+        </button>
+      </div>
+
+      <div class="tab-panel" id="tabPanel" hidden>
+        <div class="tab-pane" id="paneCat" hidden>
+          <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
+        </div>
+        <div class="tab-pane" id="paneChannel" hidden>
+          <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
+        </div>
+        <div class="tab-pane" id="paneToc" hidden>
+          <ul class="toc-list" id="tocList"></ul>
+        </div>
+      </div>
+    </div>
   </header>
-
-  <section class="control-hub" aria-label="검색, 정렬 및 탐색">
-    <div class="search-sort-row">
-      <div class="search-row">
-        <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
-          <circle cx="8.5" cy="8.5" r="5.5"></circle>
-          <path d="M13 13l4 4"></path>
-        </svg>
-        <input id="search" type="search" inputmode="search" autocomplete="off"
-               placeholder="제목·채널·내용 검색" aria-label="검색" />
-        <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
-      </div>
-      <div class="sort-wrap">
-        <label class="sr-only" for="sortSelect">정렬 기준</label>
-        <select id="sortSelect" class="sort-select" aria-label="정렬 기준">
-          <option value="newest">최신순</option>
-          <option value="oldest">오래된순</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="tab-bar" role="tablist" aria-label="분류, 채널, 목차 탭">
-      <button class="tab-btn" type="button" role="tab" id="tabBtnCat" data-tab="cat" aria-selected="false">
-        <span class="tab-ico">🏷️</span>
-        <span>분류</span>
-        <span class="tab-badge" id="tabBadgeCat" hidden></span>
-      </button>
-      <button class="tab-btn" type="button" role="tab" id="tabBtnChannel" data-tab="channel" aria-selected="false">
-        <span class="tab-ico">📺</span>
-        <span>채널</span>
-        <span class="tab-badge" id="tabBadgeChannel" hidden></span>
-      </button>
-      <button class="tab-btn" type="button" role="tab" id="tabBtnToc" data-tab="toc" aria-selected="false">
-        <span class="tab-ico">📑</span>
-        <span>목차</span>
-        <span class="tab-badge" id="tabBadgeToc">0</span>
-      </button>
-    </div>
-
-    <div class="tab-panel" id="tabPanel" hidden>
-      <div class="tab-pane" id="paneCat" hidden>
-        <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
-      </div>
-      <div class="tab-pane" id="paneChannel" hidden>
-        <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
-      </div>
-      <div class="tab-pane" id="paneToc" hidden>
-        <ul class="toc-list" id="tocList"></ul>
-      </div>
-    </div>
-  </section>
 
   <main id="feed">
     <div class="state" id="state">불러오는 중…</div>
@@ -125,6 +130,6 @@
 
 <button class="top-btn" id="topBtn" type="button" title="맨 위로" aria-label="맨 위로">↑</button>
 
-<script src="assets/app.js?v=20261119h"></script>
+<script src="assets/app.js?v=20261119i"></script>
 </body>
 </html>
