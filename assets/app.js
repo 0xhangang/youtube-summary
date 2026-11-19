@@ -174,6 +174,7 @@
     if (t && !isYt) out.push(t);
     if (id && /^[A-Za-z0-9_-]{6,}$/.test(id)) {
       out.push('https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg');
+      out.push('https://i.ytimg.com/vi/' + id + '/sddefault.jpg');
     }
     if (t) out.push(t);
     if (id) {
