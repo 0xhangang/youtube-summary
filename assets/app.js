@@ -890,7 +890,7 @@
           siteHeader.classList.remove('hide');
         } else if (dy > 2) {
           siteHeader.classList.add('hide');
-        } else if (dy < -8 && (-dy / dt) >= 1.5) {
+        } else if (dy < -25 && (-dy / dt) >= 4.5) {
           siteHeader.classList.remove('hide');
         }
       }
