@@ -6,9 +6,9 @@
 <meta name="color-scheme" content="light dark" />
 <meta name="description" content="관심 유튜브 채널 자동 요약 아카이브 — 화자의 말투 그대로 옮긴 상세 요약" />
 <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
 <title>📺 유튜브 상세 요약</title>
-<link rel="stylesheet" href="assets/style.css?v=20261119b" />
+<link rel="stylesheet" href="assets/style.css?v=20261119c" />
 <script>
   (function () {
     try {
@@ -28,6 +28,7 @@
         <div class="date-sub" id="subtitle">불러오는 중…</div>
       </div>
       <div class="controls">
+        <button class="btn" id="resetFilterBtn" type="button" hidden>↺ 초기화</button>
         <button class="btn" id="themeBtn" type="button" title="다크 모드">🌙 다크</button>
       </div>
     </div>
@@ -43,13 +44,13 @@
         <path d="M13 13l4 4"></path>
       </svg>
     </div>
-    <div class="frow">
-      <span class="flabel" aria-hidden="true">분류</span>
-      <nav class="filters" id="catChips" aria-label="분류 필터"></nav>
+    <div class="fgroup">
+      <div class="fhead">분류</div>
+      <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
     </div>
-    <div class="frow" id="channelRow">
-      <span class="flabel" aria-hidden="true">채널</span>
-      <nav class="filters" id="channelChips" aria-label="채널 필터"></nav>
+    <div class="fgroup" id="channelRow">
+      <div class="fhead">채널</div>
+      <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
     </div>
   </section>
 
@@ -75,6 +76,6 @@
 
 <button class="top-btn" id="topBtn" type="button" title="맨 위로" aria-label="맨 위로">↑</button>
 
-<script src="assets/app.js?v=20261119b"></script>
+<script src="assets/app.js?v=20261119c"></script>
 </body>
 </html>

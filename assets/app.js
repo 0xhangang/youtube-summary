@@ -1,16 +1,18 @@
-/* 유튜브 상세 요약 — 정적 뷰어
- * 데이터: data/index.json + data/YYYY-MM-DD.json
- * 항상 영상 업로드 시각(publishedAt) 최신순으로 정렬하고, 모든 요약을 펼쳐 한눈에 보여준다.
+/* 유튜브 상세 요약 — 유튜브 피드 스타일 뷰어
+ * 데이터: data/index.json + data/channels.json + data/YYYY-MM-DD.json
  */
 (function () {
   'use strict';
 
   var INDEX_URL = 'data/index.json';
+  var CHANNELS_URL = 'data/channels.json';
   var LS_THEME = 'yts.theme';
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
+  var AVATAR_COLORS = ['#2563eb', '#d97706', '#7c3aed', '#059669', '#dc2626', '#0891b2', '#db2777'];
 
   var state = {
     index: null,
+    avatars: Object.create(null),
     activeDate: null,
     cache: Object.create(null),
     docs: Object.create(null),
@@ -88,6 +90,19 @@
     var thisYear = String(new Date().getFullYear());
     return (p.y === thisYear ? '' : p.y + '.') + Number(p.m) + '.' + p.d + ' ' + p.hh + ':' + p.mm;
   }
+  function fmtRelative(iso) {
+    if (!iso) return '';
+    var t = Date.parse(iso);
+    if (isNaN(t)) return '';
+    var diffMin = Math.floor((Date.now() - t) / 60000);
+    if (diffMin < 1) return '방금 전';
+    if (diffMin < 60) return diffMin + '분 전';
+    var diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return diffHr + '시간 전';
+    var diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return diffDay + '일 전';
+    return '';
+  }
 
   function durSeconds(v) {
     if (typeof v === 'number' && isFinite(v) && v > 0) return Math.round(v);
@@ -118,16 +133,50 @@
     var isYt = /^https?:\/\/i\d?\.ytimg\.com\/vi\//.test(t);
     if (t && !isYt) out.push(t);
     if (id && /^[A-Za-z0-9_-]{6,}$/.test(id)) {
-      out.push('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
-      out.push('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
+      out.push('https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg');
     }
     if (t) out.push(t);
+    if (id) {
+      out.push('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
+      out.push('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg');
+    }
     var seen = Object.create(null);
     return out.filter(function (u) {
       if (!u || seen[u]) return false;
       seen[u] = true;
       return true;
     });
+  }
+
+  function avatarColor(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+    return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+  }
+
+  function makeAvatarEl(channelName, small) {
+    var name = channelName || '채널';
+    var url = state.avatars[name];
+    var wrap = document.createElement('span');
+    wrap.className = small ? 'ch-av ch-av-sm' : 'ch-av';
+    if (url) {
+      var img = document.createElement('img');
+      img.src = url;
+      img.alt = name;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', function () {
+        wrap.innerHTML = '';
+        wrap.style.background = avatarColor(name);
+        wrap.textContent = name.slice(0, 1);
+      });
+      wrap.appendChild(img);
+    } else {
+      wrap.style.background = avatarColor(name);
+      wrap.textContent = name.slice(0, 1);
+    }
+    return wrap;
   }
 
   function fetchJSON(url) {
@@ -154,6 +203,12 @@
   }
 
   /* ── 데이터 ────────────────────────────────────────── */
+  function loadAvatars() {
+    return fetchJSON(CHANNELS_URL).then(function (map) {
+      if (map && typeof map === 'object') state.avatars = map;
+    }).catch(function () {});
+  }
+
   function loadIndex() {
     return fetchJSON(INDEX_URL).then(function (idx) {
       if (!idx || !Array.isArray(idx.dates)) throw new Error('index.json 형식이 올바르지 않습니다');
@@ -182,7 +237,6 @@
   }
 
   function scopeOf(date) {
-    // 최신 날짜 먼저, 같은 날짜 내에서는 업로드 시각(publishedAt) 최신순으로 정렬
     var dates = date === 'all' ? state.index.dates.map(function (d) { return d.date; }) : [date];
     var out = [];
     dates.forEach(function (d) {
@@ -250,8 +304,8 @@
       var label = catLabel(k, all);
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'chip' + (state.cat === k ? ' active' : '');
-      b.innerHTML = esc(label) + ' <span class="n">' + cats[k] + '</span>';
+      b.className = 'chip cat-' + esc(k) + (state.cat === k ? ' active' : '');
+      b.innerHTML = '<span class="cat-dot"></span>' + esc(label) + ' <span class="n">' + cats[k] + '</span>';
       b.addEventListener('click', function () { state.cat = k; apply(); });
       catBox.appendChild(b);
     });
@@ -271,13 +325,23 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'chip channel' + (state.channel === n ? ' active' : '');
-        b.textContent = n;
+        b.appendChild(makeAvatarEl(n, true));
+        var txt = document.createElement('span');
+        txt.textContent = n;
+        b.appendChild(txt);
+        var cnt = document.createElement('span');
+        cnt.className = 'n';
+        cnt.textContent = chans[n];
+        b.appendChild(cnt);
         b.addEventListener('click', function () { state.channel = n; apply(); });
         chBox.appendChild(b);
       });
     } else {
       dom.channelRow.hidden = true;
     }
+
+    var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.q.trim() !== '';
+    if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
   }
 
   function catLabel(key, all) {
@@ -291,7 +355,7 @@
     return map[key] || key;
   }
 
-  /* ── 카드 ──────────────────────────────────────────── */
+  /* ── 카드 (유튜브 피드/알림 스타일) ─────────────────────── */
   function buildCard(it) {
     var s = it.s;
     var id = s.videoId || s.id || (it.date + '-' + s.title);
@@ -302,56 +366,14 @@
 
     var url = s.url || ('https://www.youtube.com/watch?v=' + id);
     var dur = durSeconds(s.duration);
-    var pub = fmtPublished(s.publishedAt || s.addedAt);
+    var rawTime = s.publishedAt || s.addedAt;
+    var pub = fmtPublished(rawTime);
+    var rel = fmtRelative(rawTime);
 
     var header = document.createElement('div');
     header.className = 'card-header';
 
-    var main = document.createElement('div');
-    main.className = 'card-main';
-
-    // 상단 메타: 채널명 + 카테고리 태그 + 시간/길이
-    var meta = document.createElement('div');
-    meta.className = 'meta-row';
-    var badge = document.createElement('span');
-    badge.className = 'channel-badge';
-    badge.textContent = s.channel || '채널';
-    meta.appendChild(badge);
-
-    if (s.categoryLabel) {
-      var tag = document.createElement('span');
-      tag.className = 'cat-tag';
-      tag.dataset.cat = s.category || 'etc';
-      tag.textContent = s.categoryLabel;
-      meta.appendChild(tag);
-    }
-    main.appendChild(meta);
-
-    var h = document.createElement('h2');
-    h.className = 'video-title';
-    h.textContent = s.title || '(제목 없음)';
-    main.appendChild(h);
-
-    if (pub || dur) {
-      var line = document.createElement('div');
-      line.className = 'meta-line';
-      if (pub) {
-        var sp = document.createElement('span');
-        sp.className = 'mi mi-pub';
-        sp.textContent = pub;
-        line.appendChild(sp);
-      }
-      if (dur) {
-        var sd = document.createElement('span');
-        sd.className = 'mi mi-dur';
-        sd.textContent = fmtDurKo(dur);
-        line.appendChild(sd);
-      }
-      main.appendChild(line);
-    }
-    header.appendChild(main);
-
-    // 콤팩트 썸네일 (누르면 유튜브로 이동)
+    // 1. 큼직한 16:9 썸네일 (모바일: 상단 풀와이드, 넓은 화면: 우측 대형 썸네일)
     var chain = thumbChain(s, id);
     if (chain.length) {
       var thumbLink = document.createElement('a');
@@ -391,8 +413,69 @@
       header.appendChild(thumbLink);
     }
 
+    // 2. 유튜브 정보 블록: 동그란 채널 아바타 + 제목 + 채널명 · 카테고리 · 시간
+    var info = document.createElement('div');
+    info.className = 'yt-info';
+
+    info.appendChild(makeAvatarEl(s.channel || '채널', false));
+
+    var main = document.createElement('div');
+    main.className = 'card-main';
+
+    var topMeta = document.createElement('div');
+    topMeta.className = 'meta-row';
+    var chName = document.createElement('span');
+    chName.className = 'channel-name';
+    chName.textContent = s.channel || '채널';
+    topMeta.appendChild(chName);
+
+    if (s.categoryLabel) {
+      var tag = document.createElement('span');
+      tag.className = 'cat-tag cat-' + (s.category || 'etc');
+      tag.textContent = s.categoryLabel;
+      topMeta.appendChild(tag);
+    }
+    main.appendChild(topMeta);
+
+    var h = document.createElement('h2');
+    h.className = 'video-title';
+    var titleLink = document.createElement('a');
+    titleLink.href = url;
+    titleLink.target = '_blank';
+    titleLink.rel = 'noopener';
+    titleLink.textContent = s.title || '(제목 없음)';
+    h.appendChild(titleLink);
+    main.appendChild(h);
+
+    if (pub || rel || dur) {
+      var line = document.createElement('div');
+      line.className = 'meta-line';
+      if (rel) {
+        var sr = document.createElement('span');
+        sr.className = 'mi mi-rel';
+        sr.textContent = rel;
+        line.appendChild(sr);
+      }
+      if (pub) {
+        var sp = document.createElement('span');
+        sp.className = 'mi mi-pub';
+        sp.textContent = pub;
+        line.appendChild(sp);
+      }
+      if (dur) {
+        var sd = document.createElement('span');
+        sd.className = 'mi mi-dur';
+        sd.textContent = fmtDurKo(dur);
+        line.appendChild(sd);
+      }
+      main.appendChild(line);
+    }
+
+    info.appendChild(main);
+    header.appendChild(info);
     card.appendChild(header);
 
+    // 3. 요약 본문 (처음부터 펼쳐져 있음)
     var body = document.createElement('div');
     body.className = 'card-body';
     var inner = document.createElement('div');
@@ -490,7 +573,7 @@
     var countText = (filteredCount != null && filteredCount !== scopeCount)
       ? filteredCount + ' / ' + scopeCount + '편'
       : (scopeCount || 0) + '편';
-    dom.subtitle.textContent = label + ' · ' + countText + ' (최신순)';
+    dom.subtitle.textContent = label + ' · ' + countText + ' · 최신순';
   }
 
   function updateToc(filtered) {
@@ -575,6 +658,17 @@
     dom.tocList = document.getElementById('tocList');
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
+    dom.resetFilterBtn = document.getElementById('resetFilterBtn');
+
+    if (dom.resetFilterBtn) {
+      dom.resetFilterBtn.addEventListener('click', function () {
+        state.cat = 'all';
+        state.channel = 'all';
+        state.q = '';
+        dom.search.value = '';
+        apply();
+      });
+    }
 
     var themeBtn = document.getElementById('themeBtn');
     function syncThemeBtn() {
@@ -617,7 +711,8 @@
   }
 
   function boot() {
-    loadIndex().then(function (dates) {
+    Promise.all([loadAvatars(), loadIndex()]).then(function (res) {
+      var dates = res[1];
       if (!dates.length) {
         dom.subtitle.textContent = '요약 없음';
         dom.feed.innerHTML = '<div class="state">아직 등록된 요약이 없어요.</div>';
