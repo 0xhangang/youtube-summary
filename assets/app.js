@@ -30,7 +30,7 @@
   function loadSort() {
     try {
       var s = localStorage.getItem(LS_SORT);
-      if (['newest', 'oldest', 'channel', 'longest', 'shortest'].indexOf(s) >= 0) return s;
+      if (s === 'newest' || s === 'oldest') return s;
     } catch (e) {}
     return 'newest';
   }
@@ -213,20 +213,6 @@
     return isNaN(t) ? 0 : t;
   }
 
-  function volumeScore(s) {
-    var d = durSeconds(s.duration);
-    var len = summaryText(s).length;
-    // 영상 길이가 있으면 우선 반영하고, 없거나 같으면 요약 글자 수로 정렬
-    return d ? (1000000 + d * 100 + len) : len;
-  }
-
-  function readMinutes(s) {
-    var len = summaryText(s).length;
-    if (!len) return '';
-    var min = Math.max(1, Math.round(len / 500));
-    return '읽기 약 ' + min + '분';
-  }
-
   /* ── 데이터 ────────────────────────────────────────── */
   function loadAvatars() {
     return fetchJSON(CHANNELS_URL).then(function (map) {
@@ -278,18 +264,6 @@
     var mode = state.sort;
     return list.slice().sort(function (a, b) {
       if (mode === 'oldest') return sortTime(a.s) - sortTime(b.s);
-      if (mode === 'channel') {
-        var ca = (a.s.channel || '').localeCompare(b.s.channel || '', 'ko');
-        return ca !== 0 ? ca : (sortTime(b.s) - sortTime(a.s));
-      }
-      if (mode === 'longest') {
-        var va = volumeScore(a.s), vb = volumeScore(b.s);
-        return vb !== va ? (vb - va) : (sortTime(b.s) - sortTime(a.s));
-      }
-      if (mode === 'shortest') {
-        var sa = volumeScore(a.s), sb = volumeScore(b.s);
-        return sa !== sb ? (sa - sb) : (sortTime(b.s) - sortTime(a.s));
-      }
       return sortTime(b.s) - sortTime(a.s);
     });
   }
@@ -448,7 +422,6 @@
     card.dataset.vid = id;
 
     var url = s.url || ('https://www.youtube.com/watch?v=' + id);
-    var dur = durSeconds(s.duration);
     var rawTime = s.publishedAt || s.addedAt;
     var pub = fmtPublished(rawTime);
     var rel = fmtRelative(rawTime);
@@ -485,13 +458,6 @@
       play.className = 'thumb-play';
       play.textContent = '▶';
       thumbLink.appendChild(play);
-
-      if (dur) {
-        var dBadge = document.createElement('span');
-        dBadge.className = 'thumb-dur';
-        dBadge.textContent = fmtClock(dur);
-        thumbLink.appendChild(dBadge);
-      }
       header.appendChild(thumbLink);
     }
 
@@ -527,8 +493,7 @@
     h.appendChild(titleLink);
     main.appendChild(h);
 
-    var rMin = readMinutes(s);
-    if (pub || rel || dur || rMin) {
+    if (pub || rel) {
       var line = document.createElement('div');
       line.className = 'meta-line';
       if (rel) {
@@ -542,17 +507,6 @@
         sp.className = 'mi mi-pub';
         sp.textContent = pub;
         line.appendChild(sp);
-      }
-      if (dur) {
-        var sd = document.createElement('span');
-        sd.className = 'mi mi-dur';
-        sd.textContent = fmtDurKo(dur);
-        line.appendChild(sd);
-      } else if (rMin) {
-        var sm = document.createElement('span');
-        sm.className = 'mi mi-dur';
-        sm.textContent = rMin;
-        line.appendChild(sm);
       }
       main.appendChild(line);
     }
