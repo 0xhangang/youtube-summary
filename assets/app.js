@@ -539,10 +539,47 @@
     header.appendChild(info);
     card.appendChild(header);
 
+    function extractTldr(item) {
+      if (item.tldr && String(item.tldr).trim()) return String(item.tldr).trim();
+      var blks = item.blocks || [];
+      for (var bi = 0; bi < blks.length; bi++) {
+        if (blks[bi] && blks[bi].type === 'callout' && blks[bi].text) {
+          return String(blks[bi].text).trim();
+        }
+      }
+      for (var bj = 0; bj < blks.length; bj++) {
+        var blk = blks[bj];
+        if (blk && blk.type === 'p' && blk.text) {
+          var txt = String(blk.text).replace(/\*\*/g, '').trim();
+          var sents = txt.split(/(?<=[.?!])\s+/);
+          var pick = sents.slice(0, 2).join(' ');
+          if (pick.length > 150) pick = pick.slice(0, 148).trim() + '…';
+          return pick;
+        }
+      }
+      return '';
+    }
+
     var body = document.createElement('div');
     body.className = 'card-body';
     var inner = document.createElement('div');
     inner.className = 'body-inner';
+
+    var tldrTxt = extractTldr(s);
+    if (tldrTxt) {
+      var tldrBox = document.createElement('div');
+      tldrBox.className = 'tldr-box';
+      var tLbl = document.createElement('div');
+      tLbl.className = 'tldr-label';
+      tLbl.textContent = '핵심 요약';
+      tldrBox.appendChild(tLbl);
+      var tBody = document.createElement('div');
+      tBody.className = 'tldr-text';
+      tBody.innerHTML = rich(tldrTxt);
+      tldrBox.appendChild(tBody);
+      inner.appendChild(tldrBox);
+    }
+
     (s.blocks || []).forEach(function (b) {
       if (!b) return;
       if (b.type === 'h') {
