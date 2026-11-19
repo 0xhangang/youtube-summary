@@ -1,4 +1,4 @@
-/* 유튜브 상세 요약 — 유튜브 피드 스타일 뷰어
+/* 피클 유튜브 요약 — 정적 뷰어
  * 데이터: data/index.json + data/channels.json + data/YYYY-MM-DD.json
  */
 (function () {
@@ -7,8 +7,9 @@
   var INDEX_URL = 'data/index.json';
   var CHANNELS_URL = 'data/channels.json';
   var LS_THEME = 'yts.theme';
+  var LS_SORT = 'yts.sort';
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
-  var AVATAR_COLORS = ['#2563eb', '#d97706', '#7c3aed', '#059669', '#dc2626', '#0891b2', '#db2777'];
+  var AVATAR_COLORS = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
   var state = {
     index: null,
@@ -18,11 +19,21 @@
     docs: Object.create(null),
     cat: 'all',
     channel: 'all',
-    q: ''
+    q: '',
+    sort: loadSort(),
+    activeTab: null // 'cat' | 'channel' | 'toc' | null(접힘)
   };
 
   var dom = {};
   var searchTimer = null;
+
+  function loadSort() {
+    try {
+      var s = localStorage.getItem(LS_SORT);
+      if (['newest', 'oldest', 'channel', 'longest', 'shortest'].indexOf(s) >= 0) return s;
+    } catch (e) {}
+    return 'newest';
+  }
 
   /* ── 유틸 ──────────────────────────────────────────── */
   function esc(s) {
@@ -242,14 +253,60 @@
     dates.forEach(function (d) {
       var doc = state.docs[d];
       if (!doc) return;
-      var sorted = doc.summaries.slice().sort(function (a, b) {
-        return sortTime(b) - sortTime(a);
-      });
-      sorted.forEach(function (s) {
+      doc.summaries.forEach(function (s) {
         out.push({ s: s, date: d, dateLabel: doc.label || fmtDateLabel(d) });
       });
     });
     return out;
+  }
+
+  function sortItems(list) {
+    var mode = state.sort;
+    return list.slice().sort(function (a, b) {
+      if (mode === 'oldest') return sortTime(a.s) - sortTime(b.s);
+      if (mode === 'channel') {
+        var ca = (a.s.channel || '').localeCompare(b.s.channel || '', 'ko');
+        return ca !== 0 ? ca : (sortTime(b.s) - sortTime(a.s));
+      }
+      if (mode === 'longest') {
+        var da = durSeconds(a.s.duration), db = durSeconds(b.s.duration);
+        if (da !== db) return db - da;
+        return sortTime(b.s) - sortTime(a.s);
+      }
+      if (mode === 'shortest') {
+        var sa = durSeconds(a.s.duration) || 9999999;
+        var sb = durSeconds(b.s.duration) || 9999999;
+        if (sa !== sb) return sa - sb;
+        return sortTime(b.s) - sortTime(a.s);
+      }
+      return sortTime(b.s) - sortTime(a.s);
+    });
+  }
+
+  /* ── 탭 제어 (분류 · 채널 · 목차) ─────────────────────── */
+  function setTab(tabName) {
+    state.activeTab = (state.activeTab === tabName) ? null : tabName;
+    syncTabs();
+  }
+
+  function syncTabs() {
+    var t = state.activeTab;
+    var btns = [
+      { id: 'tabBtnCat', key: 'cat', pane: 'paneCat' },
+      { id: 'tabBtnChannel', key: 'channel', pane: 'paneChannel' },
+      { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' }
+    ];
+    dom.tabPanel.hidden = !t;
+    btns.forEach(function (b) {
+      var btn = document.getElementById(b.id);
+      var pane = document.getElementById(b.pane);
+      var on = (t === b.key);
+      if (btn) {
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      if (pane) pane.hidden = !on;
+    });
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -261,7 +318,7 @@
     var all = document.createElement('button');
     all.type = 'button';
     all.className = 'chip' + (state.activeDate === 'all' ? ' active' : '');
-    all.innerHTML = '전체 <span class="n">(' + total + ')</span>';
+    all.innerHTML = '<span>전체</span><span class="n">' + total + '</span>';
     all.addEventListener('click', function () { setDate('all'); });
     box.appendChild(all);
 
@@ -269,7 +326,7 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip' + (state.activeDate === d.date ? ' active' : '');
-      b.innerHTML = esc(fmtDateLabel(d.date)) + ' <span class="n">(' + Number(d.count || 0) + ')</span>';
+      b.innerHTML = '<span>' + esc(fmtDateLabel(d.date)) + '</span><span class="n">' + Number(d.count || 0) + '</span>';
       b.addEventListener('click', function () { setDate(d.date); });
       box.appendChild(b);
     });
@@ -285,12 +342,13 @@
       chans[ch] = (chans[ch] || 0) + 1;
     });
 
+    // 분류 칩
     var catBox = dom.catChips;
     catBox.innerHTML = '';
     var allChip = document.createElement('button');
     allChip.type = 'button';
     allChip.className = 'chip' + (state.cat === 'all' ? ' active' : '');
-    allChip.innerHTML = '전체 <span class="n">' + all.length + '</span>';
+    allChip.innerHTML = '<span class="chip-txt">전체</span><span class="n">' + all.length + '</span>';
     allChip.addEventListener('click', function () { state.cat = 'all'; apply(); });
     catBox.appendChild(allChip);
 
@@ -305,43 +363,57 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'chip cat-' + esc(k) + (state.cat === k ? ' active' : '');
-      b.innerHTML = '<span class="cat-dot"></span>' + esc(label) + ' <span class="n">' + cats[k] + '</span>';
+      b.innerHTML = '<span class="cat-dot"></span><span class="chip-txt">' + esc(label) + '</span><span class="n">' + cats[k] + '</span>';
       b.addEventListener('click', function () { state.cat = k; apply(); });
       catBox.appendChild(b);
     });
 
+    // 채널 칩
     var chBox = dom.channelChips;
     chBox.innerHTML = '';
     var names = Object.keys(chans).sort(function (a, b) { return chans[b] - chans[a]; });
-    if (names.length > 1) {
-      dom.channelRow.hidden = false;
-      var b0 = document.createElement('button');
-      b0.type = 'button';
-      b0.className = 'chip channel' + (state.channel === 'all' ? ' active' : '');
-      b0.innerHTML = '전체 <span class="n">' + all.length + '</span>';
-      b0.addEventListener('click', function () { state.channel = 'all'; apply(); });
-      chBox.appendChild(b0);
-      names.forEach(function (n) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'chip channel' + (state.channel === n ? ' active' : '');
-        b.appendChild(makeAvatarEl(n, true));
-        var txt = document.createElement('span');
-        txt.textContent = n;
-        b.appendChild(txt);
-        var cnt = document.createElement('span');
-        cnt.className = 'n';
-        cnt.textContent = chans[n];
-        b.appendChild(cnt);
-        b.addEventListener('click', function () { state.channel = n; apply(); });
-        chBox.appendChild(b);
-      });
+    var b0 = document.createElement('button');
+    b0.type = 'button';
+    b0.className = 'chip' + (state.channel === 'all' ? ' active' : '');
+    b0.innerHTML = '<span class="chip-txt">전체 채널</span><span class="n">' + all.length + '</span>';
+    b0.addEventListener('click', function () { state.channel = 'all'; apply(); });
+    chBox.appendChild(b0);
+
+    names.forEach(function (n) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip channel' + (state.channel === n ? ' active' : '');
+      b.appendChild(makeAvatarEl(n, true));
+      var txt = document.createElement('span');
+      txt.className = 'chip-txt';
+      txt.textContent = n;
+      b.appendChild(txt);
+      var cnt = document.createElement('span');
+      cnt.className = 'n';
+      cnt.textContent = chans[n];
+      b.appendChild(cnt);
+      b.addEventListener('click', function () { state.channel = n; apply(); });
+      chBox.appendChild(b);
+    });
+
+    // 탭 배지 업데이트
+    if (state.cat !== 'all') {
+      dom.tabBadgeCat.textContent = catLabel(state.cat, all);
+      dom.tabBadgeCat.hidden = false;
     } else {
-      dom.channelRow.hidden = true;
+      dom.tabBadgeCat.hidden = true;
+    }
+    if (state.channel !== 'all') {
+      dom.tabBadgeChannel.textContent = state.channel;
+      dom.tabBadgeChannel.hidden = false;
+    } else {
+      dom.tabBadgeChannel.textContent = names.length;
+      dom.tabBadgeChannel.hidden = false;
     }
 
     var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
+    if (dom.searchClear) dom.searchClear.hidden = !state.q;
   }
 
   function catLabel(key, all) {
@@ -355,7 +427,7 @@
     return map[key] || key;
   }
 
-  /* ── 카드 (유튜브 피드/알림 스타일) ─────────────────────── */
+  /* ── 카드 ──────────────────────────────────────────── */
   function buildCard(it) {
     var s = it.s;
     var id = s.videoId || s.id || (it.date + '-' + s.title);
@@ -373,7 +445,6 @@
     var header = document.createElement('div');
     header.className = 'card-header';
 
-    // 1. 큼직한 16:9 썸네일 (모바일: 상단 풀와이드, 넓은 화면: 우측 대형 썸네일)
     var chain = thumbChain(s, id);
     if (chain.length) {
       var thumbLink = document.createElement('a');
@@ -413,10 +484,8 @@
       header.appendChild(thumbLink);
     }
 
-    // 2. 유튜브 정보 블록: 동그란 채널 아바타 + 제목 + 채널명 · 카테고리 · 시간
     var info = document.createElement('div');
     info.className = 'yt-info';
-
     info.appendChild(makeAvatarEl(s.channel || '채널', false));
 
     var main = document.createElement('div');
@@ -475,7 +544,6 @@
     header.appendChild(info);
     card.appendChild(header);
 
-    // 3. 요약 본문 (처음부터 펼쳐져 있음)
     var body = document.createElement('div');
     body.className = 'card-body';
     var inner = document.createElement('div');
@@ -530,23 +598,24 @@
       return true;
     });
 
+    var sorted = sortItems(filtered);
     var feed = dom.feed;
     feed.innerHTML = '';
-    if (!filtered.length) {
+    if (!sorted.length) {
       var none = document.createElement('div');
       none.className = 'state';
       none.textContent = all.length
         ? '조건에 맞는 요약이 없어요. 필터를 바꿔 보세요.'
         : '이 날짜에는 아직 요약이 없어요.';
       feed.appendChild(none);
-      updateToc(filtered);
-      updateSubtitle(all.length, filtered.length);
+      updateToc(sorted);
+      updateSubtitle(all.length, sorted.length);
       return;
     }
 
     var lastDate = null;
-    filtered.forEach(function (it) {
-      if (state.activeDate === 'all' && it.date !== lastDate) {
+    sorted.forEach(function (it) {
+      if (state.activeDate === 'all' && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
         var div = document.createElement('div');
         div.className = 'date-divider';
         div.textContent = it.dateLabel || fmtDateLabel(it.date);
@@ -556,8 +625,8 @@
       feed.appendChild(buildCard(it));
     });
 
-    updateToc(filtered);
-    updateSubtitle(all.length, filtered.length);
+    updateToc(sorted);
+    updateSubtitle(all.length, sorted.length);
   }
 
   function updateSubtitle(scopeCount, filteredCount) {
@@ -573,30 +642,45 @@
     var countText = (filteredCount != null && filteredCount !== scopeCount)
       ? filteredCount + ' / ' + scopeCount + '편'
       : (scopeCount || 0) + '편';
-    dom.subtitle.textContent = label + ' · ' + countText + ' · 최신순';
+    dom.subtitle.textContent = label + ' · ' + countText;
   }
 
-  function updateToc(filtered) {
+  function updateToc(listItems) {
     var list = dom.tocList;
     list.innerHTML = '';
-    if (!filtered || !filtered.length || filtered.length > 80) {
-      dom.tocBox.hidden = true;
+    dom.tabBadgeToc.textContent = listItems ? listItems.length : 0;
+    if (!listItems || !listItems.length) {
+      var empty = document.createElement('li');
+      empty.className = 'toc-empty';
+      empty.textContent = '표시할 항목이 없습니다.';
+      list.appendChild(empty);
       return;
     }
-    dom.tocBox.hidden = false;
-    dom.tocTitle.textContent = '📑 목차 (' + filtered.length + '편 · 최신순)';
-    filtered.forEach(function (it) {
+    listItems.forEach(function (it) {
       var s = it.s;
       var id = s.videoId || s.id;
       var anchor = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = '#' + anchor;
+      a.addEventListener('click', function () {
+        state.activeTab = null;
+        syncTabs();
+        var el = document.getElementById(anchor);
+        if (el) {
+          el.classList.remove('flash');
+          void el.offsetWidth;
+          el.classList.add('flash');
+        }
+      });
       var ch = document.createElement('span');
       ch.className = 'toc-channel';
       ch.textContent = s.channel || '';
       a.appendChild(ch);
-      a.appendChild(document.createTextNode(' ' + (s.title || '')));
+      var tt = document.createElement('span');
+      tt.className = 'toc-title-txt';
+      tt.textContent = s.title || '';
+      a.appendChild(tt);
       li.appendChild(a);
       list.appendChild(li);
     });
@@ -651,14 +735,38 @@
     dom.dateChips = document.getElementById('dateChips');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
-    dom.channelRow = document.getElementById('channelRow');
     dom.feed = document.getElementById('feed');
-    dom.tocBox = document.getElementById('tocBox');
-    dom.tocTitle = document.getElementById('tocTitle');
     dom.tocList = document.getElementById('tocList');
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
+    dom.searchClear = document.getElementById('searchClear');
+    dom.sortSelect = document.getElementById('sortSelect');
     dom.resetFilterBtn = document.getElementById('resetFilterBtn');
+    dom.tabPanel = document.getElementById('tabPanel');
+    dom.tabBadgeCat = document.getElementById('tabBadgeCat');
+    dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
+    dom.tabBadgeToc = document.getElementById('tabBadgeToc');
+
+    // 탭 버튼 연결 (기본 접힘)
+    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          setTab(btn.dataset.tab);
+        });
+      }
+    });
+    syncTabs();
+
+    // 정렬 셀렉트
+    if (dom.sortSelect) {
+      dom.sortSelect.value = state.sort;
+      dom.sortSelect.addEventListener('change', function () {
+        state.sort = dom.sortSelect.value;
+        try { localStorage.setItem(LS_SORT, state.sort); } catch (e) {}
+        apply();
+      });
+    }
 
     if (dom.resetFilterBtn) {
       dom.resetFilterBtn.addEventListener('click', function () {
@@ -666,6 +774,15 @@
         state.channel = 'all';
         state.q = '';
         dom.search.value = '';
+        apply();
+      });
+    }
+
+    if (dom.searchClear) {
+      dom.searchClear.addEventListener('click', function () {
+        state.q = '';
+        dom.search.value = '';
+        dom.search.focus();
         apply();
       });
     }

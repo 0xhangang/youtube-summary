@@ -4,11 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="color-scheme" content="light dark" />
-<meta name="description" content="관심 유튜브 채널 자동 요약 아카이브 — 화자의 말투 그대로 옮긴 상세 요약" />
-<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
-<title>📺 유튜브 상세 요약</title>
-<link rel="stylesheet" href="assets/style.css?v=20261119c" />
+<meta name="description" content="피클 유튜브 요약 — 화자의 말투와 뉘앙스를 살린 상세 요약 아카이브" />
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0c1017" media="(prefers-color-scheme: dark)" />
+<title>피클 유튜브 요약</title>
+<link rel="stylesheet" href="assets/style.css?v=20261119d" />
 <script>
   (function () {
     try {
@@ -23,41 +23,86 @@
 <div class="container">
   <header class="site-header" id="siteHeader">
     <div class="header-top">
-      <div class="title-block">
-        <h1>📺 유튜브 상세 요약</h1>
-        <div class="date-sub" id="subtitle">불러오는 중…</div>
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="11" fill="url(#pickleGrad)"/>
+            <path d="M11 11.5h14l-6.2 7.2M18 17.5l6.8 6.5M18 17.5l-6.8 6.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+            <path d="M14.5 12.2c0-.9.98-1.45 1.75-.98l9.1 5.55c.74.45.74 1.52 0 1.97l-9.1 5.55c-.77.47-1.75-.08-1.75-.98V12.2Z" fill="#ffffff"/>
+            <defs>
+              <linearGradient id="pickleGrad" x1="2" y1="2" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#22c55e"/>
+                <stop offset="1" stop-color="#15803d"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <div class="title-block">
+          <h1>피클 유튜브 요약</h1>
+          <div class="date-sub" id="subtitle">불러오는 중…</div>
+        </div>
       </div>
       <div class="controls">
         <button class="btn" id="resetFilterBtn" type="button" hidden>↺ 초기화</button>
-        <button class="btn" id="themeBtn" type="button" title="다크 모드">🌙 다크</button>
+        <button class="btn btn-icon" id="themeBtn" type="button" title="테마 전환">🌙 다크</button>
       </div>
     </div>
     <nav class="filters date-filters" id="dateChips" aria-label="날짜 선택"></nav>
   </header>
 
-  <section class="toolbar" aria-label="필터와 검색">
-    <div class="search-row">
-      <input id="search" type="search" inputmode="search" autocomplete="off"
-             placeholder="제목·채널·본문 검색" aria-label="검색" />
-      <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-        <circle cx="8.5" cy="8.5" r="5.5"></circle>
-        <path d="M13 13l4 4"></path>
-      </svg>
+  <section class="control-hub" aria-label="검색, 정렬 및 탐색">
+    <div class="search-sort-row">
+      <div class="search-row">
+        <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="8.5" cy="8.5" r="5.5"></circle>
+          <path d="M13 13l4 4"></path>
+        </svg>
+        <input id="search" type="search" inputmode="search" autocomplete="off"
+               placeholder="제목·채널·내용 검색" aria-label="검색" />
+        <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+      </div>
+      <div class="sort-wrap">
+        <label class="sr-only" for="sortSelect">정렬 기준</label>
+        <select id="sortSelect" class="sort-select" aria-label="정렬 기준">
+          <option value="newest">최신순</option>
+          <option value="oldest">오래된순</option>
+          <option value="channel">채널명순</option>
+          <option value="longest">긴 영상순</option>
+          <option value="shortest">짧은 영상순</option>
+        </select>
+      </div>
     </div>
-    <div class="fgroup">
-      <div class="fhead">분류</div>
-      <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
+
+    <div class="tab-bar" role="tablist" aria-label="분류, 채널, 목차 탭">
+      <button class="tab-btn" type="button" role="tab" id="tabBtnCat" data-tab="cat" aria-selected="false">
+        <span class="tab-ico">🏷️</span>
+        <span>분류</span>
+        <span class="tab-badge" id="tabBadgeCat" hidden></span>
+      </button>
+      <button class="tab-btn" type="button" role="tab" id="tabBtnChannel" data-tab="channel" aria-selected="false">
+        <span class="tab-ico">📺</span>
+        <span>채널</span>
+        <span class="tab-badge" id="tabBadgeChannel" hidden></span>
+      </button>
+      <button class="tab-btn" type="button" role="tab" id="tabBtnToc" data-tab="toc" aria-selected="false">
+        <span class="tab-ico">📑</span>
+        <span>목차</span>
+        <span class="tab-badge" id="tabBadgeToc">0</span>
+      </button>
     </div>
-    <div class="fgroup" id="channelRow">
-      <div class="fhead">채널</div>
-      <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
+
+    <div class="tab-panel" id="tabPanel" hidden>
+      <div class="tab-pane" id="paneCat" hidden>
+        <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
+      </div>
+      <div class="tab-pane" id="paneChannel" hidden>
+        <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
+      </div>
+      <div class="tab-pane" id="paneToc" hidden>
+        <ul class="toc-list" id="tocList"></ul>
+      </div>
     </div>
   </section>
-
-  <details class="toc" id="tocBox">
-    <summary class="toc-title" id="tocTitle">📑 목차</summary>
-    <ul class="toc-list" id="tocList"></ul>
-  </details>
 
   <main id="feed">
     <div class="state" id="state">불러오는 중…</div>
@@ -66,7 +111,7 @@
   <footer class="site-footer">
     <div id="footerMeta"></div>
     <div class="footer-note">
-      요약은 유튜버의 말투와 뉘앙스를 그대로 살려 옮긴 기록입니다. 썸네일을 누르면 유튜브 영상으로 이동합니다.
+      화자의 말투와 뉘앙스를 그대로 살려 옮긴 기록입니다. 썸네일이나 제목을 누르면 유튜브로 이동합니다.
     </div>
     <div class="footer-note">
       <a href="https://github.com/0xhangang/youtube-summary" target="_blank" rel="noopener">github.com/0xhangang/youtube-summary</a>
@@ -76,6 +121,6 @@
 
 <button class="top-btn" id="topBtn" type="button" title="맨 위로" aria-label="맨 위로">↑</button>
 
-<script src="assets/app.js?v=20261119c"></script>
+<script src="assets/app.js?v=20261119d"></script>
 </body>
 </html>
