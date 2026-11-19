@@ -315,7 +315,8 @@
     var btns = [
       { id: 'tabBtnCat', key: 'cat', pane: 'paneCat' },
       { id: 'tabBtnChannel', key: 'channel', pane: 'paneChannel' },
-      { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' }
+      { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' },
+      { id: 'tabBtnSearch', key: 'search', pane: 'paneSearch' }
     ];
     dom.tabPanel.hidden = !t;
     btns.forEach(function (b) {
@@ -328,6 +329,9 @@
       }
       if (pane) pane.hidden = !on;
     });
+    if (t === 'search' && dom.search) {
+      setTimeout(function () { dom.search.focus(); }, 40);
+    }
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -435,6 +439,7 @@
     var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
     if (dom.searchClear) dom.searchClear.hidden = !state.q;
+    if (dom.tabBadgeSearch) dom.tabBadgeSearch.hidden = !state.q.trim();
   }
 
   function catLabel(key, all) {
@@ -783,9 +788,10 @@
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
+    dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
 
     // 탭 버튼 연결 (기본 접힘)
-    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc'].forEach(function (id) {
+    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
         btn.addEventListener('click', function () {

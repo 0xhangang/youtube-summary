@@ -187,6 +187,29 @@ button.btn[hidden] { display: none; }
 button.btn:hover { color: var(--text); border-color: var(--border-strong); }
 button.btn:active { transform: scale(0.97); }
 
+/* 상단 정렬 필 셀렉트 (다크 버튼 옆) */
+.sort-pill {
+  height: 30px;
+  padding: 0 24px 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-faint) 50%),
+    linear-gradient(135deg, var(--text-faint) 50%, transparent 50%);
+  background-position: calc(100% - 13px) 12px, calc(100% - 8px) 12px;
+  background-size: 4.5px 4.5px, 4.5px 4.5px;
+  background-repeat: no-repeat;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.sort-pill:hover, .sort-pill:focus { outline: none; color: var(--text); border-color: var(--border-strong); }
+
 /* ── 칩 (숫자·텍스트 완벽 수직 정렬) ────────────────────── */
 .filters {
   display: flex;
@@ -367,14 +390,24 @@ button.btn:active { transform: scale(0.97); }
 }
 .sort-select:focus { outline: none; color: var(--text); }
 
-/* 캡슐 세그먼트 3단 탭 바 (기본 접힘) */
+/* 캡슐 세그먼트 4단 탭 바 (분류 · 채널 · 목차 · 검색) */
 .tab-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 3px;
   padding: 3px;
   background: var(--surface-3);
   border-radius: 12px;
+}
+#paneSearch .search-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+#paneSearch .search-row:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .tab-btn {
   display: inline-flex;
