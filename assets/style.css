@@ -98,33 +98,41 @@ button, select { -webkit-tap-highlight-color: transparent; }
   padding: 4px 12px 88px;
 }
 
-/* ── 통합 상단 허브 카드 (제목 + 날짜 + 검색/정렬 + 분류·채널·목차) ── */
+/* ── 통합 상단 허브 카드 (스크롤 시 숨김/복귀 + 원박스 통합 배치) ── */
 .hub-card {
-  margin: 10px 0 16px;
-  background: var(--surface);
+  position: sticky;
+  top: 8px;
+  z-index: 30;
+  margin: 8px 0 14px;
+  background: var(--header-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-1);
+  border-radius: 18px;
+  box-shadow: var(--shadow-2);
   overflow: hidden;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
+.hub-card.hide { transform: translateY(calc(-100% - 22px)); }
 
 .hub-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 15px 16px 11px;
+  padding: 12px 14px 9px;
 }
 .hub-dates {
-  padding: 0 16px 13px;
+  padding: 0 14px 10px;
 }
 .hub-search {
-  padding: 12px 16px 10px;
+  padding: 10px 14px 8px;
   border-top: 1px solid var(--border);
   background: var(--surface-2);
 }
 .hub-tabs {
-  padding: 0 16px 14px;
+  padding: 0 14px 11px;
   background: var(--surface-2);
 }
 .brand {
@@ -571,11 +579,19 @@ button.btn:active { transform: scale(0.97); }
 
 .yt-info {
   display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 13px 14px;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
   background: var(--surface-2);
 }
+.ch-av-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.ch-av-link:active { transform: scale(0.94); }
 
 .card-main {
   flex: 1 1 auto;
@@ -596,7 +612,9 @@ button.btn:active { transform: scale(0.97); }
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.15px;
+  text-decoration: none;
 }
+.ch-link:hover { color: var(--accent); }
 
 .cat-tag {
   display: inline-flex;
@@ -665,13 +683,24 @@ button.btn:active { transform: scale(0.97); }
 .body-inner { max-width: var(--measure); margin: 0 auto; }
 
 .section-title {
-  margin: 30px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 10px;
   font-size: 17px;
   font-weight: 800;
   line-height: 1.45;
   letter-spacing: -0.4px;
   color: var(--text);
   word-break: keep-all;
+}
+.section-title::before {
+  content: "";
+  flex: 0 0 5px;
+  height: 1.08em;
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.9), rgba(132, 204, 22, 0.8));
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
 }
 .body-inner > .section-title:first-child { margin-top: 8px; }
 

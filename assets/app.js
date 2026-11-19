@@ -189,9 +189,21 @@
     return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
   }
 
+  function getChannelAvatar(name) {
+    var entry = state.avatars[name];
+    if (!entry) return '';
+    return typeof entry === 'string' ? entry : (entry.avatar || '');
+  }
+
+  function getChannelUrl(name) {
+    var entry = state.avatars[name];
+    if (entry && typeof entry === 'object' && entry.url) return entry.url;
+    return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name || '');
+  }
+
   function makeAvatarEl(channelName, small) {
     var name = channelName || '채널';
-    var url = state.avatars[name];
+    var url = getChannelAvatar(name);
     var wrap = document.createElement('span');
     wrap.className = small ? 'ch-av ch-av-sm' : 'ch-av';
     if (url) {
@@ -485,18 +497,31 @@
       header.appendChild(thumbLink);
     }
 
+    var chTitle = s.channel || '채널';
+    var chHref = getChannelUrl(chTitle);
+
     var info = document.createElement('div');
     info.className = 'yt-info';
-    info.appendChild(makeAvatarEl(s.channel || '채널', false));
+    var avLink = document.createElement('a');
+    avLink.className = 'ch-av-link';
+    avLink.href = chHref;
+    avLink.target = '_blank';
+    avLink.rel = 'noopener';
+    avLink.title = chTitle + ' 채널로 이동';
+    avLink.appendChild(makeAvatarEl(chTitle, false));
+    info.appendChild(avLink);
 
     var main = document.createElement('div');
     main.className = 'card-main';
 
     var topMeta = document.createElement('div');
     topMeta.className = 'meta-row';
-    var chName = document.createElement('span');
-    chName.className = 'channel-name';
-    chName.textContent = s.channel || '채널';
+    var chName = document.createElement('a');
+    chName.className = 'channel-name ch-link';
+    chName.href = chHref;
+    chName.target = '_blank';
+    chName.rel = 'noopener';
+    chName.textContent = chTitle;
     topMeta.appendChild(chName);
 
     if (s.categoryLabel) {
@@ -825,7 +850,8 @@
       var y = window.scrollY;
       topBtn.classList.toggle('show', y > 600);
       if (siteHeader) {
-        if (y < 140) siteHeader.classList.remove('hide');
+        var tabOpen = dom.tabPanel && !dom.tabPanel.hidden;
+        if (y < 140 || tabOpen) siteHeader.classList.remove('hide');
         else if (y > lastY + 6) siteHeader.classList.add('hide');
         else if (y < lastY - 6) siteHeader.classList.remove('hide');
       }
