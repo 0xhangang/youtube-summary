@@ -553,30 +553,8 @@ button.btn:active { transform: scale(0.96); }
   object-position: center;
   transition: transform 0.25s ease;
 }
-.thumb-play {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.56);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #fff;
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  pointer-events: none;
-  transition: background 0.18s ease, transform 0.18s ease;
-}
-.thumb-play svg { width: 18px; height: 18px; fill: currentColor; transform: translateX(1px); }
-.thumb:active .thumb-play { transform: translate(-50%, -50%) scale(0.94); }
 @media (hover: hover) {
   .thumb:hover .thumb-img { transform: scale(1.02); }
-  .thumb:hover .thumb-play { background: rgba(220, 38, 38, 0.92); border-color: transparent; }
 }
 .card.no-thumb .thumb { display: none; }
 
@@ -867,8 +845,6 @@ ul.bullets li:last-child { margin-bottom: 0; }
     border-radius: 13px;
     border: 1px solid var(--border);
   }
-  .thumb-play { width: 40px; height: 40px; }
-  .thumb-play svg { width: 15px; height: 15px; }
   .yt-info { flex: 1 1 auto; min-width: 0; padding: 0; background: transparent; }
   .video-title { font-size: 17.5px; }
   .card-body { padding: 20px 24px 28px; font-size: 16px; }

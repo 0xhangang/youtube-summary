@@ -471,11 +471,6 @@
       });
       img.src = chain[0];
       thumbLink.appendChild(img);
-
-      var play = document.createElement('span');
-      play.className = 'thumb-play';
-      play.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.5 4.5v11l9.5-5.5-9.5-5.5Z"/></svg>';
-      thumbLink.appendChild(play);
       header.appendChild(thumbLink);
     }
 
