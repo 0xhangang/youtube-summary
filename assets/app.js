@@ -389,10 +389,12 @@
 
   function renderFilterChips(all) {
     var cats = {};
+    var catStyle = {};
     var chans = {};
     all.forEach(function (it) {
-      var c = it.s.category || 'etc';
-      cats[c] = (cats[c] || 0) + 1;
+      var lbl = (it.s.categoryLabel || it.s.category || '기타').trim();
+      cats[lbl] = (cats[lbl] || 0) + 1;
+      if (!catStyle[lbl]) catStyle[lbl] = it.s.category || 'etc';
       var ch = it.s.channel || '기타';
       chans[ch] = (chans[ch] || 0) + 1;
     });
@@ -408,19 +410,15 @@
     catBox.appendChild(allChip);
 
     var keys = Object.keys(cats).sort(function (a, b) {
-      var ia = CAT_ORDER.indexOf(a), ib = CAT_ORDER.indexOf(b);
-      if (ia < 0) ia = 99;
-      if (ib < 0) ib = 99;
-      return ia - ib;
+      return cats[b] - cats[a];
     });
     if (dom.catMeta) dom.catMeta.textContent = keys.length + '개 분류 · 영상 ' + all.length + '편';
-    keys.forEach(function (k) {
-      var label = catLabel(k, all);
+    keys.forEach(function (lbl) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'chip cat-' + esc(k) + (state.cat === k ? ' active' : '');
-      b.innerHTML = '<span class="cat-dot"></span><span class="chip-txt">' + esc(label) + '</span><span class="n">' + cats[k] + '</span>';
-      b.addEventListener('click', function () { state.cat = k; apply(); });
+      b.className = 'chip cat-' + esc(catStyle[lbl] || 'etc') + (state.cat === lbl ? ' active' : '');
+      b.innerHTML = '<span class="cat-dot"></span><span class="chip-txt">' + esc(lbl) + '</span><span class="n">' + cats[lbl] + '</span>';
+      b.addEventListener('click', function () { state.cat = lbl; apply(); });
       catBox.appendChild(b);
     });
 
@@ -455,7 +453,7 @@
 
     // 탭 배지 업데이트 (5개 탭 모두 숫자로 통일)
     if (dom.tabBadgeCat) {
-      dom.tabBadgeCat.textContent = state.cat !== 'all' ? catLabel(state.cat, all) : keys.length;
+      dom.tabBadgeCat.textContent = state.cat !== 'all' ? state.cat : keys.length;
       dom.tabBadgeCat.hidden = false;
     }
     if (dom.tabBadgeChannel) {
@@ -714,7 +712,8 @@
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
       if (state.favOnly && !isLiked(id)) return false;
-      if (state.cat !== 'all' && (s.category || 'etc') !== state.cat) return false;
+      var lbl = (s.categoryLabel || s.category || '기타').trim();
+      if (state.cat !== 'all' && lbl !== state.cat) return false;
       if (state.channel !== 'all' && (s.channel || '기타') !== state.channel) return false;
       if (q) {
         var hay = ((s.title || '') + ' ' + (s.channel || '') + ' ' +
