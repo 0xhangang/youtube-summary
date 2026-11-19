@@ -8,6 +8,12 @@
   var CHANNELS_URL = 'data/channels.json';
   var LS_THEME = 'yts.theme';
   var LS_SORT = 'yts.sort';
+  var LS_FONT = 'yts.font';
+  var FONT_MODES = [
+    { key: 'md', label: '가 보통' },
+    { key: 'lg', label: '가 크게' },
+    { key: 'sm', label: '가 작게' }
+  ];
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
   var AVATAR_COLORS = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
@@ -44,8 +50,45 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+  // **굵게** + 핵심 수치·퍼센트·단위 자동 하이라이트
+  function highlightNums(html) {
+    // HTML 태그(<...>)와 엔티티(&...;) 밖의 텍스트에서만 수치+단위 매칭
+    return html.replace(/(<[^>]+>|&[a-zA-Z0-9#]+;)|([+-]?\d[\d,]*(?:\.\d+)?(?:%|k|K|억|조|만|원|달러|불|bp|선|배|년|개월|일선|주봉|위|등))/g, function (m, tag, num) {
+      if (tag) return tag;
+      if (/^[+-]/.test(num) && num.indexOf('%') >= 0) {
+        var cls = num.charAt(0) === '-' ? 'num-hl num-down' : 'num-hl num-up';
+        return '<span class="' + cls + '">' + num + '</span>';
+      }
+      return '<span class="num-hl">' + num + '</span>';
+    });
+  }
   function rich(s) {
-    return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    var out = esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    return highlightNums(out);
+  }
+  // 긴 문단을 모바일에서 읽기 편하게 2~3문장 단위로 자연 분할
+  function splitParagraph(text) {
+    var t = String(text || '').trim();
+    if (t.length < 210) return [t];
+    var parts = t.split(/(?<=[.?!])\s+(?=[가-힣A-Za-z0-9"'(\[])/);
+    if (parts.length <= 2) return [t];
+    var out = [];
+    var buf = '';
+    var count = 0;
+    for (var i = 0; i < parts.length; i++) {
+      buf = buf ? (buf + ' ' + parts[i]) : parts[i];
+      count++;
+      if ((count >= 2 && buf.length >= 130) || count >= 3) {
+        out.push(buf);
+        buf = '';
+        count = 0;
+      }
+    }
+    if (buf) {
+      if (out.length && buf.length < 55) out[out.length - 1] += ' ' + buf;
+      else out.push(buf);
+    }
+    return out.length ? out : [t];
   }
   function fmtDateLabel(iso) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
@@ -519,12 +562,21 @@
     body.className = 'card-body';
     var inner = document.createElement('div');
     inner.className = 'body-inner';
+    var secIdx = 0;
     (s.blocks || []).forEach(function (b) {
       if (!b) return;
       if (b.type === 'h') {
+        secIdx++;
         var st = document.createElement('div');
         st.className = 'section-title';
-        st.innerHTML = rich(b.text || '');
+        var numSpan = document.createElement('span');
+        numSpan.className = 'sec-num';
+        numSpan.textContent = (secIdx < 10 ? '0' : '') + secIdx;
+        st.appendChild(numSpan);
+        var txtSpan = document.createElement('span');
+        txtSpan.className = 'sec-txt';
+        txtSpan.innerHTML = rich(b.text || '');
+        st.appendChild(txtSpan);
         inner.appendChild(st);
       } else if (b.type === 'ul') {
         var ulEl = document.createElement('ul');
@@ -538,12 +590,22 @@
       } else if (b.type === 'callout') {
         var co = document.createElement('div');
         co.className = 'callout';
-        co.innerHTML = rich(b.text || '');
+        var qm = document.createElement('span');
+        qm.className = 'callout-q';
+        qm.setAttribute('aria-hidden', 'true');
+        qm.textContent = '“';
+        co.appendChild(qm);
+        var ctxt = document.createElement('div');
+        ctxt.className = 'callout-txt';
+        ctxt.innerHTML = rich(b.text || '');
+        co.appendChild(ctxt);
         inner.appendChild(co);
       } else {
-        var p = document.createElement('p');
-        p.innerHTML = rich(b.text || '');
-        inner.appendChild(p);
+        splitParagraph(b.text || '').forEach(function (chunk) {
+          var p = document.createElement('p');
+          p.innerHTML = rich(chunk);
+          inner.appendChild(p);
+        });
       }
     });
     body.appendChild(inner);
@@ -755,6 +817,28 @@
         dom.search.value = '';
         dom.search.focus();
         apply();
+      });
+    }
+
+    var fontBtn = document.getElementById('fontBtn');
+    var fontIdx = 0;
+    try {
+      var savedFont = localStorage.getItem(LS_FONT);
+      for (var fi = 0; fi < FONT_MODES.length; fi++) {
+        if (FONT_MODES[fi].key === savedFont) { fontIdx = fi; break; }
+      }
+    } catch (e) {}
+    function syncFont() {
+      var m = FONT_MODES[fontIdx];
+      document.documentElement.setAttribute('data-font', m.key);
+      if (fontBtn) fontBtn.textContent = m.label;
+    }
+    syncFont();
+    if (fontBtn) {
+      fontBtn.addEventListener('click', function () {
+        fontIdx = (fontIdx + 1) % FONT_MODES.length;
+        try { localStorage.setItem(LS_FONT, FONT_MODES[fontIdx].key); } catch (e) {}
+        syncFont();
       });
     }
 
