@@ -8,6 +8,7 @@
   var CHANNELS_URL = 'data/channels.json';
   var LS_THEME = 'yts.theme';
   var LS_SORT = 'yts.sort';
+  var LS_LIKES = 'yts.likes';
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
   var AVATAR_COLORS = ['#10b981', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
@@ -19,13 +20,40 @@
     docs: Object.create(null),
     cat: 'all',
     channel: 'all',
+    favOnly: false,
     q: '',
+    searchOpen: false,
+    likes: loadLikes(),
     sort: loadSort(),
-    activeTab: null // 'cat' | 'channel' | 'toc' | 'search' | null
+    activeTab: null // 'cat' | 'channel' | 'toc' | 'fav' | null
   };
 
   var dom = {};
   var searchTimer = null;
+
+  function loadLikes() {
+    try {
+      var raw = localStorage.getItem(LS_LIKES);
+      if (raw) {
+        var obj = JSON.parse(raw);
+        if (obj && typeof obj === 'object') return obj;
+      }
+    } catch (e) {}
+    return {};
+  }
+  function saveLikes() {
+    try { localStorage.setItem(LS_LIKES, JSON.stringify(state.likes)); } catch (e) {}
+  }
+  function isLiked(id) {
+    return Boolean(id && state.likes[id]);
+  }
+  function toggleLike(id) {
+    if (!id) return false;
+    if (state.likes[id]) delete state.likes[id];
+    else state.likes[id] = true;
+    saveLikes();
+    return Boolean(state.likes[id]);
+  }
 
   function loadSort() {
     try {
@@ -281,7 +309,7 @@
     });
   }
 
-  /* ── 탭 제어 (분류 · 채널 · 목차 · 검색) ───────────────── */
+  /* ── 탭 제어 (분류 · 채널 · 목차 · 좋아요) ─────────────── */
   function setTab(tabName) {
     state.activeTab = (state.activeTab === tabName) ? null : tabName;
     syncTabs();
@@ -293,7 +321,7 @@
       { id: 'tabBtnCat', key: 'cat', pane: 'paneCat' },
       { id: 'tabBtnChannel', key: 'channel', pane: 'paneChannel' },
       { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' },
-      { id: 'tabBtnSearch', key: 'search', pane: 'paneSearch' }
+      { id: 'tabBtnFav', key: 'fav', pane: 'paneFav' }
     ];
     dom.tabPanel.hidden = !t;
     btns.forEach(function (b) {
@@ -306,9 +334,14 @@
       }
       if (pane) pane.hidden = !on;
     });
-    if (t === 'search' && dom.search) {
-      setTimeout(function () { dom.search.focus(); }, 40);
-    }
+  }
+
+  function syncSearchDrawer() {
+    if (!dom.searchDrawer || !dom.searchToggleBtn) return;
+    var show = state.searchOpen || state.q.trim() !== '';
+    dom.searchDrawer.hidden = !show;
+    dom.searchToggleBtn.classList.toggle('is-on', show);
+    dom.searchToggleBtn.setAttribute('aria-expanded', show ? 'true' : 'false');
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -413,10 +446,10 @@
       dom.tabBadgeChannel.hidden = false;
     }
 
-    var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.q.trim() !== '';
+    var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.favOnly || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
     if (dom.searchClear) dom.searchClear.hidden = !state.q;
-    if (dom.tabBadgeSearch) dom.tabBadgeSearch.hidden = !state.q.trim();
+    syncSearchDrawer();
   }
 
   function catLabel(key, all) {
@@ -591,6 +624,63 @@
     });
     body.appendChild(inner);
     card.appendChild(body);
+
+    var actions = document.createElement('div');
+    actions.className = 'card-actions';
+
+    var likeBtn = document.createElement('button');
+    likeBtn.type = 'button';
+    likeBtn.className = 'act-btn' + (isLiked(id) ? ' liked' : '');
+    likeBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.5s-6-3.7-6-8.3A3.5 3.5 0 0 1 10 5.7a3.5 3.5 0 0 1 6 2.5c0 4.6-6 8.3-6 8.3Z"/></svg>' +
+      '<span>좋아요</span>';
+    likeBtn.setAttribute('aria-pressed', isLiked(id) ? 'true' : 'false');
+    likeBtn.addEventListener('click', function () {
+      var on = toggleLike(id);
+      likeBtn.classList.toggle('liked', on);
+      likeBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (state.favOnly && !on) {
+        apply();
+      } else {
+        updateFav(scopeOf(state.activeDate));
+      }
+    });
+    actions.appendChild(likeBtn);
+
+    var shareBtn = document.createElement('button');
+    shareBtn.type = 'button';
+    shareBtn.className = 'act-btn';
+    shareBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="14.5" cy="4.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="15.5" r="2"/><path d="M7.3 9l5.4-3.3M7.3 11l5.4 3.3"/></svg>' +
+      '<span class="share-lbl">공유</span>';
+    shareBtn.addEventListener('click', function () {
+      var shareUrl = window.location.href.split('#')[0] + '#' + card.id;
+      var shareText = '[' + chTitle + '] ' + (s.title || '') + '\n' + url;
+      if (navigator.share) {
+        navigator.share({
+          title: '[' + chTitle + '] ' + (s.title || '피클 유튜브 요약'),
+          text: shareText,
+          url: shareUrl
+        }).catch(function () {});
+        return;
+      }
+      var copyStr = shareText + '\n' + shareUrl;
+      var done = function () {
+        var lbl = shareBtn.querySelector('.share-lbl');
+        shareBtn.classList.add('copied');
+        if (lbl) lbl.textContent = '복사됨';
+        setTimeout(function () {
+          shareBtn.classList.remove('copied');
+          if (lbl) lbl.textContent = '공유';
+        }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyStr).then(done).catch(done);
+      } else {
+        done();
+      }
+    });
+    actions.appendChild(shareBtn);
+
+    card.appendChild(actions);
     return card;
   }
 
@@ -602,6 +692,8 @@
     var q = state.q.trim().toLowerCase();
     var filtered = all.filter(function (it) {
       var s = it.s;
+      var id = s.videoId || s.id || (it.date + '-' + s.title);
+      if (state.favOnly && !isLiked(id)) return false;
       if (state.cat !== 'all' && (s.category || 'etc') !== state.cat) return false;
       if (state.channel !== 'all' && (s.channel || '기타') !== state.channel) return false;
       if (q) {
@@ -623,6 +715,7 @@
         : '이 날짜에는 아직 요약이 없어요.';
       feed.appendChild(none);
       updateToc(sorted);
+      updateFav(all);
       updateSubtitle(all.length, sorted.length);
       return;
     }
@@ -640,7 +733,66 @@
     });
 
     updateToc(sorted);
+    updateFav(all);
     updateSubtitle(all.length, sorted.length);
+  }
+
+  function updateFav(allItems) {
+    var favItems = (allItems || []).filter(function (it) {
+      var s = it.s;
+      var id = s.videoId || s.id || (it.date + '-' + s.title);
+      return isLiked(id);
+    });
+    var cnt = favItems.length;
+    if (dom.tabBadgeFav) {
+      dom.tabBadgeFav.textContent = cnt;
+      dom.tabBadgeFav.hidden = cnt === 0 && !state.favOnly;
+    }
+    if (dom.favFilterCount) dom.favFilterCount.textContent = cnt;
+    if (dom.favFilterChip) dom.favFilterChip.classList.toggle('active', state.favOnly);
+
+    var list = dom.favList;
+    if (!list) return;
+    list.innerHTML = '';
+    if (!favItems.length) {
+      var empty = document.createElement('li');
+      empty.className = 'toc-empty';
+      empty.textContent = '아직 좋아요한 요약이 없어요. 본문 아래 좋아요를 눌러 모아 보세요.';
+      list.appendChild(empty);
+      return;
+    }
+    sortItems(favItems).forEach(function (it, idx) {
+      var s = it.s;
+      var id = s.videoId || s.id;
+      var anchor = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + anchor;
+      a.addEventListener('click', function () {
+        state.activeTab = null;
+        syncTabs();
+        var el = document.getElementById(anchor);
+        if (el) {
+          el.classList.remove('flash');
+          void el.offsetWidth;
+          el.classList.add('flash');
+        }
+      });
+      var num = document.createElement('span');
+      num.className = 'toc-num';
+      num.textContent = idx + 1;
+      a.appendChild(num);
+      var ch = document.createElement('span');
+      ch.className = 'toc-channel';
+      ch.textContent = s.channel || '';
+      a.appendChild(ch);
+      var tt = document.createElement('span');
+      tt.className = 'toc-title-txt';
+      tt.textContent = s.title || '';
+      a.appendChild(tt);
+      li.appendChild(a);
+      list.appendChild(li);
+    });
   }
 
   function updateSubtitle(scopeCount, filteredCount) {
@@ -755,18 +907,23 @@
     dom.channelChips = document.getElementById('channelChips');
     dom.feed = document.getElementById('feed');
     dom.tocList = document.getElementById('tocList');
+    dom.favList = document.getElementById('favList');
+    dom.favFilterChip = document.getElementById('favFilterChip');
+    dom.favFilterCount = document.getElementById('favFilterCount');
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
     dom.searchClear = document.getElementById('searchClear');
+    dom.searchDrawer = document.getElementById('searchDrawer');
+    dom.searchToggleBtn = document.getElementById('searchToggleBtn');
     dom.sortBtn = document.getElementById('sortBtn');
     dom.resetFilterBtn = document.getElementById('resetFilterBtn');
     dom.tabPanel = document.getElementById('tabPanel');
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
-    dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
+    dom.tabBadgeFav = document.getElementById('tabBadgeFav');
 
-    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnSearch'].forEach(function (id) {
+    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnFav'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
         btn.addEventListener('click', function () {
@@ -775,6 +932,23 @@
       }
     });
     syncTabs();
+
+    if (dom.searchToggleBtn) {
+      dom.searchToggleBtn.addEventListener('click', function () {
+        state.searchOpen = !state.searchOpen;
+        syncSearchDrawer();
+        if (state.searchOpen && dom.search) {
+          setTimeout(function () { dom.search.focus(); }, 30);
+        }
+      });
+    }
+
+    if (dom.favFilterChip) {
+      dom.favFilterChip.addEventListener('click', function () {
+        state.favOnly = !state.favOnly;
+        apply();
+      });
+    }
 
     var sortSvg = document.getElementById('sortSvg');
     var sortLbl = document.getElementById('sortLbl');
@@ -801,7 +975,9 @@
       dom.resetFilterBtn.addEventListener('click', function () {
         state.cat = 'all';
         state.channel = 'all';
+        state.favOnly = false;
         state.q = '';
+        state.searchOpen = false;
         dom.search.value = '';
         apply();
       });

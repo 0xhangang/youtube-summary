@@ -10,7 +10,7 @@
 <title>피클 유튜브 요약</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-<link rel="stylesheet" href="assets/style.css?v=20261120f" />
+<link rel="stylesheet" href="assets/style.css?v=20261120g" />
 <script>
   (function () {
     try {
@@ -55,6 +55,10 @@
         <button class="btn btn-only-icon" id="resetFilterBtn" type="button" title="필터 초기화" aria-label="필터 초기화" hidden>
           <svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10a5.5 5.5 0 1 0 1.4-3.7L4 8.2"/><path d="M4 4.5v3.7h3.7"/></svg>
         </button>
+        <button class="btn" id="searchToggleBtn" type="button" title="검색" aria-expanded="false">
+          <svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.3"/><path d="m13 13 3.8 3.8"/></svg>
+          <span class="btn-lbl">검색</span>
+        </button>
         <button class="btn" id="sortBtn" type="button" title="정렬 전환">
           <svg class="btn-svg" id="sortSvg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M5.5 11.5 10 16l4.5-4.5"/></svg>
           <span class="btn-lbl" id="sortLbl">최신순</span>
@@ -66,12 +70,24 @@
       </div>
     </div>
 
+    <div class="hub-search-drawer" id="searchDrawer" hidden>
+      <div class="search-row">
+        <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="8.5" cy="8.5" r="5.5"></circle>
+          <path d="M13 13l4 4"></path>
+        </svg>
+        <input id="search" type="search" inputmode="search" autocomplete="off"
+               placeholder="제목·채널·본문 내용 검색" aria-label="검색" />
+        <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+      </div>
+    </div>
+
     <div class="hub-dates">
       <nav class="filters date-filters" id="dateChips" aria-label="날짜 선택"></nav>
     </div>
 
     <div class="hub-tabs">
-      <div class="tab-bar" role="tablist" aria-label="분류, 채널, 목차, 검색 탭">
+      <div class="tab-bar" role="tablist" aria-label="분류, 채널, 목차, 좋아요 탭">
         <button class="tab-btn" type="button" role="tab" id="tabBtnCat" data-tab="cat" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h4.17a2 2 0 0 1 1.41.59l5.33 5.33a2 2 0 0 1 0 2.82l-4.67 4.67a2 2 0 0 1-2.82 0L3.59 11.08A2 2 0 0 1 3 9.67V5.5Z"/><circle cx="7" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
           <span>분류</span>
@@ -87,10 +103,10 @@
           <span>목차</span>
           <span class="tab-badge" id="tabBadgeToc">0</span>
         </button>
-        <button class="tab-btn" type="button" role="tab" id="tabBtnSearch" data-tab="search" aria-selected="false">
-          <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.3"/><path d="m13 13 3.8 3.8"/></svg>
-          <span>검색</span>
-          <span class="tab-badge" id="tabBadgeSearch" hidden>●</span>
+        <button class="tab-btn" type="button" role="tab" id="tabBtnFav" data-tab="fav" aria-selected="false">
+          <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.5s-6-3.7-6-8.3A3.5 3.5 0 0 1 10 5.7a3.5 3.5 0 0 1 6 2.5c0 4.6-6 8.3-6 8.3Z"/></svg>
+          <span>좋아요</span>
+          <span class="tab-badge" id="tabBadgeFav" hidden>0</span>
         </button>
       </div>
 
@@ -104,16 +120,14 @@
         <div class="tab-pane" id="paneToc" hidden>
           <ul class="toc-list" id="tocList"></ul>
         </div>
-        <div class="tab-pane" id="paneSearch" hidden>
-          <div class="search-row">
-            <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
-              <circle cx="8.5" cy="8.5" r="5.5"></circle>
-              <path d="M13 13l4 4"></path>
-            </svg>
-            <input id="search" type="search" inputmode="search" autocomplete="off"
-                   placeholder="제목·채널·본문 내용 검색" aria-label="검색" />
-            <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+        <div class="tab-pane" id="paneFav" hidden>
+          <div class="fav-pane-head">
+            <button class="chip" id="favFilterChip" type="button">
+              <span class="chip-txt">좋아요한 요약만 보기</span>
+              <span class="n" id="favFilterCount">0</span>
+            </button>
           </div>
+          <ul class="toc-list" id="favList"></ul>
         </div>
       </div>
     </div>
@@ -138,6 +152,6 @@
   <svg class="top-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15.5V4.5M5.5 9 10 4.5 14.5 9"/></svg>
 </button>
 
-<script src="assets/app.js?v=20261120f"></script>
+<script src="assets/app.js?v=20261120g"></script>
 </body>
 </html>
