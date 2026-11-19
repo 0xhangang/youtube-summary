@@ -801,11 +801,17 @@
     });
     syncTabs();
 
-    // 정렬 토글 버튼 (다크 버튼과 동일 UX)
+    // 정렬 토글 버튼 (다크 버튼과 동일 SVG+라벨 구조)
+    var sortSvg = document.getElementById('sortSvg');
+    var sortLbl = document.getElementById('sortLbl');
     function syncSortBtn() {
-      if (!dom.sortBtn) return;
       var isOld = state.sort === 'oldest';
-      dom.sortBtn.textContent = isOld ? '↑ 오래된순' : '↓ 최신순';
+      if (sortLbl) sortLbl.textContent = isOld ? '오래된순' : '최신순';
+      if (sortSvg) {
+        sortSvg.innerHTML = isOld
+          ? '<path d="M10 16V4M5.5 8.5 10 4l4.5 4.5"/>'
+          : '<path d="M10 4v12M5.5 11.5 10 16l4.5-4.5"/>';
+      }
     }
     syncSortBtn();
     if (dom.sortBtn) {
@@ -837,9 +843,16 @@
     }
 
     var themeBtn = document.getElementById('themeBtn');
+    var themeSvg = document.getElementById('themeSvg');
+    var themeLbl = document.getElementById('themeLbl');
     function syncThemeBtn() {
       var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-      themeBtn.textContent = dark ? '☀️ 라이트' : '🌙 다크';
+      if (themeLbl) themeLbl.textContent = dark ? '라이트' : '다크';
+      if (themeSvg) {
+        themeSvg.innerHTML = dark
+          ? '<circle cx="10" cy="10" r="3.6"/><path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M15.3 4.7 14 6M6 14l-1.3 1.3"/>'
+          : '<path d="M15.8 12.6A6.5 6.5 0 0 1 7.4 4.2a6.5 6.5 0 1 0 8.4 8.4Z"/>';
+      }
     }
     syncThemeBtn();
     themeBtn.addEventListener('click', function () {
