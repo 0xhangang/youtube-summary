@@ -494,6 +494,13 @@ button.btn.is-on {
 [data-theme="dark"] .toc-channel { color: var(--accent); }
 .toc-title-txt { min-width: 0; color: var(--text-body); }
 .toc-empty { font-size: 13px; color: var(--text-faint); padding: 6px 4px; }
+.search-meta {
+  margin: 10px 2px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+.search-meta:empty { display: none; }
 
 .fav-pane-head {
   display: flex;

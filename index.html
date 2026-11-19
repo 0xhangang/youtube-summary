@@ -13,7 +13,7 @@
 <title>피클 유튜브 요약</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-<link rel="stylesheet" href="assets/style.css?v=20261120m" />
+<link rel="stylesheet" href="assets/style.css?v=20261120n" />
 <script>
   (function () {
     try {
@@ -78,12 +78,12 @@
         <button class="tab-btn" type="button" role="tab" id="tabBtnCat" data-tab="cat" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h4.17a2 2 0 0 1 1.41.59l5.33 5.33a2 2 0 0 1 0 2.82l-4.67 4.67a2 2 0 0 1-2.82 0L3.59 11.08A2 2 0 0 1 3 9.67V5.5Z"/><circle cx="7" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
           <span>분류</span>
-          <span class="tab-badge" id="tabBadgeCat" hidden></span>
+          <span class="tab-badge" id="tabBadgeCat">0</span>
         </button>
         <button class="tab-btn" type="button" role="tab" id="tabBtnChannel" data-tab="channel" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4.5" width="15" height="11" rx="2.5"/><path d="m8.5 8 4 2-4 2V8Z" fill="currentColor" stroke="none"/></svg>
           <span>채널</span>
-          <span class="tab-badge" id="tabBadgeChannel" hidden></span>
+          <span class="tab-badge" id="tabBadgeChannel">0</span>
         </button>
         <button class="tab-btn" type="button" role="tab" id="tabBtnToc" data-tab="toc" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h8"/></svg>
@@ -93,11 +93,12 @@
         <button class="tab-btn" type="button" role="tab" id="tabBtnFav" data-tab="fav" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.5s-6-3.7-6-8.3A3.5 3.5 0 0 1 10 5.7a3.5 3.5 0 0 1 6 2.5c0 4.6-6 8.3-6 8.3Z"/></svg>
           <span>좋아요</span>
-          <span class="tab-badge" id="tabBadgeFav" hidden>0</span>
+          <span class="tab-badge" id="tabBadgeFav">0</span>
         </button>
         <button class="tab-btn" type="button" role="tab" id="tabBtnSearch" data-tab="search" aria-selected="false">
           <svg class="tab-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.3"/><path d="m13 13 3.8 3.8"/></svg>
           <span>검색</span>
+          <span class="tab-badge" id="tabBadgeSearch">0</span>
         </button>
       </div>
 
@@ -130,6 +131,8 @@
                    placeholder="제목·채널·본문 내용 검색" aria-label="검색" />
             <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
           </div>
+          <div class="search-meta" id="searchMeta"></div>
+          <ul class="toc-list" id="searchResultList"></ul>
         </div>
       </div>
     </div>
@@ -154,6 +157,6 @@
   <svg class="top-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15.5V4.5M5.5 9 10 4.5 14.5 9"/></svg>
 </button>
 
-<script src="assets/app.js?v=20261120m"></script>
+<script src="assets/app.js?v=20261120n"></script>
 </body>
 </html>

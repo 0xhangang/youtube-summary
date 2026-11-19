@@ -440,18 +440,13 @@
       chBox.appendChild(b);
     });
 
-    // 탭 배지 업데이트
-    if (state.cat !== 'all') {
-      dom.tabBadgeCat.textContent = catLabel(state.cat, all);
+    // 탭 배지 업데이트 (5개 탭 모두 숫자로 통일)
+    if (dom.tabBadgeCat) {
+      dom.tabBadgeCat.textContent = state.cat !== 'all' ? catLabel(state.cat, all) : keys.length;
       dom.tabBadgeCat.hidden = false;
-    } else {
-      dom.tabBadgeCat.hidden = true;
     }
-    if (state.channel !== 'all') {
-      dom.tabBadgeChannel.textContent = state.channel;
-      dom.tabBadgeChannel.hidden = false;
-    } else {
-      dom.tabBadgeChannel.textContent = names.length;
+    if (dom.tabBadgeChannel) {
+      dom.tabBadgeChannel.textContent = state.channel !== 'all' ? state.channel : names.length;
       dom.tabBadgeChannel.hidden = false;
     }
 
@@ -728,6 +723,7 @@
       feed.appendChild(none);
       updateToc(sorted);
       updateFav();
+      updateSearchResults(sorted, all.length);
       updateSubtitle(all.length, sorted.length);
       return;
     }
@@ -748,7 +744,64 @@
 
     updateToc(sorted);
     updateFav();
+    updateSearchResults(sorted, all.length);
     updateSubtitle(all.length, sorted.length);
+  }
+
+  function updateSearchResults(sortedItems, totalCount) {
+    var q = state.q.trim();
+    if (dom.tabBadgeSearch) {
+      dom.tabBadgeSearch.textContent = q ? (sortedItems ? sortedItems.length : 0) : 0;
+      dom.tabBadgeSearch.hidden = false;
+    }
+    if (dom.searchMeta) {
+      dom.searchMeta.textContent = q
+        ? ('전체 ' + (totalCount || 0) + '편 중 ' + (sortedItems ? sortedItems.length : 0) + '건 찾음')
+        : '검색어를 입력하면 전체 요약에서 찾아 바로 보여 드려요.';
+    }
+    var list = dom.searchResultList;
+    if (!list) return;
+    list.innerHTML = '';
+    if (!q) return;
+    if (!sortedItems || !sortedItems.length) {
+      var empty = document.createElement('li');
+      empty.className = 'toc-empty';
+      empty.textContent = '일치하는 요약이 없습니다.';
+      list.appendChild(empty);
+      return;
+    }
+    sortedItems.forEach(function (it, idx) {
+      var s = it.s;
+      var id = s.videoId || s.id;
+      var anchor = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + anchor;
+      a.addEventListener('click', function () {
+        state.activeTab = null;
+        syncTabs();
+        var el = document.getElementById(anchor);
+        if (el) {
+          el.classList.remove('flash');
+          void el.offsetWidth;
+          el.classList.add('flash');
+        }
+      });
+      var num = document.createElement('span');
+      num.className = 'toc-num';
+      num.textContent = idx + 1;
+      a.appendChild(num);
+      var ch = document.createElement('span');
+      ch.className = 'toc-channel';
+      ch.textContent = s.channel || '';
+      a.appendChild(ch);
+      var tt = document.createElement('span');
+      tt.className = 'toc-title-txt';
+      tt.innerHTML = highlightHtml(esc(s.title || ''), q);
+      a.appendChild(tt);
+      li.appendChild(a);
+      list.appendChild(li);
+    });
   }
 
   function loadAllDates() {
@@ -967,6 +1020,9 @@
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
     dom.tabBadgeFav = document.getElementById('tabBadgeFav');
+    dom.tabBadgeSearch = document.getElementById('tabBadgeSearch');
+    dom.searchMeta = document.getElementById('searchMeta');
+    dom.searchResultList = document.getElementById('searchResultList');
 
     ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
