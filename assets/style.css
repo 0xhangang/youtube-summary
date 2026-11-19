@@ -107,6 +107,14 @@ button { -webkit-tap-highlight-color: transparent; }
   box-shadow: var(--shadow-hub);
   overflow: hidden;
 }
+.hub-card[hidden] { display: none; }
+.single-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
 
 .hub-top {
   display: flex;

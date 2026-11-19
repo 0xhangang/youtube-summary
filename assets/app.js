@@ -25,7 +25,8 @@
     searchOpen: false,
     likes: loadLikes(),
     sort: loadSort(),
-    activeTab: null // 'cat' | 'channel' | 'toc' | 'fav' | null
+    activeTab: null, // 'cat' | 'channel' | 'toc' | 'fav' | null
+    singleMode: null // { date, videoId }
   };
 
   var dom = {};
@@ -652,17 +653,17 @@
     shareBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="14.5" cy="4.5" r="2"/><circle cx="5.5" cy="10" r="2"/><circle cx="14.5" cy="15.5" r="2"/><path d="M7.3 9l5.4-3.3M7.3 11l5.4 3.3"/></svg>' +
       '<span class="share-lbl">공유</span>';
     shareBtn.addEventListener('click', function () {
-      var shareUrl = window.location.href.split('#')[0] + '#' + card.id;
-      var shareText = '[' + chTitle + '] ' + (s.title || '') + '\n' + url;
+      var baseUrl = window.location.href.split('#')[0].split('?')[0];
+      var shareUrl = baseUrl + '?d=' + encodeURIComponent(it.date) + '&v=' + encodeURIComponent(id);
+      var labelTitle = '[' + chTitle + '] ' + (s.title || '');
       if (navigator.share) {
         navigator.share({
-          title: '[' + chTitle + '] ' + (s.title || '피클 유튜브 요약'),
-          text: shareText,
+          text: labelTitle,
           url: shareUrl
         }).catch(function () {});
         return;
       }
-      var copyStr = shareText + '\n' + shareUrl;
+      var copyStr = labelTitle + '\n' + shareUrl;
       var done = function () {
         var lbl = shareBtn.querySelector('.share-lbl');
         shareBtn.classList.add('copied');
@@ -1030,12 +1031,115 @@
     }, { passive: true });
   }
 
+  function getQueryParam(name) {
+    try {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function renderSingleCard(dateHint, videoId) {
+    var hub = document.getElementById('siteHeader');
+    if (hub) hub.hidden = true;
+    dom.feed.innerHTML = '<div class="state">요약을 불러오는 중…</div>';
+
+    function showFound(found) {
+      var bar = document.createElement('div');
+      bar.className = 'single-bar';
+      var backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.className = 'btn';
+      backBtn.innerHTML = '<svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 5 7.5 10l5 5"/></svg><span class="btn-lbl">전체 요약 보기</span>';
+      backBtn.addEventListener('click', function () {
+        state.singleMode = null;
+        if (hub) hub.hidden = false;
+        try {
+          var clean = window.location.href.split('#')[0].split('?')[0];
+          window.history.replaceState(null, '', clean);
+        } catch (e) {}
+        var dates = state.index.dates;
+        var hasToday = dates.some(function (d) { return d.date === todayISO(); });
+        setDate(hasToday ? todayISO() : dates[0].date);
+      });
+      bar.appendChild(backBtn);
+
+      var themeClone = document.createElement('button');
+      themeClone.type = 'button';
+      themeClone.className = 'btn';
+      var syncSingleTheme = function () {
+        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        themeClone.innerHTML = (dark
+          ? '<svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M15.3 4.7 14 6M6 14l-1.3 1.3"/></svg><span class="btn-lbl">라이트</span>'
+          : '<svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M15.8 12.6A6.5 6.5 0 0 1 7.4 4.2a6.5 6.5 0 1 0 8.4 8.4Z"/></svg><span class="btn-lbl">다크</span>');
+      };
+      syncSingleTheme();
+      themeClone.addEventListener('click', function () {
+        var mainThemeBtn = document.getElementById('themeBtn');
+        if (mainThemeBtn) mainThemeBtn.click();
+        syncSingleTheme();
+      });
+      bar.appendChild(themeClone);
+
+      dom.feed.innerHTML = '';
+      dom.feed.appendChild(bar);
+      dom.feed.appendChild(buildCard(found));
+      document.title = '[' + (found.s.channel || '') + '] ' + (found.s.title || '피클 유튜브 요약');
+      renderFooter();
+    }
+
+    function findInDate(d) {
+      return loadDate(d).then(function (doc) {
+        var list = doc.summaries || [];
+        for (var i = 0; i < list.length; i++) {
+          var s = list[i];
+          var sid = s.videoId || s.id || '';
+          if (sid === videoId) {
+            return { s: s, date: d, dateLabel: doc.label || fmtDateLabel(d) };
+          }
+        }
+        return null;
+      });
+    }
+
+    var datesToCheck = [];
+    if (dateHint) datesToCheck.push(dateHint);
+    state.index.dates.forEach(function (d) {
+      if (d.date !== dateHint) datesToCheck.push(d.date);
+    });
+
+    var chain = Promise.resolve(null);
+    datesToCheck.forEach(function (d) {
+      chain = chain.then(function (found) {
+        if (found) return found;
+        return findInDate(d).catch(function () { return null; });
+      });
+    });
+
+    chain.then(function (found) {
+      if (found) {
+        state.activeDate = found.date;
+        showFound(found);
+      } else {
+        if (hub) hub.hidden = false;
+        dom.feed.innerHTML = '<div class="state">해당 요약을 찾을 수 없어요.</div>';
+      }
+    }).catch(fail);
+  }
+
   function boot() {
     Promise.all([loadAvatars(), loadIndex()]).then(function (res) {
       var dates = res[1];
       if (!dates.length) {
         dom.subtitle.textContent = '요약 없음';
         dom.feed.innerHTML = '<div class="state">아직 등록된 요약이 없어요.</div>';
+        return;
+      }
+      var qv = getQueryParam('v');
+      var qd = getQueryParam('d');
+      if (qv) {
+        state.singleMode = { date: qd, videoId: qv };
+        renderSingleCard(qd, qv);
         return;
       }
       var hasToday = dates.some(function (d) { return d.date === todayISO(); });
