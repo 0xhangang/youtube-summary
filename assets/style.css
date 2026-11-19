@@ -560,7 +560,7 @@ button.btn.is-on {
 
 /* ── 카드 ─────────────────────────────────────────────── */
 .card {
-  margin: 0 0 20px;
+  margin: 0 0 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
@@ -814,6 +814,16 @@ ul.bullets li:last-child { margin-bottom: 0; }
   border-radius: 2px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+mark.hl {
+  background: rgba(250, 204, 21, 0.42);
+  color: var(--text);
+  padding: 0 2px;
+  border-radius: 3px;
+}
+[data-theme="dark"] mark.hl {
+  background: rgba(250, 204, 21, 0.28);
+  color: #fef08a;
 }
 
 /* ── 카드 하단 액션 바 (좋아요 · 공유) ───────────────────── */
