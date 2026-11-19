@@ -98,14 +98,24 @@ button { -webkit-tap-highlight-color: transparent; }
   padding: 6px 8px 92px;
 }
 
-/* ── 통합 상단 허브 카드 (일반 문서 흐름) ────────────────── */
+/* ── 통합 상단 허브 카드 (스크롤 숨김/복귀 sticky) ────────────────── */
 .hub-card {
+  position: sticky;
+  top: 8px;
+  z-index: 40;
   margin: 8px 0 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 22px;
   box-shadow: var(--shadow-hub);
   overflow: hidden;
+  will-change: transform, opacity;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+.hub-card.is-hidden {
+  transform: translateY(calc(-100% - 20px));
+  opacity: 0;
+  pointer-events: none;
 }
 .hub-card[hidden] { display: none; }
 .single-bar {

@@ -1138,11 +1138,60 @@
     });
 
     var topBtn = document.getElementById('topBtn');
+    var hub = document.getElementById('siteHeader');
     topBtn.addEventListener('click', function () {
+      if (hub) hub.classList.remove('is-hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    var lastY = Math.max(0, window.scrollY || 0);
+    var lastT = performance.now();
+    var upDist = 0;
+    var downDist = 0;
+    var hubHidden = false;
+
+    function setHubHidden(next) {
+      if (!hub || hubHidden === next) return;
+      hubHidden = next;
+      hub.classList.toggle('is-hidden', next);
+    }
+
     window.addEventListener('scroll', function () {
-      topBtn.classList.toggle('show', window.scrollY > 600);
+      var y = Math.max(0, window.scrollY || 0);
+      topBtn.classList.toggle('show', y > 600);
+
+      if (!hub || hub.hidden) return;
+      if (dom.searchInput && document.activeElement === dom.searchInput) return;
+
+      var now = performance.now();
+      var dy = y - lastY;
+      var dt = Math.max(1, now - lastT);
+      lastY = y;
+      lastT = now;
+
+      if (y <= 60) {
+        upDist = 0;
+        downDist = 0;
+        setHubHidden(false);
+        return;
+      }
+
+      if (dy > 0) {
+        upDist = 0;
+        downDist += dy;
+        if (!hubHidden && y > 90 && downDist >= 16) {
+          downDist = 0;
+          setHubHidden(true);
+        }
+      } else if (dy < 0) {
+        downDist = 0;
+        upDist += -dy;
+        var speed = (-dy) / dt;
+        if (hubHidden && upDist >= 260 && speed >= 2.2) {
+          upDist = 0;
+          setHubHidden(false);
+        }
+      }
     }, { passive: true });
   }
 
