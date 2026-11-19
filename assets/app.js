@@ -782,7 +782,7 @@
     dom.footerMeta = document.getElementById('footerMeta');
     dom.search = document.getElementById('search');
     dom.searchClear = document.getElementById('searchClear');
-    dom.sortSelect = document.getElementById('sortSelect');
+    dom.sortBtn = document.getElementById('sortBtn');
     dom.resetFilterBtn = document.getElementById('resetFilterBtn');
     dom.tabPanel = document.getElementById('tabPanel');
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
@@ -801,12 +801,18 @@
     });
     syncTabs();
 
-    // 정렬 셀렉트
-    if (dom.sortSelect) {
-      dom.sortSelect.value = state.sort;
-      dom.sortSelect.addEventListener('change', function () {
-        state.sort = dom.sortSelect.value;
+    // 정렬 토글 버튼 (다크 버튼과 동일 UX)
+    function syncSortBtn() {
+      if (!dom.sortBtn) return;
+      var isOld = state.sort === 'oldest';
+      dom.sortBtn.textContent = isOld ? '↑ 오래된순' : '↓ 최신순';
+    }
+    syncSortBtn();
+    if (dom.sortBtn) {
+      dom.sortBtn.addEventListener('click', function () {
+        state.sort = (state.sort === 'newest') ? 'oldest' : 'newest';
         try { localStorage.setItem(LS_SORT, state.sort); } catch (e) {}
+        syncSortBtn();
         apply();
       });
     }
