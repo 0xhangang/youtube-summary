@@ -9,7 +9,8 @@
   var LS_THEME = 'yts.theme';
   var LS_SORT = 'yts.sort';
   var LS_LIKES = 'yts.likes';
-  var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'etc'];
+  var LS_READ = 'yts.read';
+  var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'life', 'etc'];
   var AVATAR_COLORS = ['#10b981', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
   var state = {
@@ -21,8 +22,10 @@
     cat: 'all',
     channel: 'all',
     favOnly: false,
+    unreadOnly: false,
     q: '',
     likes: loadLikes(),
+    reads: loadReads(),
     sort: loadSort(),
     activeTab: null, // 'cat' | 'channel' | 'toc' | 'fav' | 'search' | null
     singleMode: null // { date, videoId }
@@ -53,6 +56,45 @@
     else state.likes[id] = true;
     saveLikes();
     return Boolean(state.likes[id]);
+  }
+
+  function loadReads() {
+    try {
+      var raw = localStorage.getItem(LS_READ);
+      if (raw) {
+        var obj = JSON.parse(raw);
+        if (obj && typeof obj === 'object') return obj;
+      }
+    } catch (e) {}
+    return {};
+  }
+  function saveReads() {
+    try { localStorage.setItem(LS_READ, JSON.stringify(state.reads)); } catch (e) {}
+  }
+  function isRead(id) {
+    return Boolean(id && state.reads[id]);
+  }
+  function toggleRead(id) {
+    if (!id) return false;
+    if (state.reads[id]) delete state.reads[id];
+    else state.reads[id] = true;
+    saveReads();
+    return Boolean(state.reads[id]);
+  }
+  function fmtDuration(sec) {
+    var n = Number(sec || 0);
+    if (!n || isNaN(n) || n <= 0) return '';
+    var h = Math.floor(n / 3600);
+    var m = Math.floor((n % 3600) / 60);
+    var s = Math.floor(n % 60);
+    if (h > 0) return h + ':' + pad2(m) + ':' + pad2(s);
+    return m + ':' + pad2(s);
+  }
+  function fmtReadTime(s) {
+    var txt = summaryText(s);
+    if (!txt) return '';
+    var mins = Math.max(1, Math.round(txt.length / 520));
+    return '약 ' + mins + '분 읽기';
   }
 
   function loadSort() {
@@ -461,9 +503,13 @@
       dom.tabBadgeChannel.hidden = false;
     }
 
-    var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.favOnly || state.q.trim() !== '';
+    var hasFilter = state.cat !== 'all' || state.channel !== 'all' || state.favOnly || state.unreadOnly || state.q.trim() !== '';
     if (dom.resetFilterBtn) dom.resetFilterBtn.hidden = !hasFilter;
     if (dom.searchClear) dom.searchClear.hidden = !state.q;
+    if (dom.unreadBtn) {
+      dom.unreadBtn.classList.toggle('is-on', state.unreadOnly);
+      dom.unreadBtn.setAttribute('aria-pressed', state.unreadOnly ? 'true' : 'false');
+    }
   }
 
   function catLabel(key, all) {
@@ -482,7 +528,7 @@
     var s = it.s;
     var id = s.videoId || s.id || (it.date + '-' + s.title);
     var card = document.createElement('article');
-    card.className = 'card';
+    card.className = 'card' + (isRead(id) ? ' is-read' : '');
     card.id = 'v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '');
     card.dataset.vid = id;
 
@@ -578,7 +624,9 @@
     headRow.appendChild(main);
     info.appendChild(headRow);
 
-    if (pub || rel) {
+    var durTxt = fmtDuration(s.duration);
+    var readTxt = fmtReadTime(s);
+    if (pub || rel || durTxt || readTxt) {
       var line = document.createElement('div');
       line.className = 'meta-line yt-time-row';
       if (rel) {
@@ -593,6 +641,18 @@
         sp.textContent = pub;
         line.appendChild(sp);
       }
+      if (durTxt) {
+        var sd = document.createElement('span');
+        sd.className = 'mi mi-dur';
+        sd.textContent = '🎬 ' + durTxt;
+        line.appendChild(sd);
+      }
+      if (readTxt) {
+        var srd = document.createElement('span');
+        srd.className = 'mi mi-read';
+        srd.textContent = '📖 ' + readTxt;
+        line.appendChild(srd);
+      }
       info.appendChild(line);
     }
 
@@ -604,12 +664,16 @@
     var inner = document.createElement('div');
     inner.className = 'body-inner';
 
+    var headings = [];
+    var sectionNodes = [];
     (s.blocks || []).forEach(function (b) {
       if (!b) return;
       if (b.type === 'h') {
         var st = document.createElement('div');
         st.className = 'section-title';
         st.innerHTML = rich(b.text || '', q);
+        headings.push({ text: b.text || '', el: st });
+        sectionNodes.push(st);
         inner.appendChild(st);
       } else if (b.type === 'ul') {
         var ulEl = document.createElement('ul');
@@ -620,6 +684,15 @@
           ulEl.appendChild(li);
         });
         inner.appendChild(ulEl);
+      } else if (b.type === 'ol') {
+        var olEl = document.createElement('ol');
+        olEl.className = 'bullets';
+        (b.items || []).forEach(function (it2) {
+          var li = document.createElement('li');
+          li.innerHTML = rich(it2, q);
+          olEl.appendChild(li);
+        });
+        inner.appendChild(olEl);
       } else if (b.type === 'callout') {
         var co = document.createElement('div');
         co.className = 'callout';
@@ -641,11 +714,43 @@
         });
       }
     });
+    if (headings.length >= 3) {
+      var miniToc = document.createElement('div');
+      miniToc.className = 'mini-toc';
+      headings.forEach(function (hd, hIdx) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'mini-toc-chip';
+        chip.textContent = (hIdx + 1) + '. ' + hd.text.replace(/\*\*([^*]+)\*\*/g, '$1');
+        chip.addEventListener('click', function () {
+          hd.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        miniToc.appendChild(chip);
+      });
+      inner.insertBefore(miniToc, inner.firstChild);
+    }
     body.appendChild(inner);
     card.appendChild(body);
 
     var actions = document.createElement('div');
     actions.className = 'card-actions';
+
+    var readBtn = document.createElement('button');
+    readBtn.type = 'button';
+    readBtn.className = 'act-btn' + (isRead(id) ? ' is-read' : '');
+    readBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M7.4 10.2 9.2 12l3.6-3.8"/></svg>' +
+      '<span class="read-lbl">' + (isRead(id) ? '읽음' : '읽음 표시') + '</span>';
+    readBtn.setAttribute('aria-pressed', isRead(id) ? 'true' : 'false');
+    readBtn.addEventListener('click', function () {
+      var on = toggleRead(id);
+      readBtn.classList.toggle('is-read', on);
+      card.classList.toggle('is-read', on);
+      readBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var lbl = readBtn.querySelector('.read-lbl');
+      if (lbl) lbl.textContent = on ? '읽음' : '읽음 표시';
+      if (state.unreadOnly && on) apply();
+    });
+    actions.appendChild(readBtn);
 
     var likeBtn = document.createElement('button');
     likeBtn.type = 'button';
@@ -690,8 +795,30 @@
         }, 1500);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareMsg).then(done).catch(done);
+        navigator.clipboard.writeText(shareMsg).then(done).catch(function () {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = shareMsg;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          } catch (e) {}
+          done();
+        });
       } else {
+        try {
+          var ta2 = document.createElement('textarea');
+          ta2.value = shareMsg;
+          ta2.style.position = 'fixed';
+          ta2.style.opacity = '0';
+          document.body.appendChild(ta2);
+          ta2.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta2);
+        } catch (e) {}
         done();
       }
     });
@@ -712,6 +839,7 @@
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
       if (state.favOnly && !isLiked(id)) return false;
+      if (state.unreadOnly && isRead(id)) return false;
       var lbl = (s.categoryLabel || s.category || '기타').trim();
       if (state.cat !== 'all' && lbl !== state.cat) return false;
       if (state.channel !== 'all' && (s.channel || '기타') !== state.channel) return false;
@@ -1027,6 +1155,7 @@
     dom.search = document.getElementById('search');
     dom.searchClear = document.getElementById('searchClear');
     dom.sortBtn = document.getElementById('sortBtn');
+    dom.unreadBtn = document.getElementById('unreadBtn');
     dom.resetFilterBtn = document.getElementById('resetFilterBtn');
     dom.tabPanel = document.getElementById('tabPanel');
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
@@ -1068,11 +1197,19 @@
       });
     }
 
+    if (dom.unreadBtn) {
+      dom.unreadBtn.addEventListener('click', function () {
+        state.unreadOnly = !state.unreadOnly;
+        apply();
+      });
+    }
+
     if (dom.resetFilterBtn) {
       dom.resetFilterBtn.addEventListener('click', function () {
         state.cat = 'all';
         state.channel = 'all';
         state.favOnly = false;
+        state.unreadOnly = false;
         state.q = '';
         dom.search.value = '';
         apply();
@@ -1161,7 +1298,7 @@
       topBtn.classList.toggle('show', y > 600);
 
       if (!hub || hub.hidden) return;
-      if (dom.searchInput && document.activeElement === dom.searchInput) return;
+      if (dom.search && document.activeElement === dom.search) return;
 
       var now = performance.now();
       var dy = y - lastY;

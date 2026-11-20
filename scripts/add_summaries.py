@@ -54,9 +54,10 @@ INDEX = os.path.join(DATA, "index.json")
 CATEGORY_LABELS = {
     "stock": "증시·매크로",
     "coin": "코인·트레이딩",
-    "trend": "AI·사회·트렌드",
-    "tech": "테크",
-    "economy": "경제",
+    "trend": "트렌드·인사이트",
+    "tech": "AI·테크",
+    "economy": "경제·부동산",
+    "life": "생활·리뷰",
     "etc": "기타",
 }
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
@@ -88,11 +89,17 @@ def text_to_blocks(text):
             buf.clear()
 
     ul_items = []
+    ol_items = []
 
     def flush_ul():
         if ul_items:
             blocks.append({"type": "ul", "items": list(ul_items)})
             ul_items.clear()
+
+    def flush_ol():
+        if ol_items:
+            blocks.append({"type": "ol", "items": list(ol_items)})
+            ol_items.clear()
 
     for raw in text.replace("\r\n", "\n").split("\n"):
         line = raw.rstrip()
@@ -100,28 +107,40 @@ def text_to_blocks(text):
         if not s:
             flush_para()
             flush_ul()
+            flush_ol()
             continue
         m = re.match(r"^#{2,4}\s+(.*)$", s)
         if m:
             flush_para()
             flush_ul()
+            flush_ol()
             blocks.append({"type": "h", "text": m.group(1).strip()})
             continue
         m = re.match(r"^[-*•]\s+(.*)$", s)
         if m:
             flush_para()
+            flush_ol()
             ul_items.append(m.group(1).strip())
+            continue
+        m = re.match(r"^\d+\.\s+(.*)$", s)
+        if m:
+            flush_para()
+            flush_ul()
+            ol_items.append(m.group(1).strip())
             continue
         m = re.match(r"^>\s?(.*)$", s)
         if m:
             flush_para()
             flush_ul()
+            flush_ol()
             blocks.append({"type": "callout", "text": m.group(1).strip()})
             continue
         flush_ul()
+        flush_ol()
         buf.append(s)
     flush_para()
     flush_ul()
+    flush_ol()
     return blocks
 
 
@@ -202,10 +221,10 @@ def normalize(item, date_str, stamp):
     clean = []
     for b in blocks:
         t = (b or {}).get("type") or "p"
-        if t == "ul":
+        if t in ("ul", "ol"):
             items = [str(x) for x in (b.get("items") or []) if str(x).strip()]
             if items:
-                clean.append({"type": "ul", "items": items})
+                clean.append({"type": t, "items": items})
         elif t in ("h", "callout", "p"):
             txt = str(b.get("text") or "").strip()
             if txt:
@@ -274,6 +293,7 @@ def write_share_page(s, date_str):
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
 <title>{html.escape(og_title)}</title>
 <meta property="og:type" content="website" />
 <meta property="og:title" content="{html.escape(og_title)}" />
@@ -284,6 +304,11 @@ def write_share_page(s, date_str):
 <meta name="twitter:description" content="{html.escape(og_desc)}" />
 <meta name="twitter:image" content="{html.escape(og_img)}" />
 <meta http-equiv="refresh" content="0; url={html.escape(target)}" />
+<style>
+  body {{ margin:0; min-height:100vh; display:grid; place-items:center; font-family:-apple-system,BlinkMacSystemFont,"Pretendard",sans-serif; background:#f4f6fa; color:#334155; font-size:14px; }}
+  @media (prefers-color-scheme:dark) {{ body {{ background:#0b0f17; color:#cbd5e1; }} a {{ color:#34d399; }} }}
+  a {{ color:#059669; text-decoration:none; font-weight:600; }}
+</style>
 <script>location.replace({json.dumps(target)});</script>
 </head>
 <body>
