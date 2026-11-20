@@ -423,11 +423,10 @@
     if (dom.dateMeta) {
       dom.dateMeta.textContent = '총 ' + state.index.dates.length + '일 · ' + total + '편';
     }
-    if (dom.tabBadgeDate) {
-      dom.tabBadgeDate.textContent = state.activeDate === 'all'
+    if (dom.tabLabelDate) {
+      dom.tabLabelDate.textContent = state.activeDate === 'all'
         ? '전체'
-        : state.activeDate.slice(5).replace('-', '.');
-      dom.tabBadgeDate.hidden = false;
+        : fmtDateLabel(state.activeDate);
     }
     var all = document.createElement('button');
     all.type = 'button';
@@ -1285,7 +1284,7 @@
     dom.sortBtn = document.getElementById('sortBtn');
     dom.tabPanel = document.getElementById('tabPanel');
     dom.dateMeta = document.getElementById('dateMeta');
-    dom.tabBadgeDate = document.getElementById('tabBadgeDate');
+    dom.tabLabelDate = document.getElementById('tabLabelDate');
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
