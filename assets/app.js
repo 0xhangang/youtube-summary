@@ -390,9 +390,10 @@
   function syncTabs() {
     var t = state.activeTab;
     var btns = [
+      { id: 'tabBtnDate', key: 'date', pane: 'paneDate' },
+      { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' },
       { id: 'tabBtnCat', key: 'cat', pane: 'paneCat' },
       { id: 'tabBtnChannel', key: 'channel', pane: 'paneChannel' },
-      { id: 'tabBtnToc', key: 'toc', pane: 'paneToc' },
       { id: 'tabBtnRead', key: 'read', pane: 'paneRead' },
       { id: 'tabBtnFav', key: 'fav', pane: 'paneFav' },
       { id: 'tabBtnSearch', key: 'search', pane: 'paneSearch' }
@@ -419,11 +420,24 @@
     box.innerHTML = '';
     var total = 0;
     state.index.dates.forEach(function (d) { total += Number(d.count || 0); });
+    if (dom.dateMeta) {
+      dom.dateMeta.textContent = '총 ' + state.index.dates.length + '일 · ' + total + '편';
+    }
+    if (dom.tabBadgeDate) {
+      dom.tabBadgeDate.textContent = state.activeDate === 'all'
+        ? '전체'
+        : state.activeDate.slice(5).replace('-', '.');
+      dom.tabBadgeDate.hidden = false;
+    }
     var all = document.createElement('button');
     all.type = 'button';
     all.className = 'chip' + (state.activeDate === 'all' ? ' active' : '');
     all.innerHTML = '<span class="chip-txt">전체</span><span class="n">' + total + '</span>';
-    all.addEventListener('click', function () { setDate('all'); });
+    all.addEventListener('click', function () {
+      state.activeTab = 'toc';
+      syncTabs();
+      setDate('all');
+    });
     box.appendChild(all);
 
     state.index.dates.forEach(function (d) {
@@ -431,7 +445,11 @@
       b.type = 'button';
       b.className = 'chip' + (state.activeDate === d.date ? ' active' : '');
       b.innerHTML = '<span class="chip-txt">' + esc(fmtDateLabel(d.date)) + '</span><span class="n">' + Number(d.count || 0) + '</span>';
-      b.addEventListener('click', function () { setDate(d.date); });
+      b.addEventListener('click', function () {
+        state.activeTab = 'toc';
+        syncTabs();
+        setDate(d.date);
+      });
       box.appendChild(b);
     });
   }
@@ -1266,6 +1284,8 @@
     dom.searchClear = document.getElementById('searchClear');
     dom.sortBtn = document.getElementById('sortBtn');
     dom.tabPanel = document.getElementById('tabPanel');
+    dom.dateMeta = document.getElementById('dateMeta');
+    dom.tabBadgeDate = document.getElementById('tabBadgeDate');
     dom.tabBadgeCat = document.getElementById('tabBadgeCat');
     dom.tabBadgeChannel = document.getElementById('tabBadgeChannel');
     dom.tabBadgeToc = document.getElementById('tabBadgeToc');
@@ -1275,7 +1295,7 @@
     dom.searchMeta = document.getElementById('searchMeta');
     dom.searchResultList = document.getElementById('searchResultList');
 
-    ['tabBtnCat', 'tabBtnChannel', 'tabBtnToc', 'tabBtnRead', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
+    ['tabBtnDate', 'tabBtnToc', 'tabBtnCat', 'tabBtnChannel', 'tabBtnRead', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
         btn.addEventListener('click', function () {
