@@ -975,9 +975,7 @@ mark.hl {
   border-color: rgba(52, 211, 153, 0.32);
   background: rgba(52, 211, 153, 0.1);
 }
-.card.is-read .thumb-wrap,
-.card.is-read .card-head,
-.card.is-read .card-body {
+.card.is-read {
   opacity: 0.48;
   transition: opacity 0.2s ease;
 }
