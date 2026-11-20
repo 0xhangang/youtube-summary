@@ -970,7 +970,7 @@ mark.hl {
   opacity: 0.45 !important;
   transition: opacity 0.2s ease;
 }
-.feed.is-read-view .card.is-read {
+#feed.is-read-view .card.is-read {
   opacity: 1 !important;
 }
 .feed-more {
