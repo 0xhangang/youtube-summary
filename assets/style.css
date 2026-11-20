@@ -976,7 +976,8 @@ mark.hl {
   background: rgba(52, 211, 153, 0.1);
 }
 .card.is-read {
-  opacity: 0.48;
+  animation: none;
+  opacity: 0.45 !important;
   transition: opacity 0.2s ease;
 }
 
