@@ -411,6 +411,10 @@ button.btn.is-on {
 .tab-panel {
   margin-top: 11px;
   padding-top: 11px;
+  max-height: min(400px, 46vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
   animation: tabOpen 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
