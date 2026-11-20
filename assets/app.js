@@ -948,8 +948,10 @@
       var a = document.createElement('a');
       a.href = '#' + anchor;
       a.addEventListener('click', function () {
-        state.activeTab = null;
-        syncTabs();
+        if (state.activeTab !== 'toc') {
+          state.activeTab = 'toc';
+          syncTabs();
+        }
         if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
@@ -1018,8 +1020,10 @@
       var a = document.createElement('a');
       a.href = '#' + anchor;
       a.addEventListener('click', function (e) {
-        state.activeTab = null;
-        syncTabs();
+        if (state.activeTab !== 'toc') {
+          state.activeTab = 'toc';
+          syncTabs();
+        }
         if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
@@ -1082,8 +1086,10 @@
       var a = document.createElement('a');
       a.href = '#' + anchor;
       a.addEventListener('click', function (e) {
-        state.activeTab = null;
-        syncTabs();
+        if (state.activeTab !== 'toc') {
+          state.activeTab = 'toc';
+          syncTabs();
+        }
         if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
@@ -1154,8 +1160,10 @@
       var a = document.createElement('a');
       a.href = '#' + anchor;
       a.addEventListener('click', function () {
-        state.activeTab = null;
-        syncTabs();
+        if (state.activeTab !== 'toc') {
+          state.activeTab = 'toc';
+          syncTabs();
+        }
         if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
@@ -1339,8 +1347,10 @@
         state.activeTab = 'search';
         syncTabs();
       } else if (e.key === 'Escape' && state.activeTab) {
-        state.activeTab = null;
-        syncTabs();
+        if (state.activeTab !== 'toc') {
+          state.activeTab = 'toc';
+          syncTabs();
+        }
       }
     });
 
