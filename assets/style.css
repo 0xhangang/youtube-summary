@@ -851,38 +851,6 @@ ol.bullets li::marker {
 }
 [data-theme="dark"] ol.bullets li::marker { color: var(--accent); }
 
-.mini-toc {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px dashed var(--border);
-}
-.mini-toc-chip {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text-sub);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.35;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-.mini-toc-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent-strong);
-  background: var(--surface-3);
-}
-[data-theme="dark"] .mini-toc-chip:hover { color: var(--accent); }
-
 /* 화자 핵심 멘트 인용 카드 */
 .callout {
   display: flex;
@@ -994,26 +962,6 @@ mark.hl {
   color: var(--accent-strong);
 }
 [data-theme="dark"] .act-btn.copied { color: var(--accent); }
-.act-btn.is-read {
-  color: var(--accent-strong);
-  border-color: rgba(5, 150, 105, 0.32);
-  background: rgba(16, 185, 129, 0.08);
-}
-[data-theme="dark"] .act-btn.is-read {
-  color: var(--accent);
-  border-color: rgba(52, 211, 153, 0.32);
-  background: rgba(52, 211, 153, 0.1);
-}
-.card.is-read .video-title a { opacity: 0.72; }
-.mi-dur, .mi-read { opacity: 0.85; }
-.toc-date {
-  flex: 0 0 auto;
-  font-size: 11px;
-  color: var(--text-faint);
-  margin-left: auto;
-  padding-left: 6px;
-  white-space: nowrap;
-}
 
 /* ── 상태 & 하단 ─────────────────────────────────────── */
 .state {
