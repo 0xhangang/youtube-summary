@@ -22,7 +22,7 @@
     cat: 'all',
     channel: 'all',
     favOnly: false,
-    readFilter: 'all', // 'all' | 'unread' | 'read'
+    readOnly: false,
     q: '',
     likes: loadLikes(),
     reads: loadReads(),
@@ -357,18 +357,17 @@
     if (tabName === 'fav') {
       state.favOnly = (next === 'fav');
       if (state.favOnly) {
-        state.readFilter = 'all';
+        state.readOnly = false;
         loadAllDatesForLikes().then(function () { apply(); });
       } else {
         apply();
       }
     } else if (tabName === 'read') {
-      if (next === 'read') {
+      state.readOnly = (next === 'read');
+      if (state.readOnly) {
         state.favOnly = false;
-        if (state.readFilter === 'all') state.readFilter = 'read';
         loadAllDatesForReads().then(function () { apply(); });
       } else {
-        state.readFilter = 'all';
         apply();
       }
     } else if (tabName === 'search' && next === 'search') {
@@ -703,11 +702,7 @@
       readBtn.classList.toggle('is-read', on);
       card.classList.toggle('is-read', on);
       readBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      if ((state.readFilter === 'read' && !on) || (state.readFilter === 'unread' && on)) {
-        apply();
-      } else {
-        updateRead();
-      }
+      apply();
     });
     actions.appendChild(readBtn);
 
@@ -790,7 +785,7 @@
   /* ── 렌더 ──────────────────────────────────────────── */
   function apply() {
     var q = state.q.trim().toLowerCase();
-    var isGlobal = state.favOnly || state.readFilter === 'read' || q !== '';
+    var isGlobal = state.favOnly || state.readOnly || q !== '';
     var all = scopeOf(isGlobal ? 'all' : state.activeDate);
     renderFilterChips(all);
 
@@ -798,8 +793,11 @@
       var s = it.s;
       var id = s.videoId || s.id || (it.date + '-' + s.title);
       if (state.favOnly && !isLiked(id)) return false;
-      if (state.readFilter === 'read' && !isRead(id)) return false;
-      if (state.readFilter === 'unread' && isRead(id)) return false;
+      if (state.readOnly) {
+        if (!isRead(id)) return false;
+      } else if (!state.favOnly && !q) {
+        if (isRead(id)) return false;
+      }
       var lbl = (s.categoryLabel || s.category || '기타').trim();
       if (state.cat !== 'all' && lbl !== state.cat) return false;
       if (state.channel !== 'all' && (s.channel || '기타') !== state.channel) return false;
@@ -935,38 +933,13 @@
       dom.tabBadgeRead.hidden = false;
     }
 
-    var chips = dom.readFilterChips;
-    if (chips) {
-      chips.innerHTML = '';
-      var modes = [
-        { key: 'read', label: '읽은 글만' },
-        { key: 'unread', label: '안 읽은 글만' },
-        { key: 'all', label: '전체' }
-      ];
-      modes.forEach(function (m) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'chip' + (state.readFilter === m.key ? ' active' : '');
-        b.innerHTML = '<span class="chip-txt">' + m.label + '</span>';
-        b.addEventListener('click', function () {
-          state.readFilter = m.key;
-          if (m.key === 'read') {
-            loadAllDatesForReads().then(function () { apply(); });
-          } else {
-            apply();
-          }
-        });
-        chips.appendChild(b);
-      });
-    }
-
     var list = dom.readList;
     if (!list) return;
     list.innerHTML = '';
     if (!readItems.length) {
       var empty = document.createElement('li');
       empty.className = 'toc-empty';
-      empty.textContent = cnt ? '불러오는 중…' : '아직 읽음 표시한 요약이 없어요. 본문 아래 읽음을 눌러 표시해 보세요.';
+      empty.textContent = cnt ? '불러오는 중…' : '아직 읽은 요약이 없어요. 본문 아래 읽음을 누르면 목록에서 치워지고 여기에 모여요.';
       list.appendChild(empty);
       return;
     }
@@ -987,7 +960,7 @@
           el.classList.add('flash');
         } else {
           e.preventDefault();
-          state.readFilter = 'all';
+          state.readOnly = true;
           setDate(it.date, anchor);
         }
       });
@@ -1076,10 +1049,8 @@
     var label;
     if (state.favOnly) {
       label = '좋아요 모아보기';
-    } else if (state.readFilter === 'read') {
+    } else if (state.readOnly) {
       label = '읽은 글 모아보기';
-    } else if (state.readFilter === 'unread') {
-      label = '안 읽은 글';
     } else if (state.q.trim() !== '') {
       label = '전체 검색';
     } else if (state.activeDate === 'all') {
@@ -1168,6 +1139,7 @@
     state.cat = 'all';
     state.channel = 'all';
     state.favOnly = false;
+    state.readOnly = false;
     renderDateChips();
     dom.subtitle.textContent = '불러오는 중…';
     dom.feed.innerHTML = '<div class="state">불러오는 중…</div>';
@@ -1209,7 +1181,6 @@
     dom.channelMeta = document.getElementById('channelMeta');
     dom.feed = document.getElementById('feed');
     dom.tocList = document.getElementById('tocList');
-    dom.readFilterChips = document.getElementById('readFilterChips');
     dom.readList = document.getElementById('readList');
     dom.favList = document.getElementById('favList');
     dom.footerMeta = document.getElementById('footerMeta');
