@@ -368,26 +368,21 @@
 
   /* ── 탭 제어 (분류 · 채널 · 목차 · 읽음 · 좋아요 · 검색) ───────── */
   function setTab(tabName) {
-    var next = (state.activeTab === tabName) ? null : tabName;
+    var next = (state.activeTab === tabName) ? (tabName === 'toc' ? null : 'toc') : tabName;
+    var prevFav = state.favOnly;
+    var prevRead = state.readOnly;
     state.activeTab = next;
+    state.favOnly = (next === 'fav');
+    state.readOnly = (next === 'read');
     syncTabs();
-    if (tabName === 'fav') {
-      state.favOnly = (next === 'fav');
-      if (state.favOnly) {
-        state.readOnly = false;
-        loadAllDatesIf(state.likes).then(function () { apply(); });
-      } else {
-        apply();
-      }
-    } else if (tabName === 'read') {
-      state.readOnly = (next === 'read');
-      if (state.readOnly) {
-        state.favOnly = false;
-        loadAllDatesIf(state.reads).then(function () { apply(); });
-      } else {
-        apply();
-      }
-    } else if (tabName === 'search' && next === 'search') {
+    if (state.favOnly) {
+      loadAllDatesIf(state.likes).then(function () { apply(); });
+    } else if (state.readOnly) {
+      loadAllDatesIf(state.reads).then(function () { apply(); });
+    } else if (prevFav !== state.favOnly || prevRead !== state.readOnly) {
+      apply();
+    }
+    if (next === 'search') {
       loadAllDates();
     }
   }
