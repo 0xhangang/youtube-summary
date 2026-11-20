@@ -850,7 +850,7 @@
       state.feedObserver.disconnect();
       state.feedObserver = null;
     }
-    feed.classList.toggle('is-read-view', state.readOnly);
+    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly);
     feed.innerHTML = '';
     if (!sorted.length) {
       var none = document.createElement('div');
