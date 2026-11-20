@@ -10,6 +10,7 @@
   var LS_SORT = 'yts.sort';
   var LS_LIKES = 'yts.likes';
   var LS_READ = 'yts.read';
+  var PAGE_SIZE = 20;
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'life', 'etc'];
   var AVATAR_COLORS = ['#10b981', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
 
@@ -374,7 +375,7 @@
       state.favOnly = (next === 'fav');
       if (state.favOnly) {
         state.readOnly = false;
-        loadAllDatesForLikes().then(function () { apply(); });
+        loadAllDatesIf(state.likes).then(function () { apply(); });
       } else {
         apply();
       }
@@ -382,7 +383,7 @@
       state.readOnly = (next === 'read');
       if (state.readOnly) {
         state.favOnly = false;
-        loadAllDatesForReads().then(function () { apply(); });
+        loadAllDatesIf(state.reads).then(function () { apply(); });
       } else {
         apply();
       }
@@ -833,6 +834,11 @@
 
     var sorted = sortItems(filtered);
     var feed = dom.feed;
+    if (state.feedObserver) {
+      state.feedObserver.disconnect();
+      state.feedObserver = null;
+    }
+    feed.classList.toggle('is-read-view', state.readOnly);
     feed.innerHTML = '';
     if (!sorted.length) {
       var none = document.createElement('div');
@@ -842,25 +848,73 @@
         : '이 날짜에는 아직 요약이 없어요.';
       feed.appendChild(none);
       updateToc(sorted);
+      updateRead();
       updateFav();
       updateSearchResults(sorted, all.length);
       updateSubtitle(all.length, sorted.length);
       return;
     }
 
-    var frag = document.createDocumentFragment();
+    var cursor = 0;
     var lastDate = null;
-    sorted.forEach(function (it) {
-      if ((state.activeDate === 'all' || isGlobal) && (state.sort === 'newest' || state.sort === 'oldest') && it.date !== lastDate) {
-        var div = document.createElement('div');
-        div.className = 'date-divider';
-        div.textContent = it.dateLabel || fmtDateLabel(it.date);
-        frag.appendChild(div);
-        lastDate = it.date;
+    var showDividers = (state.activeDate === 'all' || isGlobal) && (state.sort === 'newest' || state.sort === 'oldest');
+    var moreWrap = null;
+
+    function appendChunk(count) {
+      if (moreWrap && moreWrap.parentNode) moreWrap.parentNode.removeChild(moreWrap);
+      var end = Math.min(cursor + count, sorted.length);
+      var frag = document.createDocumentFragment();
+      for (; cursor < end; cursor++) {
+        var it = sorted[cursor];
+        if (showDividers && it.date !== lastDate) {
+          var div = document.createElement('div');
+          div.className = 'date-divider';
+          div.textContent = it.dateLabel || fmtDateLabel(it.date);
+          frag.appendChild(div);
+          lastDate = it.date;
+        }
+        frag.appendChild(buildCard(it));
       }
-      frag.appendChild(buildCard(it));
-    });
-    feed.appendChild(frag);
+      feed.appendChild(frag);
+      if (cursor < sorted.length) {
+        if (!moreWrap) {
+          moreWrap = document.createElement('div');
+          moreWrap.className = 'feed-more';
+          var moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'btn';
+          moreBtn.addEventListener('click', function () { appendChunk(PAGE_SIZE); });
+          moreWrap.appendChild(moreBtn);
+        }
+        moreWrap.firstChild.textContent = '더 보기 (남은 ' + (sorted.length - cursor) + '편)';
+        feed.appendChild(moreWrap);
+      } else if (state.feedObserver) {
+        state.feedObserver.disconnect();
+        state.feedObserver = null;
+      }
+    }
+
+    state.ensureAnchor = function (anchor) {
+      if (document.getElementById(anchor)) return;
+      for (var i = cursor; i < sorted.length; i++) {
+        var s = sorted[i].s;
+        var id = s.videoId || s.id;
+        if ('v-' + String(id).replace(/[^A-Za-z0-9_-]/g, '') === anchor) {
+          appendChunk(i - cursor + 1);
+          break;
+        }
+      }
+    };
+
+    appendChunk(PAGE_SIZE);
+    if (cursor < sorted.length && 'IntersectionObserver' in window) {
+      state.feedObserver = new IntersectionObserver(function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) {
+          appendChunk(PAGE_SIZE);
+        }
+      }, { rootMargin: '400px 0px' });
+      if (moreWrap) state.feedObserver.observe(moreWrap);
+    }
 
     updateToc(sorted);
     updateRead();
@@ -901,6 +955,7 @@
       a.addEventListener('click', function () {
         state.activeTab = null;
         syncTabs();
+        if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
           el.classList.remove('flash');
@@ -932,13 +987,8 @@
     }));
   }
 
-  function loadAllDatesForLikes() {
-    if (!state.index || !Object.keys(state.likes).length) return Promise.resolve();
-    return loadAllDates();
-  }
-
-  function loadAllDatesForReads() {
-    if (!state.index || !Object.keys(state.reads).length) return Promise.resolve();
+  function loadAllDatesIf(map) {
+    if (!state.index || !map || !Object.keys(map).length) return Promise.resolve();
     return loadAllDates();
   }
 
@@ -975,6 +1025,7 @@
       a.addEventListener('click', function (e) {
         state.activeTab = null;
         syncTabs();
+        if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
           el.classList.remove('flash');
@@ -1038,6 +1089,7 @@
       a.addEventListener('click', function (e) {
         state.activeTab = null;
         syncTabs();
+        if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
           el.classList.remove('flash');
@@ -1109,6 +1161,7 @@
       a.addEventListener('click', function () {
         state.activeTab = null;
         syncTabs();
+        if (state.ensureAnchor) state.ensureAnchor(anchor);
         var el = document.getElementById(anchor);
         if (el) {
           el.classList.remove('flash');
@@ -1184,10 +1237,10 @@
           target.classList.add('flash');
         }
       }
-      loadAllDatesForLikes().then(function () {
+      loadAllDatesIf(state.likes).then(function () {
         updateFav();
       });
-      loadAllDatesForReads().then(function () {
+      loadAllDatesIf(state.reads).then(function () {
         updateRead();
       });
     }).catch(fail);
