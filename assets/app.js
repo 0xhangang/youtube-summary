@@ -1249,6 +1249,7 @@
       apply();
       renderFooter();
       if (scrollAnchor) {
+        if (state.ensureAnchor) state.ensureAnchor(scrollAnchor);
         var target = document.getElementById(scrollAnchor);
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
