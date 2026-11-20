@@ -1471,9 +1471,7 @@
           var clean = window.location.href.split('#')[0].split('?')[0];
           window.history.replaceState(null, '', clean);
         } catch (e) {}
-        var dates = state.index.dates;
-        var hasToday = dates.some(function (d) { return d.date === todayISO(); });
-        setDate(hasToday ? todayISO() : dates[0].date);
+        setDate('all');
       });
       bar.appendChild(backBtn);
 
@@ -1555,8 +1553,7 @@
         renderSingleCard(qd, qv);
         return;
       }
-      var hasToday = dates.some(function (d) { return d.date === todayISO(); });
-      setDate(hasToday ? todayISO() : dates[0].date);
+      setDate('all');
     }).catch(fail);
   }
 
