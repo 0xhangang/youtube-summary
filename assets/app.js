@@ -59,17 +59,33 @@
   }
 
   function loadReads() {
+    var merged = {};
     try {
       var raw = localStorage.getItem(LS_READ);
       if (raw) {
         var obj = JSON.parse(raw);
-        if (obj && typeof obj === 'object') return obj;
+        if (obj && typeof obj === 'object') {
+          Object.keys(obj).forEach(function (k) { if (obj[k]) merged[k] = true; });
+        }
       }
     } catch (e) {}
-    return {};
+    try {
+      var m = document.cookie.match(/(?:^|;\s*)yts_read=([^;]*)/);
+      if (m && m[1]) {
+        decodeURIComponent(m[1]).split(',').forEach(function (id) {
+          if (id) merged[id] = true;
+        });
+      }
+    } catch (e) {}
+    return merged;
   }
   function saveReads() {
     try { localStorage.setItem(LS_READ, JSON.stringify(state.reads)); } catch (e) {}
+    try {
+      var ids = Object.keys(state.reads).filter(function (k) { return state.reads[k]; }).slice(-120);
+      var exp = new Date(Date.now() + 365 * 864e5).toUTCString();
+      document.cookie = 'yts_read=' + encodeURIComponent(ids.join(',')) + '; expires=' + exp + '; path=/; SameSite=Lax';
+    } catch (e) {}
   }
   function isRead(id) {
     return Boolean(id && state.reads[id]);
