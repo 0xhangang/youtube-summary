@@ -722,14 +722,6 @@
         if (card.parentNode) card.parentNode.removeChild(card);
         updateRead();
         if (!dom.feed.querySelector('.card')) apply();
-      } else if (!state.readOnly && !state.favOnly && !state.q.trim() && on) {
-        var rect = card.getBoundingClientRect();
-        if (card.parentNode) card.parentNode.removeChild(card);
-        if (rect.top < 12) {
-          window.scrollTo({ top: Math.max(0, window.scrollY + rect.top - 16), behavior: 'auto' });
-        }
-        updateRead();
-        if (!dom.feed.querySelector('.card')) apply();
       } else {
         updateRead();
       }
