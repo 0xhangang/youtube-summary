@@ -348,6 +348,9 @@ button.btn.is-on {
 .tab-bar.tab-bar-5 {
   grid-template-columns: repeat(5, 1fr);
 }
+.tab-bar.tab-bar-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
 .tab-btn {
   display: inline-flex;
   align-items: center;
@@ -962,6 +965,17 @@ mark.hl {
   color: var(--accent-strong);
 }
 [data-theme="dark"] .act-btn.copied { color: var(--accent); }
+.act-btn.is-read {
+  color: var(--accent-strong);
+  border-color: rgba(5, 150, 105, 0.32);
+  background: rgba(16, 185, 129, 0.08);
+}
+[data-theme="dark"] .act-btn.is-read {
+  color: var(--accent);
+  border-color: rgba(52, 211, 153, 0.32);
+  background: rgba(52, 211, 153, 0.1);
+}
+.card.is-read .video-title a { opacity: 0.72; }
 
 /* ── 상태 & 하단 ─────────────────────────────────────── */
 .state {
@@ -1027,6 +1041,12 @@ mark.hl {
   .card-body { padding: 20px 24px 28px; font-size: 16px; }
   .card-actions { padding: 12px 24px 15px; }
   .section-title { font-size: 17px; }
+}
+
+@media (max-width: 460px) {
+  .tab-bar.tab-bar-6 .tab-svg { display: none; }
+  .tab-bar.tab-bar-6 .tab-btn { font-size: 11px; gap: 3px; padding: 0 2px; }
+  .tab-bar.tab-bar-6 .tab-badge { padding: 0 4px; height: 16px; font-size: 9.5px; max-width: 34px; }
 }
 
 @media (max-width: 420px) {
