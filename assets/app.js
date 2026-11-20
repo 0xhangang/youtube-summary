@@ -28,7 +28,7 @@
     likes: loadLikes(),
     reads: loadReads(),
     sort: loadSort(),
-    activeTab: null, // 'cat' | 'channel' | 'toc' | 'read' | 'fav' | 'search' | null
+    activeTab: 'toc', // 'cat' | 'channel' | 'toc' | 'read' | 'fav' | 'search' | null
     singleMode: null // { date, videoId }
   };
 
