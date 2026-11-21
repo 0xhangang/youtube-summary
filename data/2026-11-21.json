@@ -1,8 +1,67 @@
 {
   "date": "2026-11-21",
   "label": "2026년 11월 21일 토요일",
-  "updatedAt": "2026-11-21T21:06:17+09:00",
+  "updatedAt": "2026-11-21T22:01:19+09:00",
   "summaries": [
+    {
+      "id": "WulkTh0pfiU",
+      "videoId": "WulkTh0pfiU",
+      "url": "https://www.youtube.com/watch?v=WulkTh0pfiU",
+      "channel": "장사건물주 강호동",
+      "category": "economy",
+      "categoryLabel": "경제·부동산",
+      "title": "3개월만에 경매로 1억 번 40대 주부",
+      "publishedAt": "2026-11-21T21:00:34+09:00",
+      "thumbnail": "https://i.ytimg.com/vi/WulkTh0pfiU/hqdefault.jpg",
+      "addedAt": "2026-11-21T22:02:00+09:00",
+      "blocks": [
+        {
+          "type": "h",
+          "text": "낙찰 5개월 만에 5억 3천만 원 매도 — 세후 1억 5천만 원 수익"
+        },
+        {
+          "type": "p",
+          "text": "낙찰받고 나서 얼마에 파셨나요? 4억? 5억? 6억? 아, 그쯤 되네요. **5억 3천만 원**에 파셨다고 합니다. 언제 파셨냐고 여쭤보니 **8월에 계약**을 하셨고, 잔금은 **이번 달에 다 받으셨다**고 해요."
+        },
+        {
+          "type": "ul",
+          "items": [
+            "**수익 정산**: 세금을 다 제하고도 **1억 6천~1억 7천만 원**, 대략 **1억 5천만 원 정도**가 남았다고 합니다. 단 5개월 만에 거둔 수익이에요.",
+            "**원금 보장 구조**: 게다가 원금까지 보장되는 구조였는데, 낙찰가 자체가 매도가에 그대로 반영된 데다 **플러스 알파(+α)가 2억 5천만 원**이나 붙었기 때문에 이미 원금은 안전하게 확보된 상태였습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Wp5_cjYdlbs",
+      "videoId": "Wp5_cjYdlbs",
+      "url": "https://www.youtube.com/watch?v=Wp5_cjYdlbs",
+      "channel": "장사건물주 강호동",
+      "category": "economy",
+      "categoryLabel": "경제·부동산",
+      "title": "정보는 넘쳐나는데, 왜 돈을 잃는 사람이 생길까?",
+      "publishedAt": "2026-11-21T20:15:15+09:00",
+      "thumbnail": "https://i.ytimg.com/vi/Wp5_cjYdlbs/hqdefault.jpg",
+      "addedAt": "2026-11-21T22:02:00+09:00",
+      "blocks": [
+        {
+          "type": "h",
+          "text": "지식과 정보의 부족이 아니라 결국 '인간의 욕심'이 문제"
+        },
+        {
+          "type": "p",
+          "text": "오늘은 **'탐욕(욕심)'**이라는 주제를 가지고 이야기해 보고 싶습니다. 예전에 제가 처음 주식 투자를 시작할 때만 해도 지식과 정보가 참 부족했는데, 지금은 정반대로 **정보가 넘쳐나는 시대**가 됐잖아요."
+        },
+        {
+          "type": "callout",
+          "text": "그런데도 여전히 모두가 돈을 버는 건 아니더라고요. 지식과 정보가 답이 아니라면 결국 문제는 인간의 심리, **결국 '욕심'** 때문이라고 생각합니다."
+        },
+        {
+          "type": "p",
+          "text": "제가 관련해서 재미있는 이야기를 하나 준비해 왔는데, 한번 들어보실래요?"
+        }
+      ]
+    },
     {
       "id": "tvIeJZrpwfE",
       "videoId": "tvIeJZrpwfE",
