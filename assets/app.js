@@ -220,7 +220,9 @@
     if (diffHr < 24) return diffHr + '시간 전';
     var diffDay = Math.floor(diffHr / 24);
     if (diffDay < 7) return diffDay + '일 전';
-    return '';
+    if (diffDay < 30) return Math.floor(diffDay / 7) + '주 전';
+    if (diffDay < 365) return Math.floor(diffDay / 30) + '개월 전';
+    return Math.floor(diffDay / 365) + '년 전';
   }
 
   function thumbChain(s, id) {
