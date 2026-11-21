@@ -22,6 +22,7 @@
     docs: Object.create(null),
     cat: 'all',
     channel: 'all',
+    channelScope: 'all', // 'all' | 'watched' | 'single'
     favOnly: false,
     readOnly: false,
     q: '',
@@ -489,10 +490,69 @@
     });
 
     // 채널 칩
+    var isWatched = function (name) {
+      return Boolean(name && state.avatars && state.avatars[name] && state.avatars[name].watched);
+    };
+    var watchedCatalog = Object.keys(state.avatars || {}).filter(function (k) {
+      return state.avatars[k] && state.avatars[k].watched;
+    });
+    var allChannelSet = Object.create(null);
+    Object.keys(chans).forEach(function (n) { allChannelSet[n] = true; });
+    watchedCatalog.forEach(function (n) {
+      if (chans[n] === undefined) chans[n] = 0;
+      allChannelSet[n] = true;
+    });
+
+    var allNames = Object.keys(allChannelSet);
+    var watchedCount = allNames.filter(isWatched).length;
+    var singleCount = allNames.filter(function (n) { return !isWatched(n) && (chans[n] || 0) > 0; }).length;
+
+    if (dom.channelScopeRow) {
+      dom.channelScopeRow.innerHTML = '';
+      [
+        { key: 'all', label: '전체', count: allNames.filter(function (n) { return (chans[n] || 0) > 0 || isWatched(n); }).length },
+        { key: 'watched', label: '감시 중', count: watchedCount, dot: true },
+        { key: 'single', label: '단발 요약', count: singleCount }
+      ].forEach(function (opt) {
+        var sb = document.createElement('button');
+        sb.type = 'button';
+        sb.className = 'ch-scope-btn' + (state.channelScope === opt.key ? ' active' : '');
+        if (opt.dot) {
+          var d = document.createElement('span');
+          d.className = 'watch-dot';
+          sb.appendChild(d);
+        }
+        var lt = document.createElement('span');
+        lt.textContent = opt.label + ' ' + opt.count;
+        sb.appendChild(lt);
+        sb.addEventListener('click', function () {
+          state.channelScope = opt.key;
+          if (state.channel !== 'all') {
+            if (opt.key === 'watched' && !isWatched(state.channel)) state.channel = 'all';
+            if (opt.key === 'single' && isWatched(state.channel)) state.channel = 'all';
+          }
+          apply();
+        });
+        dom.channelScopeRow.appendChild(sb);
+      });
+    }
+
     var chBox = dom.channelChips;
     chBox.innerHTML = '';
-    var names = Object.keys(chans).sort(function (a, b) { return chans[b] - chans[a]; });
-    if (dom.channelMeta) dom.channelMeta.textContent = names.length + '개 채널 · 영상 ' + all.length + '편';
+    var names = allNames.filter(function (n) {
+      if (state.channelScope === 'watched') return isWatched(n);
+      if (state.channelScope === 'single') return !isWatched(n) && (chans[n] || 0) > 0;
+      return (chans[n] || 0) > 0;
+    }).sort(function (a, b) {
+      if ((chans[b] || 0) !== (chans[a] || 0)) return (chans[b] || 0) - (chans[a] || 0);
+      return a.localeCompare(b, 'ko');
+    });
+    if (dom.channelMeta) {
+      var scopeLabel = state.channelScope === 'watched' ? '감시 중 ' + names.length + '개 채널'
+        : state.channelScope === 'single' ? '단발 요약 ' + names.length + '개 채널'
+        : names.length + '개 채널 · 영상 ' + all.length + '편';
+      dom.channelMeta.textContent = scopeLabel;
+    }
     var b0 = document.createElement('button');
     b0.type = 'button';
     b0.className = 'chip' + (state.channel === 'all' ? ' active' : '');
@@ -505,13 +565,19 @@
       b.type = 'button';
       b.className = 'chip channel' + (state.channel === n ? ' active' : '');
       b.appendChild(makeAvatarEl(n, true));
+      if (isWatched(n)) {
+        var wd = document.createElement('span');
+        wd.className = 'watch-dot';
+        wd.title = '자동 감시 중';
+        b.appendChild(wd);
+      }
       var txt = document.createElement('span');
       txt.className = 'chip-txt';
       txt.textContent = n;
       b.appendChild(txt);
       var cnt = document.createElement('span');
       cnt.className = 'n';
-      cnt.textContent = chans[n];
+      cnt.textContent = chans[n] || 0;
       b.appendChild(cnt);
       b.addEventListener('click', function () { state.channel = n; apply(); });
       chBox.appendChild(b);
@@ -1273,6 +1339,7 @@
     dom.dateChips = document.getElementById('dateChips');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
+    dom.channelScopeRow = document.getElementById('channelScopeRow');
     dom.catMeta = document.getElementById('catMeta');
     dom.channelMeta = document.getElementById('channelMeta');
     dom.feed = document.getElementById('feed');

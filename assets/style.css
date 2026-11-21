@@ -313,6 +313,63 @@ button.btn.is-on {
   color: #06140e;
 }
 .chip.channel { padding: 0 10px 0 6px; }
+.ch-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ch-head-row .pane-meta { margin-bottom: 0; }
+.ch-scope-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-2, rgba(0, 0, 0, 0.04));
+  padding: 3px;
+  border-radius: 999px;
+}
+[data-theme="dark"] .ch-scope-row {
+  background: rgba(255, 255, 255, 0.06);
+}
+.ch-scope-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ch-scope-btn:hover { color: var(--text); }
+.ch-scope-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.watch-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16);
+}
+.chip.active .watch-dot {
+  background: #ffffff;
+  box-shadow: none;
+}
+[data-theme="dark"] .chip.active .watch-dot {
+  background: #06140e;
+}
 
 .cat-dot {
   width: 7px;
