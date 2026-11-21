@@ -508,9 +508,10 @@
       if ((chans[b] || 0) !== (chans[a] || 0)) return (chans[b] || 0) - (chans[a] || 0);
       return a.localeCompare(b, 'ko');
     });
-    var watchedCount = names.filter(isWatched).length;
+    var watchedNames = names.filter(isWatched);
+    var singleNames = names.filter(function (n) { return !isWatched(n); });
     if (dom.channelMeta) {
-      dom.channelMeta.textContent = names.length + '개 채널 (감시 중 ' + watchedCount + ') · 영상 ' + all.length + '편';
+      dom.channelMeta.textContent = '감시 중 ' + watchedNames.length + '개 · 단발 ' + singleNames.length + '개 · 영상 ' + all.length + '편';
     }
     var b0 = document.createElement('button');
     b0.type = 'button';
@@ -519,12 +520,11 @@
     b0.addEventListener('click', function () { state.channel = 'all'; apply(); });
     chBox.appendChild(b0);
 
-    names.forEach(function (n) {
+    var appendChChip = function (n, single) {
       var b = document.createElement('button');
-      var singleCls = isWatched(n) ? '' : ' is-single';
       b.type = 'button';
-      b.className = 'chip channel' + singleCls + (state.channel === n ? ' active' : '');
-      b.title = isWatched(n) ? n + ' (감시 중)' : n + ' (단발 요약)';
+      b.className = 'chip channel' + (single ? ' is-single' : '') + (state.channel === n ? ' active' : '');
+      b.title = single ? n + ' (단발 요약)' : n + ' (감시 중)';
       b.appendChild(makeAvatarEl(n, true));
       var txt = document.createElement('span');
       txt.className = 'chip-txt';
@@ -536,7 +536,17 @@
       b.appendChild(cnt);
       b.addEventListener('click', function () { state.channel = n; apply(); });
       chBox.appendChild(b);
-    });
+    };
+
+    watchedNames.forEach(function (n) { appendChChip(n, false); });
+
+    if (singleNames.length) {
+      var div = document.createElement('div');
+      div.className = 'ch-divider';
+      div.innerHTML = '<span>단발 요약 · ' + singleNames.length + '</span>';
+      chBox.appendChild(div);
+      singleNames.forEach(function (n) { appendChChip(n, true); });
+    }
 
     // 탭 배지 업데이트 (5개 탭 모두 숫자로 통일)
     if (dom.tabBadgeCat) {
