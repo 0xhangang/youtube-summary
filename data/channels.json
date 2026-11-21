@@ -312,7 +312,9 @@
     "url": "https://www.youtube.com/channel/UCr6yFj3SEFo7MfElCIyfzbA"
   },
   "홍장원의 불앤베어 (매일경제 재생목록)": {
-    "watched": true
+    "watched": true,
+    "avatar": "https://yt3.googleusercontent.com/HFOQEowfItaT23hALvIRFyOYJq5YqKNm7OMWbn1SORsRHmrrY2LNmsMci08S3odK1_YK994w=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/channel/UCPTy0BNqiv-0SdAvFgrXvXg"
   },
   "싱글파이어": {
     "watched": true,
@@ -329,5 +331,10 @@
   "강은호": {
     "watched": true,
     "url": "https://www.youtube.com/channel/UC9pCNmC-Ovq2sRfHIwLDuIg"
+  },
+  "🌐홍장원의 불앤베어🌐 (재생목록)": {
+    "watched": true,
+    "avatar": "https://yt3.googleusercontent.com/HFOQEowfItaT23hALvIRFyOYJq5YqKNm7OMWbn1SORsRHmrrY2LNmsMci08S3odK1_YK994w=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/channel/UCPTy0BNqiv-0SdAvFgrXvXg"
   }
 }
