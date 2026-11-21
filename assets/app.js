@@ -896,7 +896,7 @@
       if (state.favOnly && !isLiked(id)) return false;
       if (state.readOnly) {
         if (!isRead(id)) return false;
-      } else if (!state.favOnly && !q) {
+      } else if (!state.favOnly && !q && state.cat === 'all' && state.channel === 'all') {
         if (isRead(id)) return false;
       }
       var lbl = (s.categoryLabel || s.category || '기타').trim();
@@ -916,7 +916,7 @@
       state.feedObserver.disconnect();
       state.feedObserver = null;
     }
-    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly);
+    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly || state.cat !== 'all' || state.channel !== 'all');
     feed.innerHTML = '';
     if (!sorted.length) {
       var none = document.createElement('div');
