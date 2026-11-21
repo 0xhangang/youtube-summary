@@ -425,7 +425,7 @@
     }
     if (dom.tabLabelDate) {
       dom.tabLabelDate.textContent = state.activeDate === 'all'
-        ? '전체'
+        ? '날짜'
         : fmtDateLabel(state.activeDate);
     }
     var all = document.createElement('button');
