@@ -22,7 +22,6 @@
     docs: Object.create(null),
     cat: 'all',
     channel: 'all',
-    channelScope: 'all', // 'all' | 'watched' | 'single'
     favOnly: false,
     readOnly: false,
     q: '',
@@ -503,55 +502,15 @@
       allChannelSet[n] = true;
     });
 
-    var allNames = Object.keys(allChannelSet);
-    var watchedCount = allNames.filter(isWatched).length;
-    var singleCount = allNames.filter(function (n) { return !isWatched(n) && (chans[n] || 0) > 0; }).length;
-
-    if (dom.channelScopeRow) {
-      dom.channelScopeRow.innerHTML = '';
-      [
-        { key: 'all', label: '전체', count: allNames.filter(function (n) { return (chans[n] || 0) > 0 || isWatched(n); }).length },
-        { key: 'watched', label: '감시 중', count: watchedCount, dot: true },
-        { key: 'single', label: '단발 요약', count: singleCount }
-      ].forEach(function (opt) {
-        var sb = document.createElement('button');
-        sb.type = 'button';
-        sb.className = 'ch-scope-btn' + (state.channelScope === opt.key ? ' active' : '');
-        if (opt.dot) {
-          var d = document.createElement('span');
-          d.className = 'watch-dot';
-          sb.appendChild(d);
-        }
-        var lt = document.createElement('span');
-        lt.textContent = opt.label + ' ' + opt.count;
-        sb.appendChild(lt);
-        sb.addEventListener('click', function () {
-          state.channelScope = opt.key;
-          if (state.channel !== 'all') {
-            if (opt.key === 'watched' && !isWatched(state.channel)) state.channel = 'all';
-            if (opt.key === 'single' && isWatched(state.channel)) state.channel = 'all';
-          }
-          apply();
-        });
-        dom.channelScopeRow.appendChild(sb);
-      });
-    }
-
     var chBox = dom.channelChips;
     chBox.innerHTML = '';
-    var names = allNames.filter(function (n) {
-      if (state.channelScope === 'watched') return isWatched(n);
-      if (state.channelScope === 'single') return !isWatched(n) && (chans[n] || 0) > 0;
-      return (chans[n] || 0) > 0;
-    }).sort(function (a, b) {
+    var names = Object.keys(allChannelSet).sort(function (a, b) {
       if ((chans[b] || 0) !== (chans[a] || 0)) return (chans[b] || 0) - (chans[a] || 0);
       return a.localeCompare(b, 'ko');
     });
+    var watchedCount = names.filter(isWatched).length;
     if (dom.channelMeta) {
-      var scopeLabel = state.channelScope === 'watched' ? '감시 중 ' + names.length + '개 채널'
-        : state.channelScope === 'single' ? '단발 요약 ' + names.length + '개 채널'
-        : names.length + '개 채널 · 영상 ' + all.length + '편';
-      dom.channelMeta.textContent = scopeLabel;
+      dom.channelMeta.textContent = names.length + '개 채널 (감시 중 ' + watchedCount + ') · 영상 ' + all.length + '편';
     }
     var b0 = document.createElement('button');
     b0.type = 'button';
@@ -562,15 +521,11 @@
 
     names.forEach(function (n) {
       var b = document.createElement('button');
+      var singleCls = isWatched(n) ? '' : ' is-single';
       b.type = 'button';
-      b.className = 'chip channel' + (state.channel === n ? ' active' : '');
+      b.className = 'chip channel' + singleCls + (state.channel === n ? ' active' : '');
+      b.title = isWatched(n) ? n + ' (감시 중)' : n + ' (단발 요약)';
       b.appendChild(makeAvatarEl(n, true));
-      if (isWatched(n)) {
-        var wd = document.createElement('span');
-        wd.className = 'watch-dot';
-        wd.title = '자동 감시 중';
-        b.appendChild(wd);
-      }
       var txt = document.createElement('span');
       txt.className = 'chip-txt';
       txt.textContent = n;
@@ -1339,7 +1294,6 @@
     dom.dateChips = document.getElementById('dateChips');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
-    dom.channelScopeRow = document.getElementById('channelScopeRow');
     dom.catMeta = document.getElementById('catMeta');
     dom.channelMeta = document.getElementById('channelMeta');
     dom.feed = document.getElementById('feed');
