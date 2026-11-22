@@ -373,17 +373,17 @@
   "기릿의 주식노트 Let's Get It": {
     "avatar": "https://yt3.googleusercontent.com/sLwHwq4RNWYb22aaXlJm4vGyGReqPxpKCrxTaQHwqen7lcMyJ8m47fvxzfV2_38Qila7-fuc=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UCw8pcmyPWGSik7bjJpeINlA",
-    "watched": false
+    "watched": true
   },
   "최승정": {
     "avatar": "https://yt3.googleusercontent.com/F3s7jUiNDJB49Dffwi2OOjeanTf3hNZ5qL2tQdvWxTTz3EGfCpD1Z99JHsz80FO1zLIzGN_Rlw=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UC2czDP_-ip4OQoNWr3QyDqw",
-    "watched": false
+    "watched": true
   },
   "박주혁": {
     "avatar": "https://yt3.googleusercontent.com/IKxuPXcWEEOcjLqOKxjmcp8GYuTMn54exnoZTcPnBb33Ydikrj7v1mR_m2p0zsIWpLXdYX3TwA=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UC8QXtlF8Wpzif0L-D47QuFg",
-    "watched": false
+    "watched": true
   },
   "테크베어Tech Bear": {
     "avatar": "https://yt3.googleusercontent.com/ytc/AIdro_lxMXh3j1uPCrR7PPGxybxHjUULTDz3ZH70ZFf3NVFSYr0=s900-c-k-c0x00ffffff-no-rj",
@@ -393,6 +393,6 @@
   "쭈압": {
     "avatar": "https://yt3.googleusercontent.com/xR--Ccp6xQdmBNxp2vHSoKzpxvR0mWfhQJ6JRqUBRGVAEkF__LvoFMycgUjia2lumO13OHCJZw=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UCDr5kUsNNcPUMaDCwHE4ntw",
-    "watched": false
+    "watched": true
   }
 }
