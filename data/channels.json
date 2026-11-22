@@ -359,7 +359,8 @@
   },
   "파돌부부(파돌댁)": {
     "avatar": "https://yt3.googleusercontent.com/uLFsMXLc3DJjX8D1-CDTMWdPFaM3unbf2ogTBPT3fsqKH8Eg37QwofZs7BStq-OwnjwTdWa3SA=s900-c-k-c0x00ffffff-no-rj",
-    "watched": false
+    "watched": true,
+    "url": "https://www.youtube.com/channel/UCWOafHzobgwdfTzegZK9ijQ"
   },
   "이힛차트": {
     "watched": true,
@@ -393,6 +394,11 @@
   "쭈압": {
     "avatar": "https://yt3.googleusercontent.com/xR--Ccp6xQdmBNxp2vHSoKzpxvR0mWfhQJ6JRqUBRGVAEkF__LvoFMycgUjia2lumO13OHCJZw=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UCDr5kUsNNcPUMaDCwHE4ntw",
+    "watched": true
+  },
+  "아이렌맨 : IREN을 사랑하는 남자": {
+    "avatar": "https://yt3.googleusercontent.com/hWvkF6Q3BX4tTxXGaso9OMcuemA2hzFaLoE2VNXkpa3c1J-Z0TMDpbpoezobBPlPkEW0DwOV1g=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/channel/UCU824BZrR5TNedpoAC4sygw",
     "watched": true
   }
 }
