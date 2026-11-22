@@ -411,5 +411,10 @@
     "avatar": "https://yt3.googleusercontent.com/zMcoZBSYzlm2Koe2JAMRV5zCb8JXfZSnCdip-ECk6zL-RTzrCXvfSu-DY4vsCyC-kb0t1tZL=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/channel/UCXST0Hq6CAmG0dmo3jgrlEw",
     "watched": true
+  },
+  "이효석아카데미": {
+    "avatar": "https://yt3.googleusercontent.com/ECQ1tuiAhrztlCHQYVPoYvJfn0Gb8pSMyke3mWk2ScIKsMrcy46OvUYyoh5Wf_-td0rCwCi9Lg=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/channel/UCxvdCnvGODDyuvnELnLkQWw",
+    "watched": false
   }
 }
