@@ -1,8 +1,67 @@
 {
   "date": "2026-11-23",
   "label": "2026년 11월 23일 월요일",
-  "updatedAt": "2026-11-23T22:01:13+09:00",
+  "updatedAt": "2026-11-23T23:01:23+09:00",
   "summaries": [
+    {
+      "id": "fCeqOdDHupQ",
+      "videoId": "fCeqOdDHupQ",
+      "url": "https://www.youtube.com/watch?v=fCeqOdDHupQ",
+      "channel": "이효석아카데미",
+      "category": "economy",
+      "categoryLabel": "경제·부동산",
+      "title": "ISA에 뭘 담아야 할까? 스테이크 할인 쿠폰으로 풀어봤습니다",
+      "publishedAt": "2026-11-23T21:30:29+09:00",
+      "thumbnail": "https://i.ytimg.com/vi/fCeqOdDHupQ/hqdefault.jpg",
+      "addedAt": "2026-11-23T23:02:00+09:00",
+      "blocks": [
+        {
+          "type": "h",
+          "text": "ISA에 뭘 담아야 할까? — '스테이크 할인 쿠폰' 비유"
+        },
+        {
+          "type": "p",
+          "text": "ISA 계좌에 도대체 뭘 담아야 할까요? 예를 들어 레스토랑에 갔는데, 거기서 **스테이크를 시키면 할인 쿠폰을 준다**고 해봅시다. 다른 메뉴에는 할인이 전혀 없어요. 그럼 우리는 뭘 먹어야 할까요? 정답은 **'내가 먹고 싶은 거'**입니다."
+        },
+        {
+          "type": "ul",
+          "items": [
+            "**쿠폰을 쓰고 싶다면**: 당연히 할인 대상인 **스테이크**를 주문해야죠.",
+            "**할인 없는 메뉴를 먹어도 될까?**: 물론입니다. 우리가 레스토랑에 간 건 **밥을 먹으러 간 거지, 할인받으러 간 게 아니니까요.**"
+          ]
+        },
+        {
+          "type": "p",
+          "text": "ISA든 어떤 계좌든 투자의 최종 목적은 **'투자해서 돈을 버는 것'**이지, **세금을 아끼는 것 자체가 목적이 아닙니다.**"
+        }
+      ]
+    },
+    {
+      "id": "YnRaiQCiKKQ",
+      "videoId": "YnRaiQCiKKQ",
+      "url": "https://www.youtube.com/watch?v=YnRaiQCiKKQ",
+      "channel": "face(east)",
+      "category": "trend",
+      "categoryLabel": "트렌드·인사이트",
+      "title": "앤트로픽 직원 5300명이 가진 돈이 이 정도라고?",
+      "publishedAt": "2026-11-23T21:00:25+09:00",
+      "thumbnail": "https://i.ytimg.com/vi/YnRaiQCiKKQ/hqdefault.jpg",
+      "addedAt": "2026-11-23T23:02:00+09:00",
+      "blocks": [
+        {
+          "type": "h",
+          "text": "앤트로픽 직원 5,300명 지분 가치 > 미국 하위 1/3 가구 자산 총합"
+        },
+        {
+          "type": "p",
+          "text": "이 트윗이 뭔지 보실래요? 앤트로픽(Anthropic) 창립자들을 포함해 **직원 5,300명이 보유한 IPO 이후 지분 가치**가 **미국 가구 자산 하위 3분의 1 전체보다 더 크다**는 겁니다. 그러니까 이 **5,300명이 미국인 1억 1,500만 명을 합친 것보다 더 많은 돈**을 쥐고 있다는 거죠."
+        },
+        {
+          "type": "p",
+          "text": "와, 이 차트가 모든 걸 다 말해주네요. 늘 그렇지만 숫자만 볼 때는 체감이 안 되다가 이렇게 비교 대상을 가져다 대면 확 와닿잖아요. 저도 이거 보고 '우와' 소리가 나왔습니다. 근데 더 웃긴 건 앤트로픽 내부에서도 **직원 5,300명과 공동창업자 7명의 지분이 또 갈린다**는 거예요. 진짜 미쳤네요."
+        }
+      ]
+    },
     {
       "id": "vMDUMpd0byw",
       "videoId": "vMDUMpd0byw",
