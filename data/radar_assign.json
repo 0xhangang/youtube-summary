@@ -1,0 +1,300 @@
+{
+  "updatedAt": "2026-11-26T23:55:00+09:00",
+  "schedule": {
+    "satoshi": ":00",
+    "vitalik": ":05"
+  },
+  "note": "자동 요약 레이더 채널 배정표. 정본 채널 메타는 data/channels.json. 규칙은 RULES.md. 새 채널은 채널 수가 적은 쪽에 5:5로 배정하며(현재 36/36이라 신규는 vitalik 우선), 단발 링크 요약·소규모 신규 채널도 vitalik 우선. 양쪽 모두 푸시 직전 git pull --rebase. 실행 시각을 00분/05분으로 엇갈려 동시 푸시 충돌·Pages 빌드 취소를 막는다. @satoshi는 담당 36개에 더해 내 재생목록 'AI 요약'(PLTWv3pgJUx9o) 감시를 함께 맡는다.",
+  "vitalik": [
+    {
+      "name": "미국 주식 채널 - 에디 Eddie",
+      "channelId": "UCMupe3fvv1-Hi3SRxZzSsTw"
+    },
+    {
+      "name": "내일은 투자왕 - 김단테",
+      "channelId": "UCKTMvIu9a4VGSrpWy-8bUrQ"
+    },
+    {
+      "name": "코인덕 차트아지",
+      "channelId": "UCydQdEuqyEl1zZb3bL-GI_w"
+    },
+    {
+      "name": "3년후 연구소",
+      "channelId": "UCytoDtGoxhSBDBs78yO0bkQ"
+    },
+    {
+      "name": "face(east)",
+      "channelId": "UCw_PVQSovgBT3G85eNzECmw"
+    },
+    {
+      "name": "대왕개미 홍인기",
+      "channelId": "UCHKRLOqgrKhIgoCKJ3UkNhg"
+    },
+    {
+      "name": "세상학개론",
+      "channelId": "UCPQsfyVJ0T7-qJcGcaue5Ng"
+    },
+    {
+      "name": "차트 진",
+      "channelId": "UCozTX927BP3r4gOO5Lo2bxA"
+    },
+    {
+      "name": "돌팬티",
+      "channelId": "UCDZHh_Kpqu0ZtJE33dSBAzg"
+    },
+    {
+      "name": "뉴욕주민",
+      "channelId": "UC3dYEYtdihZpsexdC9-qKDA"
+    },
+    {
+      "name": "불장단타왕",
+      "channelId": "UChg--BAfHDoNYjg98Z5QY0A"
+    },
+    {
+      "name": "algoran알고란",
+      "channelId": "UC7uFGmwzzXok18RdOh9FDfQ"
+    },
+    {
+      "name": "트레이더 천영우",
+      "channelId": "UC3GwahOt8H2XF6waa6gPGVg"
+    },
+    {
+      "name": "불장TV, 퍼즈 (ppause)",
+      "channelId": "UC2iTeBq1P151zPPuENMBq-g"
+    },
+    {
+      "name": "토미의 트레이딩TV",
+      "channelId": "UC6nkHbnWIrpaDBHXQ_1aiIA"
+    },
+    {
+      "name": "Turbo832 TV",
+      "channelId": "UCKR3cXHN4kCRbD9Eaa-ROpQ"
+    },
+    {
+      "name": "대구코인 - 전업트레이더",
+      "channelId": "UCUDPavG833-NtaCp65uyjOQ"
+    },
+    {
+      "name": "김준송TV",
+      "channelId": "UC18feVzOBjtLU9trm8A788g"
+    },
+    {
+      "name": "우리 주식은 안 물어요",
+      "channelId": "UC5kL3Ee6yY2bOtL2FRtdyuA"
+    },
+    {
+      "name": "완브로 - 삼수돌 창시자",
+      "channelId": "UCQlIPwduvaV6Tjt24IyDJbQ"
+    },
+    {
+      "name": "머니하이",
+      "channelId": "UC6mp159KMtzjhP65DmldR0A"
+    },
+    {
+      "name": "코인 니엘",
+      "channelId": "UCu7TdPmDF93U5CqfzxyRPCw"
+    },
+    {
+      "name": "김봉찬의 비트코인 트레이딩룸",
+      "channelId": "UCr6yFj3SEFo7MfElCIyfzbA"
+    },
+    {
+      "name": "30대 우영이의 일기",
+      "channelId": "UCJ_YHwzq8dJ-qxl2fDfRtBQ"
+    },
+    {
+      "name": "코하남",
+      "channelId": "UCnAOeLV5vF4Ep1Jo0sVtvJw"
+    },
+    {
+      "name": "박종훈의 지식한방",
+      "channelId": "UCOB62fKRT7b73X7tRxMuN2g"
+    },
+    {
+      "name": "PLUS TV (플러스 TV)",
+      "channelId": "UCuHUaZo43N9PgOCjs3Hg2Uw"
+    },
+    {
+      "name": "버거형 TV [앞서가는 차트분석]",
+      "channelId": "UC-s-nHpmwdybhYdKpH_ZPwA"
+    },
+    {
+      "name": "크립토 청년메신저",
+      "channelId": "UCNOfObVwhc2hXSf98cQ_sBg"
+    },
+    {
+      "name": "와조스키",
+      "channelId": "UC5Mjj4LKlMtP_PXlIVYGxIQ"
+    },
+    {
+      "name": "쭈압",
+      "channelId": "UCDr5kUsNNcPUMaDCwHE4ntw"
+    },
+    {
+      "name": "기릿의 주식노트 Let's Get It",
+      "channelId": "UCw8pcmyPWGSik7bjJpeINlA"
+    },
+    {
+      "name": "파돌부부(파돌댁)",
+      "channelId": "UCWOafHzobgwdfTzegZK9ijQ"
+    },
+    {
+      "name": "싱글파이어",
+      "channelId": "UC5CyCSvCdoEP-VgQmFq3iww"
+    },
+    {
+      "name": "독거투자일지TV",
+      "channelId": "UCAT4OjhTXaTJsfrE2uwzOig"
+    },
+    {
+      "name": "차트119 - 차닥터",
+      "channelId": "UC0wMFXHxN6Mxh0HQ79sbIhw"
+    }
+  ],
+  "satoshi": [
+    {
+      "name": "KB여의도5번출구",
+      "channelId": "UCBWHo1UKcRRf2X075Hg-zSQ"
+    },
+    {
+      "name": "RocketMen 로켓맨",
+      "channelId": "UC2ex3YhcKmnfvFsaWrj5nmg"
+    },
+    {
+      "name": "T3chfeed - 테크피드 미국 주식 인사이트",
+      "channelId": "UCH2sxkxg_vdJSK4KYRXNE0Q"
+    },
+    {
+      "name": "강은호",
+      "channelId": "UC9pCNmC-Ovq2sRfHIwLDuIg"
+    },
+    {
+      "name": "공모주투자의법칙(공주)",
+      "channelId": "UCstq1xNCuEIR43dM3CMop3g"
+    },
+    {
+      "name": "너굴경제",
+      "channelId": "UCXD1p0ghcxXj8u4s5jYbGkw"
+    },
+    {
+      "name": "노강팔",
+      "channelId": "UCnPhcVu77PMvRUZT5QSWc9Q"
+    },
+    {
+      "name": "더리브스",
+      "channelId": "UCAHAS16V4ZlISjky24rbHGg"
+    },
+    {
+      "name": "디파이 농부 조선생 | Professor Jo",
+      "channelId": "UC7H3LGAlRWd3_fm5yOS_piw"
+    },
+    {
+      "name": "만쥬",
+      "channelId": "UCWiMB4iRTqDGu5BmtT3Ytcg"
+    },
+    {
+      "name": "머니코믹스 Money Comics",
+      "channelId": "UCJo6G1u0e_-wS-JQn3T-zEw"
+    },
+    {
+      "name": "박주혁",
+      "channelId": "UC8QXtlF8Wpzif0L-D47QuFg"
+    },
+    {
+      "name": "백원좌의 100원으로 100억 벌기",
+      "channelId": "UC6Tpm7h7xIfV8avjVWdGT9w"
+    },
+    {
+      "name": "비트슈아",
+      "channelId": "UCf64J3dPdVRT6OJf57m-uyw"
+    },
+    {
+      "name": "설명왕_테이버",
+      "channelId": "UCOio3vyYLWiKlHSYRKW-9UA"
+    },
+    {
+      "name": "소수몽키",
+      "channelId": "UCC3yfxS5qC6PCwDzetUuEWg"
+    },
+    {
+      "name": "스트릿TV",
+      "channelId": "UCBztIYIgMyDd0wBTP0meL5Q"
+    },
+    {
+      "name": "아이렌맨 : IREN을 사랑하는 남자",
+      "channelId": "UCU824BZrR5TNedpoAC4sygw"
+    },
+    {
+      "name": "알상무",
+      "channelId": "UCiDmfbYvuMEVbRxPmFP4sng"
+    },
+    {
+      "name": "월가아재의 과학적 투자",
+      "channelId": "UCpqD9_OJNtF6suPpi6mOQCQ"
+    },
+    {
+      "name": "웨돔의 비트코인",
+      "channelId": "UC9stxmmO1eaSTh9F9WETURg"
+    },
+    {
+      "name": "윙스 Wings",
+      "channelId": "UC1vFbnLDK6ntmh9ac8LQ3kQ"
+    },
+    {
+      "name": "윤석종",
+      "channelId": "UCs1tghMpOg4ENKk26eteXLQ"
+    },
+    {
+      "name": "이슬 투자 인사이트",
+      "channelId": "UC-Z5QK_pXYliMHSrdBi50yQ"
+    },
+    {
+      "name": "이힛차트",
+      "channelId": "UC-unM7touB_ltVj3Vo-8p9A"
+    },
+    {
+      "name": "잼투리",
+      "channelId": "UCz0vfs-XRMrpG78WtMVE1mg"
+    },
+    {
+      "name": "전황의 주식홈트",
+      "channelId": "UCVk5CuxZm1Ohlw6JP5ySxhg"
+    },
+    {
+      "name": "존버전략실",
+      "channelId": "UCS5oGNuk_EsAYYOh4h-89Gw"
+    },
+    {
+      "name": "주독 - 주식독설가",
+      "channelId": "UC-8ZMX23sWwZ61HeIYU-tqQ"
+    },
+    {
+      "name": "주식명사수 주명",
+      "channelId": "UCAcesv8qLL5-4BLI6bhHKxg"
+    },
+    {
+      "name": "주식에 미친 사람들",
+      "channelId": "UCHEWCYP9MbA9RSUiMPvqK9A"
+    },
+    {
+      "name": "창원개미TV",
+      "channelId": "UCqsuesS39x5nUWcBH-1Q6YA"
+    },
+    {
+      "name": "최승정",
+      "channelId": "UC2czDP_-ip4OQoNWr3QyDqw"
+    },
+    {
+      "name": "크립토 토마토CRYPTO tomato",
+      "channelId": "UCX2HXx2zvM5nOHzjB0wMDpw"
+    },
+    {
+      "name": "투자자 김혜산",
+      "channelId": "UC5vbtx5ZZf9fcNkC0TuLA6w"
+    },
+    {
+      "name": "홍장원의 불앤베어",
+      "channelId": "UCPTy0BNqiv-0SdAvFgrXvXg"
+    }
+  ]
+}

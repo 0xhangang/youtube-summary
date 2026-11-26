@@ -5,6 +5,7 @@
 
 - 사이트: https://0xhangang.github.io/youtube-summary/
 - 빌드 과정 없음. `index.html` + `assets/` + `data/*.json` 만으로 동작합니다 (.nojekyll).
+- **운영 규칙 원장: [`RULES.md`](RULES.md)** · 담당 채널 배정표: [`data/radar_assign.json`](data/radar_assign.json) (검증: `python3 scripts/check_assign.py`)
 
 ## 화면 기능
 
