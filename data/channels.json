@@ -434,5 +434,11 @@
     "avatar": "https://yt3.googleusercontent.com/ytc/AIdro_nwJ1atCtmd4bkIhKvnjnY0cVqehB44xMmyVJmSFqXiJ8c=s900-c-k-c0x00ffffff-no-rj",
     "url": "https://www.youtube.com/@codingapple",
     "watched": false
+  },
+  "윙스 Wings": {
+    "channelId": "UC1vFbnLDK6ntmh9ac8LQ3kQ",
+    "url": "https://www.youtube.com/channel/UC1vFbnLDK6ntmh9ac8LQ3kQ",
+    "avatar": "https://yt3.googleusercontent.com/BKVKJOQ88ogkuhYH0h1Lp26j4AvtueTGl1ZF8EdjoEsnOWFCEE0eFLWiYQ6r0LkFPPmf6Y_P=s900-c-k-c0x00ffffff-no-rj",
+    "watched": true
   }
 }
