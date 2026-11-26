@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T23:55:00+09:00",
+  "updatedAt": "2026-11-27T00:18:00+09:00",
   "schedule": {
     "satoshi": ":00",
     "vitalik": ":05"
@@ -85,10 +85,6 @@
     {
       "name": "완브로 - 삼수돌 창시자",
       "channelId": "UCQlIPwduvaV6Tjt24IyDJbQ"
-    },
-    {
-      "name": "머니하이",
-      "channelId": "UC6mp159KMtzjhP65DmldR0A"
     },
     {
       "name": "코인 니엘",
