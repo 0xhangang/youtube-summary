@@ -453,5 +453,10 @@
     "url": "https://www.youtube.com/channel/UC1vFbnLDK6ntmh9ac8LQ3kQ",
     "avatar": "https://yt3.googleusercontent.com/BKVKJOQ88ogkuhYH0h1Lp26j4AvtueTGl1ZF8EdjoEsnOWFCEE0eFLWiYQ6r0LkFPPmf6Y_P=s900-c-k-c0x00ffffff-no-rj",
     "watched": true
+  },
+  "스카이": {
+    "avatar": "https://yt3.googleusercontent.com/uhEPVOgEb3RAxgV0nkcUJgsaLzgJrNFiecKOeNZT0ItGhwtL4maLhjqOtEqpYH7_35dhTkiVtfc=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/@cogaisky",
+    "watched": false
   }
 }
