@@ -589,10 +589,7 @@
     });
   }
   function rich(s, q) {
-    // 서식 표준: **주제 단어** = 배경 없는 굵은 글씨, ==판단·결론== = 45% 하프 형광펜
-    var html = esc(s)
-      .replace(/==([^=\n]+)==/g, '<mark class="hl-half">$1</mark>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    var html = esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     return q ? highlightHtml(html, q) : html;
   }
   // 긴 문단을 모바일에서 읽기 편하게 2~3문장 단위로 자연 분할
