@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Pickle Agents — 집사·사토시·비탈릭 3계정의 유튜브 요약 협업 현황과 소통 기록" />
+<meta name="og:title" content="Pickle Agents · 소통 &amp; 협업 대시보드" />
+<meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0b0f17" media="(prefers-color-scheme: dark)" />
+<title>Pickle Agents · 소통 &amp; 협업 대시보드</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="agents.css?v=20261127a" />
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hdr">
+    <div class="hdr-top">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <defs>
+              <linearGradient id="agBg" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0ea5a4"/>
+                <stop offset="55%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#0f766e"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="36" height="36" rx="11" fill="url(#agBg)"/>
+            <rect x="2.5" y="2.5" width="35" height="35" rx="10.5" stroke="#ffffff" stroke-opacity="0.22"/>
+            <path d="M13 15.5h14M13 20h14M13 24.5h9" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round"/>
+            <circle cx="27.5" cy="24.5" r="2.4" fill="#a7f3d0"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Pickle Agents <span class="sep">·</span> <span class="h1-sub">소통 &amp; 협업 대시보드</span></h1>
+          <div class="hdr-meta" id="hdrMeta">불러오는 중…</div>
+        </div>
+      </div>
+      <div class="tools">
+        <span class="live" id="liveBadge" data-mode="loading" title="원장 라이브 상태">
+          <i class="live-dot" aria-hidden="true"></i><span id="liveText">확인 중</span>
+        </span>
+        <button class="btn btn-icon" id="refreshBtn" type="button" aria-label="새로고침" title="새로고침">
+          <svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.2 10a6.2 6.2 0 1 1-2-4.6M16.2 3.6v4.1h-4.1"/></svg>
+        </button>
+      </div>
+    </div>
+    <a class="jump" href="../">유튜브 요약 보기 <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="topoTitle">
+      <div class="card-head">
+        <h2 id="topoTitle">3계정 관계도</h2>
+        <span class="hint" id="topoHint">실시간</span>
+      </div>
+
+      <div class="topo-panel">
+        <span class="topo-tag">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.4a6.6 6.6 0 0 0-2.1 12.9c-.02-.5-.03-1.2 0-1.7.05-.5.3-2 .3-2s-.1-.2-.1-.6c0-.5.3-.9.7-.9.3 0 .5.2.5.5 0 .3-.2.8-.3 1.2-.1.4.2.7.6.7.7 0 1.2-.9 1.2-2 0-.8-.6-1.4-1.5-1.4-1 0-1.6.8-1.6 1.6 0 .3.1.6.3.8.02.03.03.06.02.1l-.1.4c0 .05-.04.07-.09.05-.6-.3-1-1.1-1-1.8 0-1.5 1.1-2.9 3.1-2.9 1.6 0 2.9 1.2 2.9 2.8 0 1.6-.9 2.9-2.2 2.9-.4 0-.8-.2-1-.5l-.3 1.1c-.1.4-.3.8-.5 1.1A6.6 6.6 0 1 0 8 1.4Z"/></svg>
+          <span>GitHub 단일 원장 · 0xhangang/youtube-summary</span>
+        </span>
+
+        <div class="node node-main" id="nodeMain" style="--nc:#22c55e">
+          <div class="node-top">
+            <span class="node-dot" aria-hidden="true"></span>
+            <span class="node-name">집사</span>
+            <span class="node-role">MAIN</span>
+          </div>
+          <div class="node-sub">총괄 · 조율</div>
+          <div class="node-foot">
+            <span class="chip-sm">단일 창구</span>
+            <span class="chip-sm">요청 시 단발</span>
+          </div>
+        </div>
+
+        <div class="link link-branch" aria-hidden="true">
+          <svg viewBox="0 0 100 44" preserveAspectRatio="none"><path class="ln" d="M50 0V16M24 16H76M24 16V44M76 16V44"/></svg>
+          <span class="link-label">1:1 클론 소통</span>
+        </div>
+
+        <div class="workers">
+          <div class="node" id="nodeSatoshi" style="--nc:#f7931a">
+            <div class="node-top">
+              <span class="node-dot" aria-hidden="true"></span>
+              <span class="node-name">사토시</span>
+              <span class="node-role">@satoshi</span>
+            </div>
+            <div class="node-sub">매시 :00</div>
+            <div class="node-num"><b id="numSatoshi">–</b>채널 <span class="ratio" id="ratioSatoshi"></span></div>
+            <div class="bar"><i id="barSatoshi" style="width:0%"></i></div>
+            <div class="node-state" id="stateSatoshi"><span class="pill-state" data-s="unknown">확인 중</span></div>
+          </div>
+          <div class="node" id="nodeVitalik" style="--nc:#627eea">
+            <div class="node-top">
+              <span class="node-dot" aria-hidden="true"></span>
+              <span class="node-name">비탈릭</span>
+              <span class="node-role">@vitalik</span>
+            </div>
+            <div class="node-sub">매시 :05</div>
+            <div class="node-num"><b id="numVitalik">–</b>채널 <span class="ratio" id="ratioVitalik"></span></div>
+            <div class="bar"><i id="barVitalik" style="width:0%"></i></div>
+            <div class="node-state" id="stateVitalik"><span class="pill-state" data-s="unknown">확인 중</span></div>
+          </div>
+        </div>
+
+        <div class="link link-fail" aria-hidden="true">
+          <svg viewBox="0 0 100 26" preserveAspectRatio="none"><path class="ln ln-dash" d="M24 0V10H76V0"/></svg>
+          <span class="link-label">⇄ Failover 백업</span>
+        </div>
+
+        <p class="topo-note" id="topoNote">평상시에는 각자 담당만 실행합니다.</p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="liveTitle">
+      <div class="card-head">
+        <h2 id="liveTitle">라이브 원장</h2>
+        <span class="hint" id="liveHint">–</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-k">감시 채널</span>
+          <span class="stat-v" id="statChannels">–</span>
+          <span class="stat-sub" id="statChannelsSub">watched</span>
+        </div>
+        <div class="stat">
+          <span class="stat-k" id="statTodayKey">오늘 요약</span>
+          <span class="stat-v" id="statToday">–</span>
+          <span class="stat-sub" id="statTodaySub">–</span>
+        </div>
+        <div class="stat">
+          <span class="stat-k">레이더</span>
+          <span class="stat-v stat-v-sm" id="statSchedule">–</span>
+          <span class="stat-sub" id="statScheduleSub">사토시 · 비탈릭</span>
+        </div>
+      </div>
+
+      <div class="sub-head">
+        <h3>최근 커밋</h3>
+        <a class="mini-link" href="https://github.com/0xhangang/youtube-summary/commits/main" target="_blank" rel="noopener">전체 보기</a>
+      </div>
+      <div class="tl" id="commitList">
+        <div class="tl-state">불러오는 중…</div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="commsTitle">
+      <div class="card-head">
+        <h2 id="commsTitle">에이전트 소통</h2>
+        <span class="hint" id="commsHint">–</span>
+      </div>
+
+      <div class="tabs" id="filterTabs" role="tablist" aria-label="소통 기록 필터">
+        <button class="tab is-on" type="button" role="tab" aria-selected="true" data-filter="all">전체</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-filter="satoshi">집사 ↔ 사토시</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-filter="vitalik">집사 ↔ 비탈릭</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-filter="system">규칙·시스템</button>
+      </div>
+
+      <div class="feed" id="commList" aria-live="polite">
+        <div class="tl-state">불러오는 중…</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div id="footerMeta"></div>
+    <div class="footer-note">
+      <a href="https://github.com/0xhangang/youtube-summary" target="_blank" rel="noopener">github.com/0xhangang/youtube-summary</a>
+      <span class="dotsep">·</span>
+      <a href="../">유튜브 요약</a>
+    </div>
+  </footer>
+</div>
+
+<script src="agents.js?v=20261127a"></script>
+</body>
+</html>
