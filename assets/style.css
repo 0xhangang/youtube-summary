@@ -1495,7 +1495,7 @@ ol.bullets li::marker {
   font-weight: 800;
   white-space: nowrap;
   color: var(--text);
-  background: var(--surface);
+  background: transparent;
 }
 .tbl tbody td { color: var(--text-body); }
 .tbl tbody tr:nth-child(even) th,
