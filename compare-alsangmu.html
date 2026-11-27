@@ -22,7 +22,7 @@
 </script>
 <style>
   /* 비교 페이지 전용 크롬 — 카드 본문은 사이트 style.css 그대로 */
-  .cg-wrap { max-width: 820px; margin: 0 auto; padding: 10px 10px 72px; }
+  .cg-wrap { max-width: 820px; margin: 0 auto; padding: 6px 8px 72px; }
 
   .cg-head {
     display: flex; align-items: center; gap: 12px;
@@ -60,7 +60,7 @@
   .cg-tabs {
     position: sticky; top: 0; z-index: 40;
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px;
-    margin: 0 -2px 8px; padding: 8px 2px;
+    margin: 0 0 8px; padding: 8px 0;
     background: color-mix(in srgb, var(--bg) 90%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(1.15);
     backdrop-filter: blur(14px) saturate(1.15);
@@ -99,7 +99,7 @@
 
   .cg-note {
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
-    margin: 0 2px 12px; font-size: 12px; line-height: 1.55;
+    margin: 0 0 12px; font-size: 12px; line-height: 1.55;
     color: var(--text-sub); word-break: keep-all;
   }
   .cg-note-k {
