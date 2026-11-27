@@ -469,5 +469,10 @@
     "url": "https://www.youtube.com/channel/UC1JSQe6GWGZbD7i3wucxQ_A",
     "avatar": "https://yt3.googleusercontent.com/Tb4JJofUWO-rQf5d9jmzUs8ysNl3FH2kmWlDcmX3cf6yzfyPt1iuew0-b0r-o2PruMDz9t1BpA=s900-c-k-c0x00ffffff-no-rj",
     "watched": true
+  },
+  "김단군": {
+    "avatar": "https://yt3.googleusercontent.com/oECxTD4XvXx98e8dUAuL-QPIZ13GcG1ycCoZV1j7DAB1i524NVdc3mEggITvmw8RGlCbbNUsYg=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/@1983dk",
+    "watched": false
   }
 }
