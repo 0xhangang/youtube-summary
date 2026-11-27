@@ -366,7 +366,7 @@
       apply();
       return;
     }
-    var hideRead = !state.favOnly && !state.q && state.cat === 'all' && state.channel === 'all';
+    var hideRead = !state.favOnly && !state.q && state.cat === 'all' && state.channel === 'all' && state.activeDate === 'all';
     var cards = dom.feed.querySelectorAll('.card[data-vid]');
     for (var i = 0; i < cards.length; i++) {
       var card = cards[i];
@@ -1560,7 +1560,7 @@
       if (state.favOnly && !isLiked(id)) return false;
       if (state.readOnly) {
         if (!isRead(id)) return false;
-      } else if (!state.favOnly && !q && state.cat === 'all' && state.channel === 'all') {
+      } else if (!state.favOnly && !q && state.cat === 'all' && state.channel === 'all' && state.activeDate === 'all') {
         if (isRead(id)) return false;
       }
       var lbl = (s.categoryLabel || s.category || '기타').trim();
@@ -1580,7 +1580,7 @@
       state.feedObserver.disconnect();
       state.feedObserver = null;
     }
-    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly || state.cat !== 'all' || state.channel !== 'all');
+    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly || state.cat !== 'all' || state.channel !== 'all' || state.activeDate !== 'all');
     feed.innerHTML = '';
     scheduleReadingBar();
     if (!sorted.length) {

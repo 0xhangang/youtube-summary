@@ -1404,16 +1404,16 @@ mark.hl {
 }
 .rb-av[hidden] { display: none; }
 
-/* 채널명 — 굵게 */
+/* 채널명 — 목차·읽음 목록과 같은 초록 + 굵게 */
 .rb-channel {
   flex: 0 1 auto;
   max-width: 42%;
   min-width: 0;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 18px;
   letter-spacing: -0.012em;
-  color: var(--text);
+  color: var(--accent-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1425,6 +1425,7 @@ mark.hl {
   line-height: 18px;
   color: var(--text-faint);
 }
+[data-theme="dark"] .reading-bar .rb-channel { color: var(--accent); }
 .rb-dot[hidden] { display: none; }
 
 /* 영상 제목 — 한 줄 말줄임 */
@@ -1435,7 +1436,7 @@ mark.hl {
   font-weight: 500;
   line-height: 18px;
   letter-spacing: -0.012em;
-  color: var(--text-sub);
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
