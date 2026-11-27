@@ -470,11 +470,12 @@ button.btn.is-on {
   gap: 4px;
 }
 .cal-cell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   height: 38px;
   padding: 0;
   border: 1px solid transparent;
@@ -485,18 +486,23 @@ button.btn.is-on {
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
+/* 날짜(위) — 굵고 진하게 */
 .cal-d {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.cal-n {
-  font-size: 9.5px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  opacity: 0.85;
+}
+/* 영상 편수(아래) — 작고 연하게, `68편`처럼 단위까지 */
+.cal-n {
+  font-size: 9.5px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.72;
 }
 .cal-cell.is-blank { visibility: hidden; pointer-events: none; }
 .cal-cell.is-off {
@@ -506,6 +512,10 @@ button.btn.is-on {
 }
 .cal-cell.is-live { color: var(--accent-strong); }
 [data-theme="dark"] .cal-cell.is-live { color: var(--accent); }
+/* 히트맵 타일 안에서도 날짜는 진한 글자, 편수는 에메랄드 작은 글자로 위계 분리 */
+.cal-cell.is-live .cal-d { color: var(--text); }
+.cal-cell.is-live .cal-n { color: var(--accent-strong); }
+[data-theme="dark"] .cal-cell.is-live .cal-n { color: var(--accent); }
 .cal-cell.lv1 { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .cal-cell.lv2 { background: color-mix(in srgb, var(--accent) 19%, transparent); }
 .cal-cell.lv3 { background: color-mix(in srgb, var(--accent) 30%, transparent); }
@@ -526,6 +536,34 @@ button.btn.is-on {
 }
 .cal-cell.is-active .cal-d { font-weight: 800; }
 .cal-cell.is-active .cal-n { opacity: 0.9; }
+/* 선택된 날은 흰색(라이트)/검정(다크) 글자 — 위의 라이브 색보다 우선 */
+.cal-cell.is-active .cal-d,
+.cal-cell.is-active .cal-n { color: inherit; }
+
+/* ── 오늘 날짜(KST) — 선택 표시와 분리된 링 + 우상단 점 ── */
+.cal-cell.is-today {
+  box-shadow: inset 0 0 0 2px var(--accent-strong);
+}
+.cal-cell.is-today::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 5.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+}
+[data-theme="dark"] .cal-cell.is-today {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+[data-theme="dark"] .cal-cell.is-today::after { background: var(--accent); }
+.cal-cell.is-off.is-today { opacity: 0.72; }
+/* 오늘이 선택됐을 때는 링·점을 글자색(흰색/검정)으로 바꿔 에메랄드 배경과 겹치지 않게 */
+.cal-cell.is-today.is-active,
+.cal-cell.is-today.is-active:hover {
+  box-shadow: inset 0 0 0 2px currentColor;
+}
 .cal-meta {
   margin-top: 7px;
   font-size: 10.5px;

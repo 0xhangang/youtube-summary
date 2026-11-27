@@ -1518,8 +1518,9 @@
   /* ── 날짜 탭 — 월간 달력 ──────────────────────────────────
    * data/index.json 의 dates(날짜·편수)만으로 한 장을 그린다.
    *   · 상단: [전체 보기] + [◀ 2026년 11월 ▶] (데이터가 있는 달로만 이동)
-   *   · 7열 달력: 날짜 숫자 + 그날 편수, 편수에 따라 에메랄드 강약(히트맵)
+   *   · 7열 달력: 날짜 숫자(위·굵게) + 그날 편수(아래·작게 `68편`), 편수에 따라 에메랄드 강약(히트맵)
    *   · 0편인 날은 흐리게(비활성), 선택한 날은 진한 에메랄드
+   *   · KST 오늘 날짜는 테두리 링 + 우상단 점(.is-today)으로 따로 표시
    */
   function calMonths() {
     var seen = {};
@@ -1541,6 +1542,13 @@
     return map;
   }
 
+  // 기기 시간대와 무관하게 KST(UTC+9) 기준 오늘 날짜(YYYY-MM-DD)
+  function kstToday() {
+    var now = new Date();
+    var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+    return kst.getFullYear() + '-' + pad2(kst.getMonth() + 1) + '-' + pad2(kst.getDate());
+  }
+
   function currentCalMonth() {
     var months = calMonths();
     if (!months.length) return null;
@@ -1550,6 +1558,9 @@
       var ofActive = state.activeDate.slice(0, 7);
       if (months.indexOf(ofActive) >= 0) return ofActive;
     }
+    // 오늘 날짜가 있는 달을 먼저 보여 준다(오늘 표시가 첫 화면에 보이도록)
+    var ofToday = kstToday().slice(0, 7);
+    if (months.indexOf(ofToday) >= 0) return ofToday;
     return months[months.length - 1];
   }
 
@@ -1606,6 +1617,7 @@
       if (counts[k] > max) max = counts[k];
     }
 
+    var today = kstToday();
     var frag = document.createDocumentFragment();
     for (var i = 0; i < first; i++) {
       var blank = document.createElement('span');
@@ -1616,24 +1628,26 @@
     for (var d = 1; d <= lastDay; d++) {
       var iso = month + '-' + pad2(d);
       var n = counts[iso] || 0;
+      var isToday = iso === today;
       var cell = document.createElement('button');
       cell.type = 'button';
       cell.className = 'cal-cell';
       cell.dataset.date = iso;
       cell.setAttribute('role', 'gridcell');
+      if (isToday) cell.classList.add('is-today');
       if (!n) {
         cell.classList.add('is-off');
         cell.disabled = true;
-        cell.setAttribute('aria-label', d + '일 · 요약 없음');
+        cell.setAttribute('aria-label', d + '일 · ' + (isToday ? '오늘 · ' : '') + '요약 없음');
         cell.innerHTML = '<span class="cal-d">' + d + '</span>';
       } else {
         var ratio = max ? n / max : 1;
         var lv = ratio >= 0.75 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
         cell.classList.add('is-live', 'lv' + lv);
         if (state.activeDate === iso) cell.classList.add('is-active');
-        cell.setAttribute('aria-label', fmtDateLabel(iso) + ' · ' + n + '편');
+        cell.setAttribute('aria-label', fmtDateLabel(iso) + ' · ' + n + '편' + (isToday ? ' · 오늘' : ''));
         cell.setAttribute('aria-pressed', state.activeDate === iso ? 'true' : 'false');
-        cell.innerHTML = '<span class="cal-d">' + d + '</span><span class="cal-n">' + n + '</span>';
+        cell.innerHTML = '<span class="cal-d">' + d + '</span><span class="cal-n">' + n + '편</span>';
         (function (date) {
           cell.addEventListener('click', function () {
             state.activeTab = 'toc';
