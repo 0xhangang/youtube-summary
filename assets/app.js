@@ -461,7 +461,7 @@
       sync.last = Date.now();
       lsSet(LS_SYNC_LAST, String(sync.last));
       updateSyncUi();
-      refreshSyncedCards(changed);
+      try { refreshSyncedCards(changed); } catch (e) {}
       return true;
     }).catch(function (err) {
       sync.busy = false;
