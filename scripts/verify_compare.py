@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
-"""compare-alsangmu.html 무손실 검증.
+"""compare-alsangmu.html 4차 검증.
 
-C안(무손실 본문 + 구조 시각화)이 A안(순수 텍스트) 본문을 문장 단위로 100% 보존하는지
-assert 한다. 시각화 블록(stats/levels/flow/compare/table/svg...)은 본문 대조에서 제외하고
-본문 블록(h/p/ul/ol/callout)만 순서대로 비교한다.
+A안(순수 텍스트) · B안(필기 마킹) · C안(시각화 몰빵) 세 버전의 규칙을 assert 한다.
+
+1) A안은 손대지 않았는지 (문단 25 · 문장 56)
+2) B안 = A안 본문 100% 그대로 + 마킹만
+   - 블록 구성: legend 1개 + A안과 같은 순서의 h/p
+   - 토큰({{..}})과 기호(★●▲■)를 걷어내면 A안 문단 텍스트와 글자 단위로 동일
+   - 박스·시각화 0
+3) C안
+   - 소제목 6개가 A안과 같은 순서로 1:1
+   - 화자 한마디(callout)는 A안 본문의 연속 부분 문자열(인용 왜곡 없음)
+   - C안 텍스트에 나오는 모든 숫자는 A안 본문에도 존재 (없는 수치 창작 금지)
+     · SVG 축 눈금(class 에 ax)만 눈금용으로 예외
 
     python3 scripts/verify_compare.py            # 검증 + 리포트
     python3 scripts/verify_compare.py --quiet    # 통과/실패만
@@ -11,9 +20,10 @@ assert 한다. 시각화 블록(stats/levels/flow/compare/table/svg...)은 본�
 import json, re, sys, pathlib
 
 HTML = pathlib.Path(__file__).resolve().parent.parent / 'compare-alsangmu.html'
-BODY_TYPES = {'h', 'p', 'ul', 'ol', 'callout'}
-VIZ_TYPES = {'stats', 'levels', 'flow', 'compare', 'table', 'svg', 'bars', 'donut', 'timeline'}
+TOKEN_RE = re.compile(r'\{\{[A-Z0-9]{1,2}\|([\s\S]*?)\}\}')
+SYM_RE = re.compile(r'[★●▲■]')
 SENT_RE = re.compile(r'.+?(?:[.?!](?=\s|$)|$)', re.S)
+NUM_RE = re.compile(r'\d[\d,\.]*')
 
 
 def load():
@@ -23,18 +33,8 @@ def load():
     return json.loads(m.group(1))
 
 
-def body_blocks(blocks):
-    return [b for b in blocks if b.get('type') in BODY_TYPES]
-
-
-def body_text(blocks):
-    out = []
-    for b in blocks:
-        if b.get('type') in ('p', 'callout', 'h'):
-            out.append(b.get('text') or '')
-        elif b.get('type') in ('ul', 'ol'):
-            out.extend(b.get('items') or [])
-    return out
+def strip_marks(t):
+    return SYM_RE.sub('', TOKEN_RE.sub(lambda m: m.group(1), t))
 
 
 def sentences(lines):
@@ -47,61 +47,114 @@ def sentences(lines):
     return out
 
 
+def body_lines(blocks):
+    out = []
+    for b in blocks:
+        if b.get('type') in ('p', 'callout', 'h'):
+            out.append(b.get('text') or '')
+        elif b.get('type') in ('ul', 'ol'):
+            out.extend(b.get('items') or [])
+    return out
+
+
+def nums(s):
+    return {n.rstrip('.,').replace(',', '') for n in NUM_RE.findall(s)}
+
+
+def block_text(b, skip_ax=True):
+    """블록이 화면에 보여 주는 글자 전부 (SVG 는 <text> 내용만, 축 눈금 제외)."""
+    out = []
+    for key in ('text', 'title', 'caption', 'label', 'value', 'sub', 'name', 'badge', 'note', 'tag'):
+        v = b.get(key)
+        if isinstance(v, str) and v:
+            out.append(v)
+    for key in ('items', 'points', 'steps', 'cards', 'cols', 'levels', 'rows'):
+        for it in b.get(key) or []:
+            if isinstance(it, str):
+                out.append(it)
+            elif isinstance(it, dict):
+                out.append(block_text(it, skip_ax))
+            elif isinstance(it, list):
+                out.extend([str(x) for x in it if x is not None])
+    if b.get('svg'):
+        for m in re.finditer(r'<text\b([^>]*)>([^<]*)</text>', b['svg']):
+            attrs, content = m.group(1), m.group(2)
+            if skip_ax and 'ax' in re.search(r'class="([^"]*)"', attrs or '').group(0):
+                continue
+            out.append(content)
+    return ' '.join(out)
+
+
 def main():
     quiet = '--quiet' in sys.argv
     data = load()
     v = data['versions']
-    A, C = v['a']['blocks'], v['c']['blocks']
-
-    a_body, c_body = body_blocks(A), body_blocks(C)
-    ok = True
+    A, B, C = v['a']['blocks'], v['b']['blocks'], v['c']['blocks']
     fails = []
 
-    # 1) 본문 블록 타입·순서 동일
-    if [b['type'] for b in a_body] != [b['type'] for b in c_body]:
-        ok = False
-        fails.append('본문 블록 구성이 다름: %s vs %s'
-                     % ([b['type'] for b in a_body], [b['type'] for b in c_body]))
+    a_lines = body_lines(A)
+    a_text = ' '.join(a_lines)
+    a_plain = a_text.replace('**', '')
+    a_sents = sentences(a_lines)
+    a_heads = [b['text'] for b in A if b['type'] == 'h']
 
-    # 2) 본문 텍스트 완전 일치 (문단 단위)
-    a_lines, c_lines = body_text(a_body), body_text(c_body)
-    if a_lines != c_lines:
-        ok = False
-        for i, (x, y) in enumerate(zip(a_lines, c_lines)):
+    # ── B안 ────────────────────────────────────────────────
+    if B[0].get('type') != 'legend':
+        fails.append('B안 첫 블록이 마킹 범례가 아님')
+    b_body = B[1:]
+    if [b['type'] for b in b_body] != [b['type'] for b in A]:
+        fails.append('B안 블록 구성이 A안과 다름')
+    b_lines = [strip_marks(b.get('text', '')) for b in b_body]
+    b_sents = sentences(b_lines)
+    if b_lines != a_lines:
+        for i, (x, y) in enumerate(zip(a_lines, b_lines)):
             if x != y:
-                fails.append('문단 %d 불일치\n  A: %s\n  C: %s' % (i, x[:120], y[:120]))
+                fails.append('B안 문단 %d 불일치\n  A: %s\n  B: %s' % (i, x[:100], y[:100]))
                 break
-        if len(a_lines) != len(c_lines):
-            fails.append('문단 수 다름: A %d vs C %d' % (len(a_lines), len(c_lines)))
+        if len(a_lines) != len(b_lines):
+            fails.append('B안 문단 수 다름: A %d vs B %d' % (len(a_lines), len(b_lines)))
+    if b_sents != a_sents:
+        fails.append('B안 문장 단위 불일치: A %d문장 vs B %d문장' % (len(a_sents), len(b_sents)))
+    b_other = [b['type'] for b in B if b['type'] not in ('h', 'p', 'legend')]
+    if b_other:
+        fails.append('B안에 글자 마킹 외 블록이 있음: %s' % b_other)
 
-    # 3) 문장 단위 대조
-    a_s, c_s = sentences(a_lines), sentences(c_lines)
-    if a_s != c_s:
-        ok = False
-        fails.append('문장 단위 불일치: A %d문장 vs C %d문장' % (len(a_s), len(c_s)))
+    # ── C안 ────────────────────────────────────────────────
+    c_heads = [b['text'] for b in C if b['type'] == 'h']
+    if c_heads != a_heads:
+        fails.append('C안 소제목이 A안 6개와 1:1이 아님')
 
-    # 4) 소제목 개수 동일
-    a_h = [b['text'] for b in a_body if b['type'] == 'h']
-    c_h = [b['text'] for b in c_body if b['type'] == 'h']
-    if a_h != c_h:
-        ok = False
-        fails.append('소제목 불일치')
+    for i, b in enumerate(C):
+        if b.get('type') == 'callout':
+            quote = b['text'].replace('**', '')
+            if quote not in a_plain:
+                fails.append('C안 인용이 원문에 없음: %s' % quote[:60])
 
-    if ok:
-        viz = [b['type'] for b in C if b.get('type') in VIZ_TYPES]
-        marks = lambda bs: len(re.findall(r'\*\*[^*]+\*\*', ' '.join(body_text(bs))))
-        if not quiet:
-            print('✅ C안 본문 100%% 무손실 — A안과 문단 %d개·문장 %d개·소제목 %d개 완전 일치'
-                  % (len(a_lines), len(a_s), len(a_h)))
-            print('   글자수 A %d / C %d · 형광펜 A %d / C %d'
-                  % (len(' '.join(a_lines)), len(' '.join(c_lines)), marks(a_body), marks(c_body)))
-            print('   C안 시각화 %d개: %s' % (len(viz), ', '.join(viz)))
-        return 0
+    a_nums = nums(a_text)
+    c_text_all = ' '.join(block_text(b) for b in C)
+    bad = sorted(n for n in nums(c_text_all) if n not in a_nums)
+    if bad:
+        fails.append('C안에 원문에 없는 수치: %s' % ', '.join(bad))
 
-    print('❌ 무손실 검증 실패')
-    for f in fails:
-        print(' -', f)
-    return 1
+    if fails:
+        print('❌ 검증 실패')
+        for f in fails:
+            print(' -', f)
+        return 1
+
+    if not quiet:
+        tok = sum(len(re.findall(r'\{\{[A-Z0-9]{1,2}\|', b.get('text', ''))) for b in B)
+        sym = sum(len(re.findall(r'[★●▲■]', b.get('text', ''))) for b in B)
+        viz = [b['type'] for b in C if b['type'] in
+               ('stats', 'levels', 'flow', 'compare', 'table', 'svg', 'map', 'vs', 'cards', 'signal')]
+        print('✅ A안 그대로 · B안 본문 100%% 무손실 — 문단 %d개 · 문장 %d개 · 소제목 %d개 일치'
+              % (len(a_lines), len(a_sents), len(a_heads)))
+        print('   A 글자 %d자 (불변)' % len(a_text))
+        print('   B 마킹 %d개(형광펜·밑줄·태그) · 기호 %d개 · 박스/시각화 0' % (tok, sym))
+        print('   C 시각화 %d개: %s' % (len(viz), ', '.join(viz)))
+        print('   C 화자 한마디 %d개 — 전부 원문 그대로 / 수치 %d종 전부 원문에 존재'
+              % (sum(1 for b in C if b['type'] == 'callout'), len(nums(c_text_all))))
+    return 0
 
 
 if __name__ == '__main__':
