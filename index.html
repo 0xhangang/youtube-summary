@@ -13,7 +13,7 @@
 <title>피클 유튜브 요약</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-<link rel="stylesheet" href="assets/style.css?v=20261128c" />
+<link rel="stylesheet" href="assets/style.css?v=20261128d" />
 <script>
   (function () {
     try {
@@ -125,40 +125,45 @@
         </button>
       </div>
 
-      <div class="tab-panel" id="tabPanel" hidden>
-        <div class="tab-pane" id="paneDate" hidden>
-          <div class="pane-meta" id="dateMeta"></div>
-          <nav class="filters wrap" id="dateChips" aria-label="날짜 선택"></nav>
-        </div>
-        <div class="tab-pane" id="paneCat" hidden>
-          <div class="pane-meta" id="catMeta"></div>
-          <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
-        </div>
-        <div class="tab-pane" id="paneChannel" hidden>
-          <div class="pane-meta" id="channelMeta"></div>
-          <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
-        </div>
-        <div class="tab-pane" id="paneToc" hidden>
-          <ul class="toc-list" id="tocList"></ul>
-        </div>
-        <div class="tab-pane" id="paneRead" hidden>
-          <ul class="toc-list" id="readList"></ul>
-        </div>
-        <div class="tab-pane" id="paneFav" hidden>
-          <ul class="toc-list" id="favList"></ul>
-        </div>
-        <div class="tab-pane" id="paneSearch" hidden>
-          <div class="search-row">
-            <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
-              <circle cx="8.5" cy="8.5" r="5.5"></circle>
-              <path d="M13 13l4 4"></path>
-            </svg>
-            <input id="search" type="search" inputmode="search" autocomplete="off"
-                   placeholder="제목·채널·본문 내용 검색" aria-label="검색" />
-            <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+      <div class="tab-scroll-wrap">
+        <div class="tab-panel" id="tabPanel" hidden>
+          <div class="tab-pane" id="paneDate" hidden>
+            <div class="pane-meta" id="dateMeta"></div>
+            <nav class="filters wrap" id="dateChips" aria-label="날짜 선택"></nav>
           </div>
-          <div class="search-meta" id="searchMeta"></div>
-          <ul class="toc-list" id="searchResultList"></ul>
+          <div class="tab-pane" id="paneCat" hidden>
+            <div class="pane-meta" id="catMeta"></div>
+            <nav class="filters wrap" id="catChips" aria-label="분류 필터"></nav>
+          </div>
+          <div class="tab-pane" id="paneChannel" hidden>
+            <div class="pane-meta" id="channelMeta"></div>
+            <nav class="filters wrap" id="channelChips" aria-label="채널 필터"></nav>
+          </div>
+          <div class="tab-pane" id="paneToc" hidden>
+            <ul class="toc-list" id="tocList"></ul>
+          </div>
+          <div class="tab-pane" id="paneRead" hidden>
+            <ul class="toc-list" id="readList"></ul>
+          </div>
+          <div class="tab-pane" id="paneFav" hidden>
+            <ul class="toc-list" id="favList"></ul>
+          </div>
+          <div class="tab-pane" id="paneSearch" hidden>
+            <div class="search-row">
+              <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true">
+                <circle cx="8.5" cy="8.5" r="5.5"></circle>
+                <path d="M13 13l4 4"></path>
+              </svg>
+              <input id="search" type="search" inputmode="search" autocomplete="off"
+                     placeholder="제목·채널·본문 내용 검색" aria-label="검색" />
+              <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기" hidden>×</button>
+            </div>
+            <div class="search-meta" id="searchMeta"></div>
+            <ul class="toc-list" id="searchResultList"></ul>
+          </div>
+        </div>
+        <div class="tab-track" id="tabTrack" hidden aria-hidden="true">
+          <span class="tab-thumb" id="tabThumb"></span>
         </div>
       </div>
     </div>
@@ -220,6 +225,6 @@
   </div>
 </div>
 
-<script src="assets/app.js?v=20261128c"></script>
+<script src="assets/app.js?v=20261128d"></script>
 </body>
 </html>

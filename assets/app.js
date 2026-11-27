@@ -874,6 +874,77 @@
     if (t === 'search' && dom.search) {
       setTimeout(function () { dom.search.focus(); }, 40);
     }
+    scheduleTabScroll();
+  }
+
+  /* ── 탭 패널 커스텀 스크롤바 ───────────────────────────────
+   * 삼성 인터넷 같은 안드로이드 브라우저는 OS 오버레이 스크롤바 정책 때문에
+   * ::-webkit-scrollbar 를 스크롤이 멈추면 감춘다. 그래서 네이티브 스크롤바는
+   * CSS로 완전히 숨기고, .tab-panel 우측에 항상 보이는 얇은 트랙·썸을
+   * 직접 그려 움직인다.
+   *   - 내용이 넘칠 때(scrollHeight > clientHeight)만 표시
+   *   - 썸 높이 = clientHeight / scrollHeight 비율(최소 24px) → 목록 길이감
+   *   - .tab-panel 스크롤에 따라 translateY 로 부드럽게 따라간다 */
+  var tabBar = {
+    panel: null, track: null, thumb: null,
+    frame: 0, ro: null, thumbH: 0
+  };
+
+  function updateTabScroll() {
+    var p = tabBar.panel;
+    var track = tabBar.track;
+    var thumb = tabBar.thumb;
+    if (!p || !track || !thumb) return;
+    if (p.hidden) { track.hidden = true; return; }
+    var sh = p.scrollHeight;
+    var ch = p.clientHeight;
+    if (sh <= ch + 1) {
+      track.hidden = true;
+      tabBar.thumbH = 0;
+      return;
+    }
+    var trackH = 0;
+    /* 썸을 재기 전에 트랙을 먼저 보여야 clientHeight가 실제 값을 준다 */
+    track.hidden = false;
+    trackH = track.clientHeight;
+    if (!trackH) { track.hidden = true; return; }
+    var h = Math.round(trackH * (ch / sh));
+    if (h < 24) h = 24;
+    if (h > trackH) h = trackH;
+    if (h !== tabBar.thumbH) {
+      tabBar.thumbH = h;
+      thumb.style.height = h + 'px';
+    }
+    var travel = trackH - h;
+    var max = sh - ch;
+    var k = max > 0 ? (p.scrollTop / max) : 0;
+    if (k < 0) k = 0; else if (k > 1) k = 1;
+    thumb.style.transform = 'translateY(' + (k * travel).toFixed(2) + 'px)';
+  }
+
+  function scheduleTabScroll() {
+    if (tabBar.frame) return;
+    tabBar.frame = requestAnimationFrame(function () {
+      tabBar.frame = 0;
+      updateTabScroll();
+    });
+  }
+
+  function initTabScroll() {
+    tabBar.panel = dom.tabPanel;
+    tabBar.track = document.getElementById('tabTrack');
+    tabBar.thumb = document.getElementById('tabThumb');
+    if (!tabBar.panel || !tabBar.track || !tabBar.thumb) return;
+    tabBar.panel.addEventListener('scroll', scheduleTabScroll, { passive: true });
+    window.addEventListener('resize', scheduleTabScroll, { passive: true });
+    window.addEventListener('orientationchange', scheduleTabScroll, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+      tabBar.ro = new ResizeObserver(function () { scheduleTabScroll(); });
+      tabBar.ro.observe(tabBar.panel);
+      var panes = tabBar.panel.querySelectorAll('.tab-pane');
+      for (var i = 0; i < panes.length; i++) tabBar.ro.observe(panes[i]);
+    }
+    scheduleTabScroll();
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -1360,6 +1431,7 @@
       updateFav();
       updateSearchResults(sorted, all.length);
       updateSubtitle(all.length, sorted.length);
+      scheduleTabScroll();
       return;
     }
 
@@ -1430,6 +1502,7 @@
     updateFav();
     updateSearchResults(sorted, all.length);
     updateSubtitle(all.length, sorted.length);
+    scheduleTabScroll();
   }
 
   function updateSearchResults(sortedItems, totalCount) {
@@ -1973,6 +2046,7 @@
     }, { passive: true });
 
     initReadingBar();
+    initTabScroll();
   }
 
   /* ── 상단 읽기 바 ──────────────────────────────────────
@@ -1982,13 +2056,25 @@
   var bar = {
     el: null, channelEl: null, dotEl: null, titleEl: null, avEl: null,
     currentEl: null, sectionEl: null,
-    card: null, shown: false,
+    card: null, shown: false, gap: 8,
     channel: null, title: null, section: null, avatar: null, swapToken: 0, swapTimer: 0,
     frame: 0, lockY: 0, lockUntil: 0
   };
 
   function barHeight() {
     return (bar.el && bar.el.offsetHeight) || 53;
+  }
+
+  /* 바는 화면 위에서 gap(기본 8px + safe-area)만큼 띄워 붙으므로, 본문이
+     가리는 기준선은 바 높이 + gap 이다. (transform과 무관하게 계산) */
+  function barBottom() {
+    return (bar.gap || 0) + barHeight();
+  }
+
+  function measureBarGap() {
+    if (!bar.el) return;
+    var t = parseFloat(window.getComputedStyle(bar.el).top);
+    bar.gap = isNaN(t) ? 8 : t;
   }
 
   function barText(node) {
@@ -2103,7 +2189,7 @@
     if (dom.syncModal && !dom.syncModal.hidden) { setBarShown(false); return; }
     if (hub && !hub.hidden && !hub.classList.contains('is-hidden')) { setBarShown(false); return; }
 
-    var top = barHeight();
+    var top = barBottom();
     var card = cardAtY(top);
     if (!card) { setBarShown(false); return; }
 
@@ -2141,6 +2227,7 @@
     bar.currentEl = document.getElementById('rbCurrent');
     bar.sectionEl = document.getElementById('rbSection');
     if (!bar.el) return;
+    measureBarGap();
     if (bar.avEl) {
       bar.avEl.addEventListener('error', function () {
         /* 아바타가 없거나 막힌 채널은 그냥 숨긴다 */
@@ -2149,7 +2236,7 @@
     }
     bar.el.addEventListener('click', function () {
       var card = bar.card;
-      if (!card || !card.isConnected) card = cardAtY(barHeight());
+      if (!card || !card.isConnected) card = cardAtY(barBottom());
       setBarShown(false);
       if (card) {
         bar.lockY = card.getBoundingClientRect().top + (window.scrollY || 0);
@@ -2157,7 +2244,10 @@
         card.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
-    window.addEventListener('resize', scheduleReadingBar, { passive: true });
+    window.addEventListener('resize', function () {
+      measureBarGap();
+      scheduleReadingBar();
+    }, { passive: true });
     scheduleReadingBar();
   }
 
