@@ -2152,61 +2152,16 @@
     });
 
     var topBtn = document.getElementById('topBtn');
-    var hub = document.getElementById('siteHeader');
     topBtn.addEventListener('click', function () {
-      if (hub) hub.classList.remove('is-hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    var lastY = Math.max(0, window.scrollY || 0);
-    var lastT = performance.now();
-    var upDist = 0;
-    var downDist = 0;
-    var hubHidden = false;
-
-    function setHubHidden(next) {
-      if (!hub || hubHidden === next) return;
-      hubHidden = next;
-      hub.classList.toggle('is-hidden', next);
-    }
-
+    /* 허브 카드는 페이지 맨 위에 그대로 있고(스크롤하면 자연스럽게 올라간다),
+       스크롤에서는 맨 위로 버튼·읽기 바만 갱신한다. */
     window.addEventListener('scroll', function () {
       var y = Math.max(0, window.scrollY || 0);
       topBtn.classList.toggle('show', y > 600);
       scheduleReadingBar();
-
-      if (!hub || hub.hidden) return;
-      if (dom.search && document.activeElement === dom.search) return;
-
-      var now = performance.now();
-      var dy = y - lastY;
-      var dt = Math.max(1, now - lastT);
-      lastY = y;
-      lastT = now;
-
-      if (y <= 60) {
-        upDist = 0;
-        downDist = 0;
-        setHubHidden(false);
-        return;
-      }
-
-      if (dy > 0) {
-        upDist = 0;
-        downDist += dy;
-        if (!hubHidden && y > 90 && downDist >= 16) {
-          downDist = 0;
-          setHubHidden(true);
-        }
-      } else if (dy < 0) {
-        downDist = 0;
-        upDist += -dy;
-        var speed = (-dy) / dt;
-        if (hubHidden && upDist >= 260 && speed >= 2.2) {
-          upDist = 0;
-          setHubHidden(false);
-        }
-      }
     }, { passive: true });
 
     initReadingBar();
@@ -2225,11 +2180,11 @@
   };
 
   function barHeight() {
-    return (bar.el && bar.el.offsetHeight) || 53;
+    return (bar.el && bar.el.offsetHeight) || 40;
   }
 
-  /* 바는 화면 위에서 gap(기본 8px + safe-area)만큼 띄워 붙으므로, 본문이
-     가리는 기준선은 바 높이 + gap 이다. (transform과 무관하게 계산) */
+  /* 바는 화면 맨 위(top: 0)에 붙으므로 본문이 가리는 기준선은 바 높이 그대로다.
+     top 값이 있으면 그만큼 더한다. (transform과 무관하게 계산) */
   function barBottom() {
     return (bar.gap || 0) + barHeight();
   }
@@ -2308,7 +2263,9 @@
     }
     var hub = document.getElementById('siteHeader');
     if (dom.syncModal && !dom.syncModal.hidden) { setBarShown(false); return; }
-    if (hub && !hub.hidden && !hub.classList.contains('is-hidden')) { setBarShown(false); return; }
+    /* 허브 카드가 화면 위로 완전히 사라진 뒤에만 읽기 바를 띄운다(겸침 방지).
+       허브는 sticky가 아닌 일반 블록이라 스크롤하면 bottom이 그대로 올라간다. */
+    if (hub && !hub.hidden && hub.getBoundingClientRect().bottom > 0) { setBarShown(false); return; }
 
     var top = barBottom();
     var card = cardAtY(top);

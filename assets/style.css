@@ -121,9 +121,8 @@ button { -webkit-tap-highlight-color: transparent; }
 
 /* ── 통합 상단 허브 카드 (글래스모피즘 + 스크롤 숨김/복귀 sticky) ────── */
 .hub-card {
-  position: sticky;
-  top: 8px;
-  z-index: 40;
+  /* 페이지 맨 위에 일반 카드처럼 놓인다 — 스크롤하면 그냥 위로 올라간다 */
+  position: relative;
   margin: 8px 0 18px;
   background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(1.8);
@@ -132,16 +131,10 @@ button { -webkit-tap-highlight-color: transparent; }
   box-shadow: var(--shadow-hub);
   border-radius: 22px;
   overflow: hidden;
-  will-change: transform, opacity;
-  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, background 0.2s ease;
+  transition: background 0.2s ease;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .hub-card { background: var(--surface); }
-}
-.hub-card.is-hidden {
-  transform: translateY(calc(-100% - 20px));
-  opacity: 0;
-  pointer-events: none;
 }
 .hub-card[hidden] { display: none; }
 .single-bar {
@@ -456,8 +449,8 @@ button.btn.is-on {
   padding-top: 11px;
   /* 썸이 올라갈 우측 여백 — 항목 글자가 트랙 밑으로 들어가지 않게 */
   padding-right: 10px;
-  /* 한 줄짜리 항목 5개(5줄)가 정확히 들어가는 높이 — 6번째 항목은 보이지 않는다 */
-  max-height: min(192px, 30vh);
+  /* 한 줄짜리 항목 10개(10줄)가 정확히 들어가는 높이(11px 패딩 + 10×34.27px + 9×2px 간격) — 11번째 항목은 보이지 않는다 */
+  max-height: min(372px, 60vh);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1342,48 +1335,45 @@ mark.hl {
 }
 
 /* ── 상단 읽기 바 (1줄 슬림 — 아바타 · 채널 · · · 제목 · ↑) ──────
-   상단 허브 카드(.hub-card)와 똑같은 플로팅 글래스 조각을 그대로 쓰되,
-   높이만 38px 슬림하게 줄인 한 줄 바. 화면 위에 붙은 띠가 아니라 상단에서
-   8px 띄운 둥근 유리 조각(같은 --glass-bg · blur(24px) saturate(1.8) ·
-   --shadow-hub 유리 반사광 · border-radius 22px · 컨테이너 좌우 여백 정렬). */
+   화면 맨 위에 딱 붙는 슬림 1줄 풀폭 바. 허브 카드가 화면 위로
+   완전히 사라진 뒤 본문을 읽는 동안에만 내려온다. 배경은 맑은 유리
+   (surface 88% + blur), 아래 경계선 하나로 본문과 구분하고 글자는
+   모노톤으로 조용하게 둔다. 내용만 본문 폭(780px)에 맟춰 정렬. */
 .reading-bar {
   position: fixed;
-  top: calc(8px + env(safe-area-inset-top, 0px));
+  top: 0;
   left: 0;
   right: 0;
   z-index: 45;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: calc(100% - 16px);
-  max-width: 780px;
-  height: 38px;
-  margin: 0 auto;
-  padding: 0 14px;
-  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
-  border-radius: 22px;
-  /* 은은한 에메랄드 유리 톤 — 허브(중립 유리)와 구분되는 읽기 바의 표식 */
-  background: color-mix(in srgb, var(--accent) 10%, var(--glass-bg));
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  box-shadow: var(--shadow-hub);
+  width: 100%;
+  max-width: none;
+  height: 40px;
+  margin: 0;
+  padding: 0 max(12px, calc((100% - 780px) / 2));
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.06);
   color: var(--text);
   font: inherit;
   text-align: left;
   cursor: pointer;
   overflow: hidden;
-  will-change: transform, opacity;
   visibility: hidden;
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-100%);
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.24s;
 }
+[data-theme="dark"] .reading-bar { box-shadow: 0 1px 8px rgba(0, 0, 0, 0.32); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .reading-bar { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
-}
-[data-theme="dark"] .reading-bar {
-  background: color-mix(in srgb, var(--accent) 13%, var(--glass-bg));
+  .reading-bar { background: var(--surface); }
 }
 .reading-bar.is-on {
   visibility: visible;
@@ -1392,7 +1382,7 @@ mark.hl {
   pointer-events: auto;
   transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
 }
-.reading-bar:active { transform: scale(0.995); }
+.reading-bar:active { transform: scale(0.998); }
 
 .rb-body {
   flex: 1 1 auto;
@@ -1420,15 +1410,14 @@ mark.hl {
   max-width: 42%;
   min-width: 0;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 18px;
   letter-spacing: -0.012em;
-  color: color-mix(in srgb, var(--accent-strong) 72%, var(--text));
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-[data-theme="dark"] .rb-channel { color: color-mix(in srgb, var(--accent) 68%, var(--text)); }
 .rb-dot {
   flex: 0 0 auto;
   margin: 0 6px;
@@ -1460,11 +1449,10 @@ mark.hl {
   justify-content: center;
   width: 16px;
   height: 16px;
-  color: color-mix(in srgb, var(--accent-strong) 62%, var(--text-faint));
-  opacity: 0.8;
+  color: var(--text-faint);
+  opacity: 0.7;
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.2s ease;
 }
-[data-theme="dark"] .rb-up { color: color-mix(in srgb, var(--accent) 62%, var(--text-faint)); }
 .rb-up svg { width: 13px; height: 13px; display: block; }
 .reading-bar:hover .rb-up,
 .reading-bar:focus-visible .rb-up { color: var(--accent-strong); opacity: 0.9; }
@@ -1473,8 +1461,6 @@ mark.hl {
 /* ── 넓은 화면 (태블릿·데스크톱) ─────────────────────────── */
 @media (min-width: 600px) {
   .container { padding: 12px 20px 96px; }
-  /* 읽기 바도 허브 카드와 같은 좌우 여백(20px)으로 정렬 */
-  .reading-bar { width: calc(100% - 40px); }
   h1 { font-size: 18.5px; }
 
   .yt-info { padding: 16px 20px 15px; }
