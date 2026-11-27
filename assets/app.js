@@ -761,10 +761,168 @@
     if (typeof s.plain === 'string' && s.plain) return s.plain;
     var out = [];
     (s.blocks || []).forEach(function (b) {
+      if (!b) return;
       if (b.text) out.push(b.text);
-      if (b.items) out.push(b.items.join(' '));
+      if (b.title) out.push(b.title);
+      (b.items || []).forEach(function (it) {
+        if (it && typeof it === 'object') {
+          out.push([it.label, it.display].filter(Boolean).join(' '));
+        } else if (it) {
+          out.push(String(it));
+        }
+      });
+      (b.steps || []).forEach(function (st) {
+        if (st) out.push([st.label, st.note].filter(Boolean).join(' '));
+      });
+      (b.cols || []).forEach(function (c) {
+        if (!c) return;
+        out.push([c.title, c.badge].filter(Boolean).join(' '));
+        (c.points || []).forEach(function (pt) { if (pt) out.push(String(pt)); });
+      });
     });
     return out.join(' ');
+  }
+
+  /* ── 경량 시각화 블록 (flow · bars · compare) ─────────────────
+   * 본문 사이에 도식·수치 막대·2열 비교 카드를 넣는다. 막대 길이만
+   * value(절댓값) 비율로 계산할 뿐, 화면에 적히는 글자는 데이터에 적힌
+   * display·label 그대로다. 색은 CSS 변수라 라이트/다크 모두 대응한다. */
+  function vizShell(type, title, q) {
+    var box = document.createElement('div');
+    box.className = 'viz viz-' + type;
+    if (title) {
+      var t = document.createElement('div');
+      t.className = 'viz-title';
+      t.innerHTML = rich(title, q);
+      box.appendChild(t);
+    }
+    return box;
+  }
+
+  function buildFlow(b, q) {
+    var box = vizShell('flow', b.title, q);
+    var wrap = document.createElement('div');
+    wrap.className = 'flow';
+    var n = 0;
+    (b.steps || []).forEach(function (st) {
+      if (!st) return;
+      var label = String(st.label == null ? '' : st.label).trim();
+      var note = String(st.note == null ? '' : st.note).trim();
+      if (!label && !note) return;
+      if (n) {
+        var ar = document.createElement('span');
+        ar.className = 'flow-arrow';
+        ar.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(ar);
+      }
+      n += 1;
+      var step = document.createElement('div');
+      step.className = 'flow-step';
+      var num = document.createElement('span');
+      num.className = 'flow-num';
+      num.setAttribute('aria-hidden', 'true');
+      num.textContent = String(n);
+      step.appendChild(num);
+      var body = document.createElement('div');
+      body.className = 'flow-body';
+      if (label) {
+        var lb = document.createElement('div');
+        lb.className = 'flow-label';
+        lb.innerHTML = rich(label, q);
+        body.appendChild(lb);
+      }
+      if (note) {
+        var nt = document.createElement('div');
+        nt.className = 'flow-note';
+        nt.innerHTML = rich(note, q);
+        body.appendChild(nt);
+      }
+      step.appendChild(body);
+      wrap.appendChild(step);
+    });
+    if (n) box.appendChild(wrap);
+    return box;
+  }
+
+  function buildBars(b, q) {
+    var box = vizShell('bars', b.title, q);
+    var items = (b.items || []).filter(function (it) {
+      return it && (it.label || it.display);
+    });
+    if (!items.length) return box;
+    var max = 0;
+    items.forEach(function (it) {
+      var v = Math.abs(Number(it.value));
+      if (isFinite(v) && v > max) max = v;
+    });
+    var list = document.createElement('div');
+    list.className = 'bars';
+    items.forEach(function (it) {
+      var v = Number(it.value);
+      var tone = it.tone || (isFinite(v) && v < 0 ? 'red' : 'accent');
+      var row = document.createElement('div');
+      row.className = 'bar-row tone-' + tone;
+      var top = document.createElement('div');
+      top.className = 'bar-top';
+      var lb = document.createElement('span');
+      lb.className = 'bar-label';
+      lb.innerHTML = rich(it.label || '', q);
+      top.appendChild(lb);
+      var val = document.createElement('span');
+      val.className = 'bar-val';
+      var txt = it.display != null ? String(it.display) : (isFinite(v) ? String(v) : '');
+      val.innerHTML = rich(txt, q);
+      top.appendChild(val);
+      row.appendChild(top);
+      var track = document.createElement('div');
+      track.className = 'bar-track';
+      var fill = document.createElement('span');
+      fill.className = 'bar-fill';
+      var w = max > 0 && isFinite(v) ? Math.round((Math.abs(v) / max) * 100) : 0;
+      if (w > 0 && w < 4) w = 4;
+      fill.style.width = w + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+    return box;
+  }
+
+  function buildCompare(b, q) {
+    var box = vizShell('compare', b.title, q);
+    var grid = document.createElement('div');
+    grid.className = 'cmp-grid';
+    (b.cols || []).forEach(function (col) {
+      if (!col) return;
+      var c = document.createElement('div');
+      c.className = 'cmp-col';
+      var head = document.createElement('div');
+      head.className = 'cmp-head';
+      var ttl = document.createElement('span');
+      ttl.className = 'cmp-title';
+      ttl.innerHTML = rich(col.title || '', q);
+      head.appendChild(ttl);
+      if (col.badge) {
+        var badge = document.createElement('span');
+        badge.className = 'cmp-badge';
+        badge.innerHTML = rich(col.badge, q);
+        head.appendChild(badge);
+      }
+      c.appendChild(head);
+      var ul = document.createElement('ul');
+      ul.className = 'cmp-points';
+      (col.points || []).forEach(function (pt) {
+        if (!String(pt == null ? '' : pt).trim()) return;
+        var li = document.createElement('li');
+        li.innerHTML = rich(pt, q);
+        ul.appendChild(li);
+      });
+      c.appendChild(ul);
+      grid.appendChild(c);
+    });
+    box.appendChild(grid);
+    return box;
   }
 
   function sortTime(s) {
@@ -875,7 +1033,6 @@
       setTimeout(function () { dom.search.focus(); }, 40);
     }
     scheduleTabScroll();
-    schedulePageScroll();
   }
 
   /* ── 탭 패널 커스텀 스크롤바 ───────────────────────────────
@@ -946,74 +1103,6 @@
       for (var i = 0; i < panes.length; i++) tabBar.ro.observe(panes[i]);
     }
     scheduleTabScroll();
-  }
-
-  /* ── 전체 페이지 커스텀 스크롤바 ────────────────────────────────
-   * 메뉴 패널과 똑같은 4px 트랙·썸을 화면 우측 끝(.page-track)에 고정해
-   * 그린다. 네이티브 페이지 스크롤바는 CSS로 숨겼고 window 스크롤 구조는
-   * 그대로 쓴다(삼성 인터넷 주소창 숨김·sticky 허브 동작 보존).
-   *   - 내용이 넘칠 때(documentElement.scrollHeight > innerHeight + 4)만 표시
-   *   - 썸 높이 = trackH * (innerHeight / scrollHeight), 최소 28px
-   *   - 스크롤 위치 비율에 맞춰 translateY 로 부드럽게 따라간다 */
-  var pageBar = { track: null, thumb: null, frame: 0, ro: null, thumbH: 0 };
-
-  function updatePageScroll() {
-    var track = pageBar.track;
-    var thumb = pageBar.thumb;
-    if (!track || !thumb) return;
-    var doc = document.documentElement;
-    var body = document.body;
-    /* 동기화 모달이 페이지 스크롤을 잠근 동안에는 감춘다 */
-    if (body && body.classList.contains('sync-open')) {
-      track.hidden = true;
-      return;
-    }
-    var vh = window.innerHeight || doc.clientHeight;
-    var sh = Math.max(doc.scrollHeight, body ? body.scrollHeight : 0);
-    if (sh <= vh + 4) {
-      track.hidden = true;
-      pageBar.thumbH = 0;
-      return;
-    }
-    track.hidden = false;
-    var trackH = track.clientHeight;
-    if (!trackH) { track.hidden = true; return; }
-    var h = Math.round(trackH * (vh / sh));
-    if (h < 28) h = 28;
-    if (h > trackH) h = trackH;
-    if (h !== pageBar.thumbH) {
-      pageBar.thumbH = h;
-      thumb.style.height = h + 'px';
-    }
-    var travel = trackH - h;
-    var max = sh - vh;
-    var y = window.scrollY || doc.scrollTop || 0;
-    var k = max > 0 ? (y / max) : 0;
-    if (k < 0) k = 0; else if (k > 1) k = 1;
-    thumb.style.transform = 'translateY(' + (k * travel).toFixed(2) + 'px)';
-  }
-
-  function schedulePageScroll() {
-    if (pageBar.frame) return;
-    pageBar.frame = requestAnimationFrame(function () {
-      pageBar.frame = 0;
-      updatePageScroll();
-    });
-  }
-
-  function initPageScroll() {
-    pageBar.track = document.getElementById('pageTrack');
-    pageBar.thumb = document.getElementById('pageThumb');
-    if (!pageBar.track || !pageBar.thumb) return;
-    window.addEventListener('scroll', schedulePageScroll, { passive: true });
-    window.addEventListener('resize', schedulePageScroll, { passive: true });
-    window.addEventListener('orientationchange', schedulePageScroll, { passive: true });
-    window.addEventListener('load', schedulePageScroll);
-    if (typeof ResizeObserver !== 'undefined') {
-      pageBar.ro = new ResizeObserver(function () { schedulePageScroll(); });
-      if (document.body) pageBar.ro.observe(document.body);
-    }
-    schedulePageScroll();
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -1339,6 +1428,12 @@
         ctxt.innerHTML = rich(b.text || '', q);
         co.appendChild(ctxt);
         inner.appendChild(co);
+      } else if (b.type === 'flow') {
+        inner.appendChild(buildFlow(b, q));
+      } else if (b.type === 'bars') {
+        inner.appendChild(buildBars(b, q));
+      } else if (b.type === 'compare') {
+        inner.appendChild(buildCompare(b, q));
       } else {
         splitParagraph(b.text || '').forEach(function (chunk) {
           var p = document.createElement('p');
@@ -1501,7 +1596,6 @@
       updateSearchResults(sorted, all.length);
       updateSubtitle(all.length, sorted.length);
       scheduleTabScroll();
-      schedulePageScroll();
       return;
     }
 
@@ -1527,7 +1621,6 @@
       }
       feed.appendChild(frag);
       scheduleReadingBar();
-      schedulePageScroll();
       if (cursor < sorted.length) {
         if (!moreWrap) {
           moreWrap = document.createElement('div');
@@ -1574,7 +1667,6 @@
     updateSearchResults(sorted, all.length);
     updateSubtitle(all.length, sorted.length);
     scheduleTabScroll();
-    schedulePageScroll();
   }
 
   function updateSearchResults(sortedItems, totalCount) {
@@ -2119,7 +2211,6 @@
 
     initReadingBar();
     initTabScroll();
-    initPageScroll();
   }
 
   /* ── 상단 읽기 바 ──────────────────────────────────────
@@ -2329,7 +2420,6 @@
       dom.feed.appendChild(bar);
       dom.feed.appendChild(buildCard(found));
       scheduleReadingBar();
-      schedulePageScroll();
       document.title = '[' + (found.s.channel || '') + '] ' + (found.s.title || '피클 유튜브 요약');
       renderFooter();
     }

@@ -79,6 +79,7 @@
 
 - 스키마: 요약 객체는 `videoId`·`title`·`channel`·`category`·`categoryLabel`·`addedAt`·`blocks`를 갖추고, 선택 필드 `publishedAt`·`duration`·`thumbnail`·`kind`·`url`·`channelId`를 채운다.
   `blocks`는 `type`이 `h`(소제목)·`p`(문단)·`ul`(불릿)·`callout`(강조 상자)인 배열이다. 본문 텍스트의 `**굵게**`만 서식으로 변환된다.
+  여기에 경량 시각화 블록 세 가지를 더 쓸 수 있다 — `flow`(단계·인과 흐름, `steps:[{label,note?}]`), `bars`(수치 막대, `items:[{label,value,display,tone?}]`), `compare`(2열 비교, `cols:[{title,badge?,points:[]}]`). 시각화는 **기존 본문(p·ul·callout)을 한 줄도 줄이지 않은 채** 그 아래에 하나만 덧붙인다. 수치는 본문에 적힌 값만 쓰고 추정·계산값을 넣지 않는다.
 - 같은 `videoId`는 기본적으로 건너뛴다. 내용을 고칠 때만 `--replace`를 쓴다.
 - `data/index.json`은 스크립트가 다시 계산한다. 손으로 고치지 않는다.
 

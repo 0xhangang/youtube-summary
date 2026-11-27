@@ -18,6 +18,10 @@ summary 필드
     category  증시·매크로=stock, 코인·트레이딩=coin, AI·사회·트렌드=trend, 테크=tech, 경제=economy, 기타=etc
     categoryLabel  비우면 category에서 자동 채움
     blocks    본문 블록 배열 — [{"type":"h|p|ul|callout","text":..,"items":[..]}]
+              · flow    {"type":"flow","title":..,"steps":[{"label":..,"note":..}]}      단계·인과 흐름
+              · bars    {"type":"bars","title":..,"items":[{"label":..,"value":1.5,"display":"80%","tone":"accent|red|blue|amber"}]}  수치 막대
+              · compare {"type":"compare","title":..,"cols":[{"title":..,"badge":..,"points":[..]}]}  2열 비교
+              (본문 p·ul·callout 을 축약하지 말고 그 아래에 걸맞은 시각화 블록만 덧붙인다)
     text      blocks 대신 줄글 하나로 줄 때. 아래 규칙으로 blocks로 변환된다.
                 "## 제목" / "### 제목"   -> h
                 "- 항목" / "* 항목"      -> ul
@@ -229,6 +233,71 @@ def normalize(item, date_str, stamp):
             txt = str(b.get("text") or "").strip()
             if txt:
                 clean.append({"type": t, "text": txt})
+        elif t in ("flow", "bars", "compare"):
+            nb = {"type": t}
+            title = str((b or {}).get("title") or "").strip()
+            if title:
+                nb["title"] = title
+            if t == "flow":
+                steps = []
+                for st in (b or {}).get("steps") or []:
+                    if not isinstance(st, dict):
+                        continue
+                    label = str(st.get("label") or "").strip()
+                    note = str(st.get("note") or "").strip()
+                    if not label and not note:
+                        continue
+                    step = {}
+                    if label:
+                        step["label"] = label
+                    if note:
+                        step["note"] = note
+                    steps.append(step)
+                if steps:
+                    nb["steps"] = steps
+                    clean.append(nb)
+            elif t == "bars":
+                bars = []
+                for it in (b or {}).get("items") or []:
+                    if not isinstance(it, dict):
+                        continue
+                    label = str(it.get("label") or "").strip()
+                    display = str(it.get("display") or "").strip()
+                    if not label and not display:
+                        continue
+                    bar = {"label": label, "display": display}
+                    v = it.get("value")
+                    if v is not None and not isinstance(v, bool):
+                        try:
+                            fv = float(v)
+                            bar["value"] = int(fv) if fv.is_integer() else fv
+                        except (TypeError, ValueError):
+                            bar["value"] = 0
+                    tone = str(it.get("tone") or "").strip()
+                    if tone in ("accent", "red", "blue", "amber"):
+                        bar["tone"] = tone
+                    bars.append(bar)
+                if bars:
+                    nb["items"] = bars
+                    clean.append(nb)
+            else:  # compare
+                cols = []
+                for col in (b or {}).get("cols") or []:
+                    if not isinstance(col, dict):
+                        continue
+                    ctitle = str(col.get("title") or "").strip()
+                    badge = str(col.get("badge") or "").strip()
+                    points = [str(x).strip() for x in (col.get("points") or []) if str(x).strip()]
+                    if not ctitle and not points:
+                        continue
+                    cdata = {"title": ctitle}
+                    if badge:
+                        cdata["badge"] = badge
+                    cdata["points"] = points
+                    cols.append(cdata)
+                if cols:
+                    nb["cols"] = cols
+                    clean.append(nb)
         else:
             txt = str(b.get("text") or "").strip()
             if txt:

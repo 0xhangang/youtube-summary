@@ -81,23 +81,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* ── 전체 페이지 스크롤바 ────────────────────────────────────────
-   메뉴 패널(.tab-track·.tab-thumb)과 똑같은 4px 커스텀 트랙·썸을 화면
-   우측 끝에 고정해 그린다(.page-track·.page-thumb, app.js가 갱신).
-   삼성 인터넷 같은 안드로이드 브라우저는 OS 오버레이 스크롤바 정책 때문에
-   ::-webkit-scrollbar 를 스크롤이 멈추면 감춰 버리므로, 네이티브 페이지
-   스크롤바는 완전히 숨긴다. window 스크롤 구조 자체는 그대로 둔다. */
-html, body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
 /* 동기화 모달 안쪽처럼 남는 내부 스크롤 영역은 얇은 에메랄드 톤 유지 */
 .sync-panel::-webkit-scrollbar { width: 6px; height: 6px; }
 .sync-panel::-webkit-scrollbar-track { background: transparent; }
@@ -518,51 +501,14 @@ button.btn.is-on {
   width: 100%;
   height: 0;
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 68%, transparent),
-    color-mix(in srgb, var(--accent-strong) 55%, transparent)
-  );
+  /* 브라우저 기본 스크롤바와 어울리는 은은한 회색 톤 */
+  background: color-mix(in srgb, var(--text-faint) 52%, transparent);
   transform: translateY(0);
   transition: transform 0.09s linear, height 0.12s ease;
   will-change: transform;
 }
 [data-theme="dark"] .tab-track { background: color-mix(in srgb, var(--border-strong) 38%, transparent); }
-
-/* ── 전체 페이지 스크롤바 (메뉴 패널과 100% 동일한 4px 트랙·썸) ─────
-   .tab-track · .tab-thumb 와 같은 폭·트랙 배경·에메랄드 그라데이션·둥근
-   모서리를 화면 우측 끝에 고정(position: fixed)해 나란히 통일한다.
-   표시 여부·높이·위치는 app.js가 계산하고, 터치는 통과시킨다. */
-.page-track {
-  position: fixed;
-  top: calc(10px + env(safe-area-inset-top, 0px));
-  right: 3px;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  width: 4px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--border) 55%, transparent);
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 35;
-}
-.page-track[hidden] { display: none; }
-[data-theme="dark"] .page-track { background: color-mix(in srgb, var(--border-strong) 38%, transparent); }
-.page-thumb {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 0;
-  border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 68%, transparent),
-    color-mix(in srgb, var(--accent-strong) 55%, transparent)
-  );
-  transform: translateY(0);
-  transition: transform 0.09s linear, height 0.12s ease;
-  will-change: transform;
-}
+[data-theme="dark"] .tab-thumb { background: color-mix(in srgb, var(--text-faint) 60%, transparent); }
 
 /* 검색 탭 입력 */
 .search-row {
@@ -1028,6 +974,215 @@ ol.bullets li::marker {
 [data-theme="dark"] .callout-q { color: var(--accent); }
 .callout-txt { flex: 1 1 auto; min-width: 0; }
 
+/* ── 경량 시각화 블록 (flow · bars · compare) ───────────────
+   본문 흐름을 끊지 않게 카드 안에 한 덩어리로 앉힌다. 배경·테두리는
+   기존 불릿 박스와 같은 톤, 포인트만 에메랄드. 라이트/다크 공통. */
+.viz {
+  margin: 16px 0 1.2em;
+  padding: 13px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+.viz-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 11px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  color: var(--text-sub);
+  word-break: keep-all;
+}
+.viz-title::before {
+  content: "";
+  flex: 0 0 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #10b981, #84cc16);
+}
+
+/* 단계·인과 흐름 */
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.flow-num {
+  flex: 0 0 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+[data-theme="dark"] .flow-num { color: var(--accent); }
+.flow-body { flex: 1 1 auto; min-width: 0; }
+.flow-label {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--text);
+  word-break: keep-all;
+}
+.flow-note {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-sub);
+  word-break: keep-all;
+}
+.flow-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  margin: 5px 0;
+  border-right: 2px solid var(--border-strong);
+  border-bottom: 2px solid var(--border-strong);
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+@media (min-width: 640px) {
+  .viz-flow .flow { flex-direction: row; align-items: stretch; }
+  .viz-flow .flow-step { flex: 1 1 0; }
+  .viz-flow .flow-arrow {
+    align-self: center;
+    margin: 0 1px;
+    transform: rotate(-45deg);
+  }
+}
+
+/* 수치 막대 */
+.bars { display: flex; flex-direction: column; gap: 11px; }
+.bar-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.bar-label {
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-sub);
+  word-break: keep-all;
+}
+.bar-val {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+}
+.bar-row.tone-red .bar-fill { background: linear-gradient(90deg, #fb7185, #e11d48); }
+.bar-row.tone-red .bar-val { color: #e11d48; }
+.bar-row.tone-blue .bar-fill { background: linear-gradient(90deg, #60a5fa, #2563eb); }
+.bar-row.tone-blue .bar-val { color: #2563eb; }
+.bar-row.tone-amber .bar-fill { background: linear-gradient(90deg, #fbbf24, #d97706); }
+.bar-row.tone-amber .bar-val { color: #b45309; }
+[data-theme="dark"] .bar-row.tone-red .bar-val { color: #fb7185; }
+[data-theme="dark"] .bar-row.tone-blue .bar-val { color: #60a5fa; }
+[data-theme="dark"] .bar-row.tone-amber .bar-val { color: #fbbf24; }
+
+/* 2열 비교 카드 */
+.cmp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+@media (max-width: 560px) {
+  .cmp-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.cmp-col {
+  padding: 11px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.cmp-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cmp-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  word-break: keep-all;
+}
+.cmp-badge {
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+[data-theme="dark"] .cmp-badge { color: var(--accent); }
+.cmp-points { margin: 0; padding: 0; list-style: none; }
+.cmp-points li {
+  position: relative;
+  margin: 0 0 6px;
+  padding-left: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+  word-break: keep-all;
+}
+.cmp-points li::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 0.64em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+}
+[data-theme="dark"] .cmp-points li::before { background: var(--accent); }
+.cmp-points li:last-child { margin-bottom: 0; }
+
 .card-body strong {
   font-weight: 700;
   color: var(--text);
@@ -1205,9 +1360,10 @@ mark.hl {
   height: 38px;
   margin: 0 auto;
   padding: 0 14px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
   border-radius: 22px;
-  background: var(--glass-bg);
+  /* 은은한 에메랄드 유리 톤 — 허브(중립 유리)와 구분되는 읽기 바의 표식 */
+  background: color-mix(in srgb, var(--accent) 10%, var(--glass-bg));
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
   box-shadow: var(--shadow-hub);
@@ -1224,7 +1380,10 @@ mark.hl {
   transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.24s;
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .reading-bar { background: var(--surface); }
+  .reading-bar { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+}
+[data-theme="dark"] .reading-bar {
+  background: color-mix(in srgb, var(--accent) 13%, var(--glass-bg));
 }
 .reading-bar.is-on {
   visibility: visible;
@@ -1264,11 +1423,12 @@ mark.hl {
   font-weight: 700;
   line-height: 18px;
   letter-spacing: -0.012em;
-  color: var(--text);
+  color: color-mix(in srgb, var(--accent-strong) 72%, var(--text));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+[data-theme="dark"] .rb-channel { color: color-mix(in srgb, var(--accent) 68%, var(--text)); }
 .rb-dot {
   flex: 0 0 auto;
   margin: 0 6px;
@@ -1300,10 +1460,11 @@ mark.hl {
   justify-content: center;
   width: 16px;
   height: 16px;
-  color: var(--text-faint);
-  opacity: 0.55;
+  color: color-mix(in srgb, var(--accent-strong) 62%, var(--text-faint));
+  opacity: 0.8;
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.2s ease;
 }
+[data-theme="dark"] .rb-up { color: color-mix(in srgb, var(--accent) 62%, var(--text-faint)); }
 .rb-up svg { width: 13px; height: 13px; display: block; }
 .reading-bar:hover .rb-up,
 .reading-bar:focus-visible .rb-up { color: var(--accent-strong); opacity: 0.9; }
