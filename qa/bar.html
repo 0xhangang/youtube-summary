@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>읽기 바 레이아웃 확인용 (임시)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #dfe4ec; font-family: system-ui, sans-serif; }
+  .row { display: flex; gap: 16px; padding: 12px; align-items: flex-start; }
+  .cell { display: flex; flex-direction: column; gap: 4px; }
+  .lbl { font-size: 11px; color: #334155; letter-spacing: .02em; }
+  iframe { border: 0; display: block; background: #fff; box-shadow: 0 2px 10px rgba(15,23,42,.18); }
+</style>
+</head>
+<body>
+<div class="row" id="row"></div>
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var w = parseInt(p.get('w') || '390', 10);
+  var h = parseInt(p.get('h') || '844', 10);
+  var mode = p.get('mode') || 'mid';
+  var themes = (p.get('themes') || 'light,dark').split(',');
+  var row = document.getElementById('row');
+
+  themes.forEach(function (theme) {
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+    var lbl = document.createElement('div');
+    lbl.className = 'lbl';
+    lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode;
+    var f = document.createElement('iframe');
+    f.width = w;
+    f.height = h;
+    f.src = '../index.html';
+    cell.appendChild(lbl);
+    cell.appendChild(f);
+    row.appendChild(cell);
+
+    f.addEventListener('load', function () {
+      try {
+        var win = f.contentWindow;
+        var doc = win.document;
+        win.localStorage.setItem('yts.theme', theme);
+        doc.documentElement.setAttribute('data-theme', theme);
+        win.requestAnimationFrame(function () {
+          win.requestAnimationFrame(function () {
+            var card = doc.querySelector('.card');
+            if (!card) return;
+            var info = card.querySelector('.yt-info');
+            var infoBottomAbs = info.getBoundingClientRect().bottom + win.scrollY;
+            var cardBottomAbs = card.getBoundingClientRect().bottom + win.scrollY;
+            var y;
+            if (mode === 'edge') y = Math.round(infoBottomAbs + 6);
+            else if (mode === 'end') y = Math.round(cardBottomAbs - 24);
+            else if (mode === 'head') y = Math.round(infoBottomAbs - 300);
+            else y = Math.round(infoBottomAbs + 420);
+            win.scrollTo({ top: y, behavior: 'instant' });
+            setTimeout(function () {
+              var b = card.querySelector('.card-bar');
+              var r = b.getBoundingClientRect();
+              var cr = card.getBoundingClientRect();
+              lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode +
+                ' | scrollY ' + Math.round(win.scrollY) +
+                ' | bar ' + r.top.toFixed(0) + '~' + r.bottom.toFixed(0) +
+                ' x ' + r.left.toFixed(1) + '~' + r.right.toFixed(1) +
+                ' | card ' + cr.top.toFixed(0) + '~' + cr.bottom.toFixed(0) +
+                ' | ' + (b.className.indexOf('is-on') >= 0 ? 'ON' : 'off');
+            }, 260);
+          });
+        });
+      } catch (e) {
+        lbl.textContent += ' ERROR ' + e.message;
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
