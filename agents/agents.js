@@ -172,7 +172,7 @@
       var keys = Object.keys(ch || {});
       var watched = keys.filter(function (k) { return ch[k] && ch[k].watched === true; }).length;
       setText('statChannels', String(watched));
-      setText('statChannelsSub', 'watched: true / 전체 ' + keys.length);
+      setText('statChannelsSub', '전체 ' + keys.length + '개 채널');
     }).catch(function () {
       setText('statChannels', '–');
       setText('statChannelsSub', '불러오지 못함');
@@ -398,7 +398,7 @@
   /* ── 새로고침 ────────────────────────────────────────── */
   function stamp() {
     var t = kst();
-    setText('hdrMeta', '확인 ' + t.hm + ' KST · 새로고침으로 갱신');
+    setText('hdrMeta', '확인 ' + t.hm + ' KST');
   }
 
   function loadAll(manual) {
