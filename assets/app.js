@@ -766,7 +766,7 @@
       if (b.title) out.push(b.title);
       (b.items || []).forEach(function (it) {
         if (it && typeof it === 'object') {
-          out.push([it.label, it.display].filter(Boolean).join(' '));
+          out.push(notEmpty([it.label, it.value, it.display, it.sub]).join(' '));
         } else if (it) {
           out.push(String(it));
         }
@@ -779,6 +779,21 @@
         out.push([c.title, c.badge].filter(Boolean).join(' '));
         (c.points || []).forEach(function (pt) { if (pt) out.push(String(pt)); });
       });
+      (b.levels || []).forEach(function (lv) {
+        if (lv) out.push(notEmpty([lv.label, lv.price]).join(' '));
+      });
+      (b.events || []).forEach(function (ev) {
+        if (ev) out.push(notEmpty([ev.time, ev.title, ev.note]).join(' '));
+      });
+      (b.headers || []).forEach(function (h) { if (notEmpty([h]).length) out.push(String(h)); });
+      (b.rows || []).forEach(function (r) {
+        (Array.isArray(r) ? r : []).forEach(function (c) {
+          if (notEmpty([c]).length) out.push(String(c));
+        });
+      });
+      notEmpty([b.centerValue, b.centerLabel]).forEach(function (x) { out.push(String(x)); });
+      if (b.caption) out.push(String(b.caption));
+      if (b.unit) out.push(String(b.unit));
     });
     return out.join(' ');
   }
@@ -922,6 +937,374 @@
       grid.appendChild(c);
     });
     box.appendChild(grid);
+    return box;
+  }
+
+  /* ── 확장 시각화 블록 (donut · levels · timeline · stats · table · svg) ──
+   * 정형 블록은 데이터에 적힌 글자를 그대로 옮기고 길이·각도만 value
+   * 비율로 계산한다. 자유형 svg 는 DOMParser 로 파싱한 뒤 화이트리스트
+   * 태그만 남기고 스크립트·이벤트 핸들러·javascript: URL·foreignObject
+   * 를 걷어낸 마크업만 삽입한다. 색은 전부 CSS 변수라 라이트/다크에
+   * 같이 대응한다. */
+  var VIZ_TONES = { accent: 1, red: 1, blue: 1, amber: 1, green: 1, violet: 1 };
+
+  function notEmpty(list) {
+    return (list || []).filter(function (x) {
+      return x != null && String(x).trim() !== '';
+    });
+  }
+  function vizTone(t, dflt) {
+    var s = String(t == null ? '' : t).trim().toLowerCase();
+    return VIZ_TONES[s] ? s : (dflt || 'accent');
+  }
+  function fmtNum(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return String(v == null ? '' : v);
+    var neg = n < 0;
+    var parts = String(Math.abs(n)).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + parts.join('.');
+  }
+  /* 가격·수치 표기: 숫자면 천 단위 쉼표, 그 밖의 문자열은 그대로 */
+  function vizPrice(v) {
+    var raw = String(v == null ? '' : v).trim();
+    if (!raw) return '';
+    var n = Number(raw.replace(/[,\s]/g, ''));
+    return isFinite(n) ? fmtNum(n) : raw;
+  }
+  function vizText(tag, cls, html) {
+    var el = document.createElement(tag);
+    if (cls) el.className = cls;
+    el.innerHTML = html;
+    return el;
+  }
+
+  /* 원형 도넛 — value 비율로 호 길이를 잡고, 글자는 label·display 그대로 */
+  function buildDonut(b, q) {
+    var box = vizShell('donut', b.title, q);
+    var items = (b.items || []).filter(function (it) {
+      return it && (it.label || it.display != null);
+    });
+    if (!items.length) return box;
+    var vals = [];
+    var total = 0;
+    items.forEach(function (it) {
+      var v = Math.abs(Number(it.value));
+      if (!isFinite(v)) v = 0;
+      vals.push(v);
+      total += v;
+    });
+    if (total <= 0) return box;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'donut-wrap';
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 120 120');
+    svg.setAttribute('class', 'donut-svg');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-hidden', 'true');
+    var R = 46;
+    var C = 2 * Math.PI * R;
+    var g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('transform', 'rotate(-90 60 60)');
+    var track = document.createElementNS(SVG_NS, 'circle');
+    track.setAttribute('cx', '60');
+    track.setAttribute('cy', '60');
+    track.setAttribute('r', String(R));
+    track.setAttribute('class', 'donut-track');
+    g.appendChild(track);
+    var acc = 0;
+    items.forEach(function (it, i) {
+      var v = vals[i];
+      if (v <= 0) return;
+      var len = (v / total) * C;
+      var dash = Math.max(len - 1.6, 0.6);
+      var seg = document.createElementNS(SVG_NS, 'circle');
+      seg.setAttribute('cx', '60');
+      seg.setAttribute('cy', '60');
+      seg.setAttribute('r', String(R));
+      seg.setAttribute('class', 'donut-seg p' + ((i % 6) + 1) +
+        (it.tone && VIZ_TONES[String(it.tone).toLowerCase()] ? ' tone-' + vizTone(it.tone) : ''));
+      seg.setAttribute('stroke-dasharray', dash.toFixed(2) + ' ' + (C - dash).toFixed(2));
+      seg.setAttribute('stroke-dashoffset', (-acc).toFixed(2));
+      g.appendChild(seg);
+      acc += len;
+    });
+    svg.appendChild(g);
+    wrap.appendChild(svg);
+
+    if (notEmpty([b.centerValue, b.centerLabel]).length) {
+      var mid = document.createElement('div');
+      mid.className = 'donut-center';
+      if (b.centerValue != null && String(b.centerValue).trim() !== '') {
+        mid.appendChild(vizText('div', 'donut-cv', rich(String(b.centerValue), q)));
+      }
+      if (b.centerLabel) {
+        mid.appendChild(vizText('div', 'donut-cl', rich(String(b.centerLabel), q)));
+      }
+      wrap.appendChild(mid);
+    }
+    box.appendChild(wrap);
+
+    var legend = document.createElement('ul');
+    legend.className = 'donut-legend';
+    items.forEach(function (it, i) {
+      var li = document.createElement('li');
+      var dot = document.createElement('span');
+      dot.className = 'donut-dot p' + ((i % 6) + 1) +
+        (it.tone && VIZ_TONES[String(it.tone).toLowerCase()] ? ' tone-' + vizTone(it.tone) : '');
+      dot.setAttribute('aria-hidden', 'true');
+      li.appendChild(dot);
+      if (it.label) li.appendChild(vizText('span', 'donut-label', rich(String(it.label), q)));
+      if (it.display != null && String(it.display).trim() !== '') {
+        li.appendChild(vizText('span', 'donut-val', rich(String(it.display), q)));
+      }
+      legend.appendChild(li);
+    });
+    box.appendChild(legend);
+    return box;
+  }
+
+  /* 가격 구간·지지/저항 레벨 — 위(높은 가격)에서 아래로 눈금을 늘어놓는다 */
+  function buildLevels(b, q) {
+    var box = vizShell('levels', b.title, q);
+    var levels = (b.levels || []).filter(function (lv) {
+      return lv && notEmpty([lv.price, lv.label]).length;
+    });
+    if (!levels.length) return box;
+    var nums = levels.map(function (lv) {
+      var n = Number(String(lv.price == null ? '' : lv.price).replace(/[,\s]/g, ''));
+      return isFinite(n) ? n : null;
+    });
+    var allNum = nums.every(function (n) { return n != null; });
+    var ordered = levels.map(function (lv, i) { return { lv: lv, n: nums[i] }; });
+    if (allNum) {
+      ordered.sort(function (a, c) { return c.n - a.n; });
+    }
+
+    if (b.unit) {
+      var un = document.createElement('div');
+      un.className = 'lv-unit';
+      un.textContent = String(b.unit);
+      box.appendChild(un);
+    }
+    var list = document.createElement('div');
+    list.className = 'lv-list';
+    ordered.forEach(function (o) {
+      var lv = o.lv;
+      var row = document.createElement('div');
+      row.className = 'lv-row tone-' + vizTone(lv.tone);
+      var tick = document.createElement('span');
+      tick.className = 'lv-tick';
+      tick.setAttribute('aria-hidden', 'true');
+      row.appendChild(tick);
+      row.appendChild(vizText('span', 'lv-label', rich(String(lv.label || ''), q)));
+      row.appendChild(vizText('span', 'lv-price', rich(vizPrice(lv.price), q)));
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+    return box;
+  }
+
+  /* 시간순 사건 전개 — 세로 레일 + 노드 */
+  function buildTimeline(b, q) {
+    var box = vizShell('timeline', b.title, q);
+    var events = (b.events || []).filter(function (ev) {
+      return ev && notEmpty([ev.time, ev.title, ev.note]).length;
+    });
+    if (!events.length) return box;
+    var list = document.createElement('ol');
+    list.className = 'tl-list';
+    events.forEach(function (ev) {
+      var li = document.createElement('li');
+      li.className = 'tl-item';
+      var time = document.createElement('div');
+      time.className = 'tl-time';
+      if (notEmpty([ev.time]).length) time.innerHTML = rich(String(ev.time), q);
+      li.appendChild(time);
+      var body = document.createElement('div');
+      body.className = 'tl-body';
+      var node = document.createElement('span');
+      node.className = 'tl-node';
+      node.setAttribute('aria-hidden', 'true');
+      body.appendChild(node);
+      var txt = document.createElement('div');
+      txt.className = 'tl-txt';
+      if (ev.title) txt.appendChild(vizText('div', 'tl-title', rich(String(ev.title), q)));
+      if (ev.note) txt.appendChild(vizText('div', 'tl-note', rich(String(ev.note), q)));
+      body.appendChild(txt);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+    return box;
+  }
+
+  /* 핵심 지표 타일 */
+  function buildStats(b, q) {
+    var box = vizShell('stats', b.title, q);
+    var items = (b.items || []).filter(function (it) {
+      return it && notEmpty([it.label, it.value, it.sub]).length;
+    });
+    if (!items.length) return box;
+    var grid = document.createElement('div');
+    grid.className = 'stats-grid';
+    items.forEach(function (it) {
+      var cell = document.createElement('div');
+      cell.className = 'stat' + (it.tone && VIZ_TONES[String(it.tone).toLowerCase()]
+        ? ' tone-' + vizTone(it.tone) : '');
+      if (it.label) cell.appendChild(vizText('div', 'stat-label', rich(String(it.label), q)));
+      if (it.value != null && String(it.value).trim() !== '') {
+        cell.appendChild(vizText('div', 'stat-value', rich(String(it.value), q)));
+      }
+      if (it.sub) cell.appendChild(vizText('div', 'stat-sub', rich(String(it.sub), q)));
+      grid.appendChild(cell);
+    });
+    box.appendChild(grid);
+    return box;
+  }
+
+  /* 비교 표 — 모바일에서는 가로 스크롤 */
+  function buildTable(b, q) {
+    var box = vizShell('table', b.title, q);
+    var headers = (b.headers || []).map(function (h) { return h == null ? '' : String(h); });
+    var rows = (b.rows || []).filter(function (r) {
+      return Array.isArray(r) && notEmpty(r).length;
+    });
+    if (!headers.length && !rows.length) return box;
+    var wrap = document.createElement('div');
+    wrap.className = 'tbl-wrap';
+    var table = document.createElement('table');
+    table.className = 'tbl';
+    if (headers.length) {
+      var thead = document.createElement('thead');
+      var hr = document.createElement('tr');
+      headers.forEach(function (h) {
+        var th = document.createElement('th');
+        th.setAttribute('scope', 'col');
+        th.innerHTML = rich(h, q);
+        hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+      table.appendChild(thead);
+    }
+    if (rows.length) {
+      var tbody = document.createElement('tbody');
+      var cols = Math.max(headers.length, 1);
+      rows.forEach(function (r) {
+        cols = Math.max(cols, r.length);
+      });
+      rows.forEach(function (r) {
+        var tr = document.createElement('tr');
+        for (var i = 0; i < cols; i++) {
+          var cell = document.createElement(i === 0 ? 'th' : 'td');
+          if (i === 0) cell.setAttribute('scope', 'row');
+          cell.innerHTML = rich(r[i] == null ? '' : String(r[i]), q);
+          tr.appendChild(cell);
+        }
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+    }
+    wrap.appendChild(table);
+    box.appendChild(wrap);
+    return box;
+  }
+
+  /* ── 자유형 인라인 SVG ───────────────────────────────────
+   * 화이트리스트 태그만 남기고 나머지(script·foreignObject·image·
+   * animate·style 등)는 통째로 지운다. 속성은 on* 이벤트, 외부를 가리키는
+   * href, javascript:/vbscript:/data: URL, expression() 을 걷어낸다.
+   * 크기는 CSS(width:100%, height:auto)가 잡고 viewBox 로 비율을 유지한다. */
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var SVG_TAGS = {
+    svg: 1, g: 1, defs: 1, title: 1, desc: 1, symbol: 1, use: 1,
+    lineargradient: 1, radialgradient: 1, stop: 1, pattern: 1,
+    clippath: 1, mask: 1, marker: 1,
+    path: 1, rect: 1, circle: 1, ellipse: 1, line: 1, polyline: 1, polygon: 1,
+    text: 1, tspan: 1, textpath: 1
+  };
+  var SVG_BAD_URL = /(javascript|vbscript|data)\s*:/i;
+
+  function cleanSvgAttrs(el) {
+    var attrs = [];
+    for (var i = 0; i < el.attributes.length; i++) attrs.push(el.attributes[i]);
+    attrs.forEach(function (a) {
+      var name = String(a.name || '').toLowerCase();
+      var val = String(a.value == null ? '' : a.value);
+      var drop = false;
+      if (name.indexOf('on') === 0) drop = true;
+      else if (name === 'href' || name.slice(-5) === ':href') {
+        if (!/^\s*#/.test(val)) drop = true;
+      }
+      if (!drop && (SVG_BAD_URL.test(val) || /expression\s*\(/i.test(val))) drop = true;
+      if (drop) el.removeAttribute(a.name);
+    });
+  }
+
+  function cleanSvgTree(node) {
+    var children = [];
+    for (var i = 0; i < node.childNodes.length; i++) children.push(node.childNodes[i]);
+    children.forEach(function (ch) {
+      if (ch.nodeType === 1) {
+        var name = String(ch.nodeName || '').toLowerCase();
+        if (name.indexOf(':') >= 0) name = name.split(':').pop();
+        if (!SVG_TAGS[name] || ch.namespaceURI !== SVG_NS) {
+          node.removeChild(ch);
+          return;
+        }
+        cleanSvgAttrs(ch);
+        cleanSvgTree(ch);
+      } else if (ch.nodeType !== 3) {
+        node.removeChild(ch);
+      }
+    });
+  }
+
+  function sanitizeSvg(src) {
+    var txt = String(src == null ? '' : src).trim();
+    if (!txt || !/^<svg[\s>]/i.test(txt)) return null;
+    var doc = null;
+    try {
+      doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
+    } catch (e) {
+      return null;
+    }
+    if (!doc || !doc.documentElement) return null;
+    if (doc.querySelector('parsererror')) return null;
+    var root = doc.documentElement;
+    if (String(root.nodeName).toLowerCase() !== 'svg') return null;
+
+    var w = parseFloat(root.getAttribute('width'));
+    var h = parseFloat(root.getAttribute('height'));
+    cleanSvgAttrs(root);
+    cleanSvgTree(root);
+    root.removeAttribute('width');
+    root.removeAttribute('height');
+    if (!root.getAttribute('viewBox') && isFinite(w) && isFinite(h) && w > 0 && h > 0) {
+      root.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    }
+    root.setAttribute('class', ((root.getAttribute('class') || '') + ' svg-canvas').trim());
+    root.setAttribute('width', '100%');
+    root.setAttribute('height', 'auto');
+    root.setAttribute('focusable', 'false');
+    if (!root.getAttribute('role')) root.setAttribute('role', 'img');
+    return new XMLSerializer().serializeToString(root);
+  }
+
+  function buildSvg(b, q) {
+    var box = vizShell('svg', b.title, q);
+    var markup = sanitizeSvg(b.svg);
+    if (markup) {
+      var holder = document.createElement('div');
+      holder.className = 'svg-holder';
+      holder.innerHTML = markup;
+      var svgEl = holder.querySelector('svg');
+      if (svgEl) box.appendChild(holder);
+    }
+    if (b.caption) {
+      box.appendChild(vizText('div', 'svg-caption', rich(String(b.caption), q)));
+    }
     return box;
   }
 
@@ -1434,6 +1817,18 @@
         inner.appendChild(buildBars(b, q));
       } else if (b.type === 'compare') {
         inner.appendChild(buildCompare(b, q));
+      } else if (b.type === 'donut') {
+        inner.appendChild(buildDonut(b, q));
+      } else if (b.type === 'levels') {
+        inner.appendChild(buildLevels(b, q));
+      } else if (b.type === 'timeline') {
+        inner.appendChild(buildTimeline(b, q));
+      } else if (b.type === 'stats') {
+        inner.appendChild(buildStats(b, q));
+      } else if (b.type === 'table') {
+        inner.appendChild(buildTable(b, q));
+      } else if (b.type === 'svg') {
+        inner.appendChild(buildSvg(b, q));
       } else {
         splitParagraph(b.text || '').forEach(function (chunk) {
           var p = document.createElement('p');

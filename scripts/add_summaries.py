@@ -21,7 +21,15 @@ summary 필드
               · flow    {"type":"flow","title":..,"steps":[{"label":..,"note":..}]}      단계·인과 흐름
               · bars    {"type":"bars","title":..,"items":[{"label":..,"value":1.5,"display":"80%","tone":"accent|red|blue|amber"}]}  수치 막대
               · compare {"type":"compare","title":..,"cols":[{"title":..,"badge":..,"points":[..]}]}  2열 비교
-              (본문 p·ul·callout 을 축약하지 말고 그 아래에 걸맞은 시각화 블록만 덧붙인다)
+              · donut   {"type":"donut","title":..,"centerLabel":..,"centerValue":..,"items":[{"label":..,"value":50,"display":"50%","tone":..}]}  원형 비중
+              · levels  {"type":"levels","title":..,"unit":..,"levels":[{"price":7182,"label":..,"tone":..}]}  지지/저항·가격 구간
+              · timeline{"type":"timeline","title":..,"events":[{"time":..,"title":..,"note":..}]}  시간순 전개
+              · stats   {"type":"stats","title":..,"items":[{"label":..,"value":..,"sub":..,"tone":..}]}  지표 타일
+              · table   {"type":"table","title":..,"headers":[..],"rows":[[..],..]}             비교 표
+              · svg     {"type":"svg","title":..,"caption":..,"svg":"<svg viewBox=..>..</svg>"}  자유형 도식
+              (본문 p·ul·callout 을 축약하지 말고 그 아래에 걸맞은 시각화 블록을 덧붙인다)
+              svg 내부 문자열은 임의 축약·손상 없이 그대로 보존한다(스크립트·이벤트
+              속성·foreignObject 등은 웹페이지 app.js가 삽입 전에 걷어낸다).
     text      blocks 대신 줄글 하나로 줄 때. 아래 규칙으로 blocks로 변환된다.
                 "## 제목" / "### 제목"   -> h
                 "- 항목" / "* 항목"      -> ul
@@ -148,6 +156,39 @@ def text_to_blocks(text):
     return blocks
 
 
+VIZ_TONES = ("accent", "red", "blue", "amber", "green", "violet")
+VIZ_BLOCK_TYPES = ("flow", "bars", "compare", "donut", "levels", "timeline",
+                   "stats", "table", "svg")
+
+
+def _s(v):
+    return str(v if v is not None else "").strip()
+
+
+def _tone(v):
+    t = _s(v).lower()
+    return t if t in VIZ_TONES else ""
+
+
+def _num(v):
+    """숫자로 읽히는 값만 float/int로. 그 밖의 표기는 임의 보정 없이 버린다."""
+    if v is None or isinstance(v, bool):
+        return None
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return int(f) if f.is_integer() else f
+
+
+def _value(v):
+    """value 계열 필드: 숫자면 숫자로, 아니면 표기 그대로(문자열) 살린다."""
+    if v is None or _s(v) == "":
+        return None
+    n = _num(v)
+    return n if n is not None else _s(v)
+
+
 def norm_published(v):
     """업로드 시각을 KST ISO 문자열로 맞춘다. 알아볼 수 없는 표기는 그대로 돌려준다."""
     if not v:
@@ -233,7 +274,7 @@ def normalize(item, date_str, stamp):
             txt = str(b.get("text") or "").strip()
             if txt:
                 clean.append({"type": t, "text": txt})
-        elif t in ("flow", "bars", "compare"):
+        elif t in VIZ_BLOCK_TYPES:
             nb = {"type": t}
             title = str((b or {}).get("title") or "").strip()
             if title:
@@ -280,7 +321,7 @@ def normalize(item, date_str, stamp):
                 if bars:
                     nb["items"] = bars
                     clean.append(nb)
-            else:  # compare
+            elif t == "compare":
                 cols = []
                 for col in (b or {}).get("cols") or []:
                     if not isinstance(col, dict):
@@ -298,6 +339,134 @@ def normalize(item, date_str, stamp):
                 if cols:
                     nb["cols"] = cols
                     clean.append(nb)
+            elif t == "donut":
+                for k in ("centerLabel", "centerValue"):
+                    val = _s((b or {}).get(k))
+                    if val:
+                        nb[k] = val
+                items = []
+                for it in (b or {}).get("items") or []:
+                    if not isinstance(it, dict):
+                        continue
+                    label = _s(it.get("label"))
+                    display = _s(it.get("display"))
+                    value = _num(it.get("value"))
+                    if not label and not display and value is None:
+                        continue
+                    item = {}
+                    if label:
+                        item["label"] = label
+                    if value is not None:
+                        item["value"] = value
+                    if display:
+                        item["display"] = display
+                    tone = _tone(it.get("tone"))
+                    if tone:
+                        item["tone"] = tone
+                    items.append(item)
+                if items:
+                    nb["items"] = items
+                    clean.append(nb)
+            elif t == "levels":
+                unit = _s((b or {}).get("unit"))
+                if unit:
+                    nb["unit"] = unit
+                levels = []
+                for lv in (b or {}).get("levels") or []:
+                    if not isinstance(lv, dict):
+                        continue
+                    label = _s(lv.get("label"))
+                    price = _value(lv.get("price"))
+                    if price is None and not label:
+                        continue
+                    item = {}
+                    if price is not None:
+                        item["price"] = price
+                    if label:
+                        item["label"] = label
+                    tone = _tone(lv.get("tone"))
+                    if tone:
+                        item["tone"] = tone
+                    levels.append(item)
+                if levels:
+                    nb["levels"] = levels
+                    clean.append(nb)
+            elif t == "timeline":
+                events = []
+                for ev in (b or {}).get("events") or []:
+                    if not isinstance(ev, dict):
+                        continue
+                    time = _s(ev.get("time"))
+                    etitle = _s(ev.get("title"))
+                    note = _s(ev.get("note"))
+                    if not time and not etitle and not note:
+                        continue
+                    item = {}
+                    if time:
+                        item["time"] = time
+                    if etitle:
+                        item["title"] = etitle
+                    if note:
+                        item["note"] = note
+                    events.append(item)
+                if events:
+                    nb["events"] = events
+                    clean.append(nb)
+            elif t == "stats":
+                items = []
+                for it in (b or {}).get("items") or []:
+                    if not isinstance(it, dict):
+                        continue
+                    label = _s(it.get("label"))
+                    value = _value(it.get("value"))
+                    sub = _s(it.get("sub"))
+                    if not label and value is None and not sub:
+                        continue
+                    item = {}
+                    if label:
+                        item["label"] = label
+                    if value is not None:
+                        item["value"] = value
+                    if sub:
+                        item["sub"] = sub
+                    tone = _tone(it.get("tone"))
+                    if tone:
+                        item["tone"] = tone
+                    items.append(item)
+                if items:
+                    nb["items"] = items
+                    clean.append(nb)
+            elif t == "table":
+                headers = [_s(h) for h in ((b or {}).get("headers") or [])]
+                rows = []
+                for row in (b or {}).get("rows") or []:
+                    if not isinstance(row, (list, tuple)):
+                        continue
+                    cells = [_s(c) for c in row]
+                    if not any(cells):
+                        continue
+                    rows.append(cells)
+                if any(headers):
+                    nb["headers"] = headers
+                if rows:
+                    nb["rows"] = rows
+                if any(headers) or rows:
+                    clean.append(nb)
+            elif t == "svg":
+                raw = (b or {}).get("svg")
+                body = "" if raw is None else str(raw)
+                body = body.strip()  # 바깥 공백만 정리 — 내부는 그대로 보존
+                if not body:
+                    print("경고: svg 블록에 그림이 없어 건너뜀", file=sys.stderr)
+                    continue
+                if not body[:4].lower() == "<svg":
+                    print("경고: svg 블록이 <svg>로 시작하지 않아 건너뜀", file=sys.stderr)
+                    continue
+                nb["svg"] = body
+                caption = _s((b or {}).get("caption"))
+                if caption:
+                    nb["caption"] = caption
+                clean.append(nb)
         else:
             txt = str(b.get("text") or "").strip()
             if txt:

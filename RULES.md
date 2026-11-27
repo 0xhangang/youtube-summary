@@ -4,7 +4,7 @@
 규칙이 바뀌면 양쪽 비서에게 길게 설명하지 말고 **이 파일 하나만 고칩니다.** 채널 담당 배정은 [`data/radar_assign.json`](data/radar_assign.json), 채널 원본 메타(아바타·URL·감시 여부)는 [`data/channels.json`](data/channels.json), 자동 백업(Failover) 상태는 [`data/failover.json`](data/failover.json)이 기준입니다.
 
 - 사이트: https://0xhangang.github.io/youtube-summary/
-- 최종 갱신: 2026-11-26
+- 최종 갱신: 2026-11-28
 - 구조: 빌드 없음 — `index.html` + `assets/` + `data/*.json` + `s/*.html` (`.nojekyll`)
 
 ---
@@ -79,7 +79,11 @@
 
 - 스키마: 요약 객체는 `videoId`·`title`·`channel`·`category`·`categoryLabel`·`addedAt`·`blocks`를 갖추고, 선택 필드 `publishedAt`·`duration`·`thumbnail`·`kind`·`url`·`channelId`를 채운다.
   `blocks`는 `type`이 `h`(소제목)·`p`(문단)·`ul`(불릿)·`callout`(강조 상자)인 배열이다. 본문 텍스트의 `**굵게**`만 서식으로 변환된다.
-  여기에 경량 시각화 블록 세 가지를 더 쓸 수 있다 — `flow`(단계·인과 흐름, `steps:[{label,note?}]`), `bars`(수치 막대, `items:[{label,value,display,tone?}]`), `compare`(2열 비교, `cols:[{title,badge?,points:[]}]`). 시각화는 **기존 본문(p·ul·callout)을 한 줄도 줄이지 않은 채** 그 아래에 하나만 덧붙인다. 수치는 본문에 적힌 값만 쓰고 추정·계산값을 넣지 않는다.
+  여기에 시각화 블록을 덧붙인다 — `flow`(단계·인과 흐름, `steps:[{label,note?}]`), `bars`(수치 막대, `items:[{label,value,display,tone?}]`), `compare`(2열 비교, `cols:[{title,badge?,points:[]}]`), `donut`(원형 비중, `centerLabel?`·`centerValue?`·`items:[{label,value,display,tone?}]`), `levels`(지지/저항·가격 구간, `unit?`·`levels:[{price,label,tone?}]`), `timeline`(시간순 전개, `events:[{time,title,note?}]`), `stats`(지표 타일 2~4칸, `items:[{label,value,sub?,tone?}]`), `table`(`headers:[...]`·`rows:[[...]]`), 그리고 자유형 `svg`(`svg:"<svg viewBox=...>…</svg>"`, `caption?`, `title?`). `tone`은 `accent|red|blue|amber|green|violet`.
+- **절대 원칙 — 본문 무손실:** 시각화를 넣는다고 해서 §2의 1인칭 구어체 최대 상세 본문을 줄이거나 생략하는 것은 금지다. 본문은 100% 무손실로 쓰고, 시각화는 본문 이해를 돕는 보조로만 본문 사이·아래에 얹는다. 시각화를 넣느라 문장이 빠졌거나 분량이 줄었다면 그 요약은 미완성이다.
+- **무제한 적극 활용:** 블록 종류를 정형 목록으로 한정하지 않는다. 영상 내용에 가장 어울리는 도식·그래프·차트를 적극적으로 고른다 — 비중·확률은 `donut`, 지지/저항·가격대는 `levels`, 일정·사건 전개는 `timeline`, 핵심 수치는 `stats`, 항목 비교는 `table`·`compare`, 단계·인과는 `flow`, 크기 비교는 `bars`, 사분면·벤다이어그램·마인드맵·캔들·추세선처럼 정형으로 담기지 않는 것은 자유형 `svg`로 그린다. 한 요약에 몇 개를 넣을지는 영상 내용의 밀도가 정한다(수치가 쏟아지는 긴 영상은 여러 개, 짧은 영상은 하나면 충분). 수치·비중·확률은 본문에 적힌 값만 쓰고 추정·계산값을 새로 만들지 않는다.
+- **라이트/다크 동시 대응:** `svg`의 색은 검정 하드코딩 대신 CSS 변수를 쓴다(`style="fill:var(--text)"`, `stroke="var(--accent)"`, `var(--tone-red)`, `var(--border)` 등). 불가피하면 라이트·다크 양쪽에서 모두 읽히는 중간 톤을 쓴다. `svg`에는 `viewBox`를 반드시 넣는다(없으면 `width`/`height`에서 만든다) — 크기는 웹페이지가 `width:100%; height:auto`로 맞춘다.
+- **svg 보안:** `app.js`가 삽입 전에 `DOMParser`로 파싱해 `<script>`·`<foreignObject>`·`on*` 이벤트 속성·`javascript:`/`data:` URL·외부 `href`를 걷어낸다. 그래도 넣는 것은 정적 도형·텍스트뿐이며, 스크립트·외부 이미지·애니메이션은 넣지 않는다.
 - 같은 `videoId`는 기본적으로 건너뛴다. 내용을 고칠 때만 `--replace`를 쓴다.
 - `data/index.json`은 스크립트가 다시 계산한다. 손으로 고치지 않는다.
 
