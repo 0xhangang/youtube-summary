@@ -8,7 +8,7 @@
   html, body { margin: 0; padding: 0; background: #dfe4ec; font-family: system-ui, sans-serif; }
   .row { display: flex; gap: 16px; padding: 12px; align-items: flex-start; }
   .cell { display: flex; flex-direction: column; gap: 4px; }
-  .lbl { font-size: 11px; color: #334155; letter-spacing: .02em; }
+  .lbl { font-size: 11px; color: #334155; letter-spacing: .02em; height: 14px; }
   iframe { border: 0; display: block; background: #fff; box-shadow: 0 2px 10px rgba(15,23,42,.18); }
 </style>
 </head>
@@ -23,65 +23,65 @@
   var themes = (p.get('themes') || 'light,dark').split(',');
   var row = document.getElementById('row');
 
+  function start(f, lbl, theme) {
+    var win, doc;
+    try {
+      win = f.contentWindow;
+      doc = win.document;
+    } catch (e) { return false; }
+    var card = doc.querySelector('.card');
+    if (!card || !card.querySelector('.card-bar')) return false;
+
+    win.localStorage.setItem('yts.theme', theme);
+    doc.documentElement.setAttribute('data-theme', theme);
+
+    win.requestAnimationFrame(function () {
+      win.requestAnimationFrame(function () {
+        var info = card.querySelector('.yt-info');
+        var infoBottomAbs = info.getBoundingClientRect().bottom + win.scrollY;
+        var cardBottomAbs = card.getBoundingClientRect().bottom + win.scrollY;
+        var y;
+        if (mode === 'edge') y = Math.round(infoBottomAbs + 4);
+        else if (mode === 'end') y = Math.round(cardBottomAbs - 22);
+        else if (mode === 'head') y = Math.round(infoBottomAbs - 320);
+        else if (mode === 'top') y = 0;
+        else y = Math.round(infoBottomAbs + 420);
+        win.scrollTo({ top: y, behavior: 'instant' });
+        setTimeout(function () {
+          var b = card.querySelector('.card-bar');
+          var r = b.getBoundingClientRect();
+          var cr = card.getBoundingClientRect();
+          lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode +
+            ' | y ' + Math.round(win.scrollY) +
+            ' | bar ' + r.top.toFixed(0) + '~' + r.bottom.toFixed(0) +
+            ' x ' + r.left.toFixed(1) + '~' + r.right.toFixed(1) +
+            ' | card ' + cr.top.toFixed(0) + '~' + cr.bottom.toFixed(0) +
+            ' | ' + (b.className.indexOf('is-on') >= 0 ? 'ON' : 'off');
+        }, 350);
+      });
+    });
+    return true;
+  }
+
   themes.forEach(function (theme) {
     var cell = document.createElement('div');
     cell.className = 'cell';
     var lbl = document.createElement('div');
     lbl.className = 'lbl';
-    lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode;
+    lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode + ' (로딩)';
     var f = document.createElement('iframe');
     f.width = w;
     f.height = h;
-    f.src = '../index.html';
     cell.appendChild(lbl);
     cell.appendChild(f);
     row.appendChild(cell);
+    f.src = '../index.html';
 
-    f.addEventListener('load', function () {
-      try {
-        var win = f.contentWindow;
-        var doc = win.document;
-        win.localStorage.setItem('yts.theme', theme);
-        doc.documentElement.setAttribute('data-theme', theme);
-        var tries = 0;
-        var waitCard = function () {
-          tries++;
-          var card = doc.querySelector('.card');
-          if (!card || !card.querySelector('.card-bar')) {
-            if (tries < 60) { setTimeout(waitCard, 200); return; }
-            lbl.textContent += ' | 카드 없음';
-            return;
-          }
-          win.requestAnimationFrame(function () {
-            win.requestAnimationFrame(function () {
-              var info = card.querySelector('.yt-info');
-              var infoBottomAbs = info.getBoundingClientRect().bottom + win.scrollY;
-              var cardBottomAbs = card.getBoundingClientRect().bottom + win.scrollY;
-              var y;
-              if (mode === 'edge') y = Math.round(infoBottomAbs + 6);
-              else if (mode === 'end') y = Math.round(cardBottomAbs - 24);
-              else if (mode === 'head') y = Math.round(infoBottomAbs - 300);
-              else y = Math.round(infoBottomAbs + 420);
-              win.scrollTo({ top: y, behavior: 'instant' });
-              setTimeout(function () {
-                var b = card.querySelector('.card-bar');
-                var r = b.getBoundingClientRect();
-                var cr = card.getBoundingClientRect();
-                lbl.textContent = w + 'x' + h + ' · ' + theme + ' · ' + mode +
-                  ' | scrollY ' + Math.round(win.scrollY) +
-                  ' | bar ' + r.top.toFixed(0) + '~' + r.bottom.toFixed(0) +
-                  ' x ' + r.left.toFixed(1) + '~' + r.right.toFixed(1) +
-                  ' | card ' + cr.top.toFixed(0) + '~' + cr.bottom.toFixed(0) +
-                  ' | ' + (b.className.indexOf('is-on') >= 0 ? 'ON' : 'off');
-              }, 320);
-            });
-          });
-        };
-        waitCard();
-      } catch (e) {
-        lbl.textContent += ' ERROR ' + e.message;
-      }
-    });
+    var tries = 0;
+    var timer = setInterval(function () {
+      tries++;
+      if (start(f, lbl, theme) || tries > 40) clearInterval(timer);
+    }, 250);
   });
 })();
 </script>
