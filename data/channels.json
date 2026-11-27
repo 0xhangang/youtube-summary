@@ -486,5 +486,10 @@
     "url": "https://www.youtube.com/channel/UCcAYWARm5WSaCLOMms6jc2w",
     "avatar": "https://yt3.googleusercontent.com/8xWCxTCHggHzsxkjmEa-79PIjlNqI9GWRBuVD_VdHvhpZtuKrn8JR-YysiWJBgOFe2YUGoCWMw=s900-c-k-c0x00ffffff-no-rj",
     "watched": true
+  },
+  "피프": {
+    "channelUrl": "https://www.youtube.com/channel/UCWmuhz6LZ8u7QNYkITlNcpQ",
+    "avatar": "https://yt3.googleusercontent.com/a373T6MfZ36eNA998DT5xDjLqjX34I04OmZF6Xmi--tuomWLm7NvFEkME3nEt47etLH0Ahov=s900-c-k-c0x00ffffff-no-rj",
+    "watched": false
   }
 }
