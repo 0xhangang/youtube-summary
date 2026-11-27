@@ -39,7 +39,7 @@
     var link = doc.querySelector('link[rel="stylesheet"][href*="style.css"]');
     if (link && !link.getAttribute('data-bs')) {
       link.setAttribute('data-bs', '1');
-      link.href = '../assets/style.css?cb=' + Date.now();
+      link.href = '/youtube-summary/assets/style.css?cb=' + Date.now();
       return false;
     }
 
@@ -83,7 +83,7 @@
     cell.appendChild(lbl);
     cell.appendChild(f);
     row.appendChild(cell);
-    f.src = '../index.html';
+    setTimeout(function () { f.src = '../index.html'; }, p.get('defer') ? 1500 : 0);
 
     var tries = 0;
     var timer = setInterval(function () {
