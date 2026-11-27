@@ -438,7 +438,7 @@ button.btn.is-on {
 .tab-panel {
   margin-top: 11px;
   padding-top: 11px;
-  max-height: min(400px, 46vh);
+  max-height: min(220px, 28vh);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
