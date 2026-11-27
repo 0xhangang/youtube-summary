@@ -1,31 +1,8 @@
 {
   "date": "2026-11-27",
   "label": "2026년 11월 27일 금요일",
-  "updatedAt": "2026-11-28T03:38:17+09:00",
+  "updatedAt": "2026-11-28T03:41:04+09:00",
   "summaries": [
-    {
-      "id": "vizcheck002",
-      "videoId": "vizcheck002",
-      "url": "https://www.youtube.com/watch?v=vizcheck002",
-      "channel": "임시점검",
-      "category": "etc",
-      "categoryLabel": "기타",
-      "title": "SVG 새니타이저 임시 점검",
-      "thumbnail": "https://i.ytimg.com/vi/vizcheck002/hqdefault.jpg",
-      "addedAt": "2026-11-28T03:38:17+09:00",
-      "blocks": [
-        {
-          "type": "p",
-          "text": "임시 점검용 카드입니다. 위험 요소가 실제로 제거되는지 확인한 뒤 바로 삭제됩니다."
-        },
-        {
-          "type": "svg",
-          "title": "새니타이저 점검",
-          "svg": "<svg viewBox=\"0 0 200 120\"><style>*{fill:red}</style><script>alert('x')</script><rect x=\"10\" y=\"10\" width=\"80\" height=\"40\" onclick=\"alert(1)\" onload=\"alert(2)\" style=\"fill:var(--accent)\"/><a href=\"javascript:alert(3)\"><text x=\"12\" y=\"80\" style=\"fill:var(--text)\">링크텍스트</text></a><image href=\"https://example.com/x.png\" width=\"10\" height=\"10\"/><foreignObject width=\"50\" height=\"20\"><div>HTML</div></foreignObject><use xlink:href=\"https://example.com/x.svg#a\"/><circle cx=\"150\" cy=\"40\" r=\"20\" style=\"fill:var(--tone-red)\"/><animate attributeName=\"opacity\" values=\"0;1\"/><text x=\"10\" y=\"110\" style=\"fill:var(--text)\">남아야 하는 글자</text></svg>",
-          "caption": "script · foreignObject · image · animate · style · on* · javascript: · 외부 href 가 모두 사라져야 정상"
-        }
-      ]
-    },
     {
       "id": "xC58Z4eEeZ0",
       "videoId": "xC58Z4eEeZ0",
