@@ -10,7 +10,7 @@
 <title>R's Trading Station (11월 27일 금) 풀버젼 | 알상무 샘플 — 순수 줄글 + 개념어 볼드 · 판단·의견 하프 형광펜</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-<link rel="stylesheet" href="assets/style.css?v=20261128z5" />
+<link rel="stylesheet" href="assets/style.css?v=20261128z4" />
 <script>
   (function () {
     try {
@@ -32,6 +32,32 @@
   .sp-top .sp-sep { color: var(--border-strong); }
   .sp-top a { color: var(--text-faint); text-decoration: none; border-bottom: 1px solid var(--border-strong); }
   .sp-top .btn { margin-left: auto; }
+
+  /* ── 이 샘플의 유일한 추가: 굵은 글씨(문단 주제 단어) / 45% 하프 형광펜(화자 판단·결론) ──
+     카드 본문의 기존 에메랄드 강조 배경은 끄고 순수 굵은 글씨만 남긴다.
+     (사용자가 이 샘플만 보고 확정하기 전까지 전역 style.css는 그대로 둔다) */
+  .card-body strong,
+  .card-body strong.b-num {
+    background-image: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    color: var(--text);
+    font-weight: 800;
+  }
+  .card-body mark.hl-half {
+    background: transparent;
+    background-image: linear-gradient(to top, rgba(16, 185, 129, 0.22) 0.45em, transparent 0.45em);
+    color: inherit;
+    font-weight: 400;
+    padding: 0 1px;
+    border-radius: 0;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  [data-theme="dark"] .card-body mark.hl-half {
+    background-image: linear-gradient(to top, rgba(52, 211, 153, 0.26) 0.45em, transparent 0.45em);
+  }
 </style>
 </head>
 <body>
