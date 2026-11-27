@@ -712,6 +712,29 @@ h1 .h1-sub { font-weight: 700; color: var(--text-sub); font-size: 12.5px; letter
 .dotsep { color: var(--border-strong); margin: 0 3px; }
 
 /* ── 좁은 화면 ────────────────────────────────────────── */
+/* ── 넓은 화면에서는 본문을 한 단계 키움 ───────────────── */
+@media (min-width: 620px) {
+  body { font-size: 15px; }
+  h1 { font-size: 17px; }
+  .brand-mark { flex-basis: 38px; width: 38px; height: 38px; }
+  .card-head h2 { font-size: 14.5px; }
+  .node-name { font-size: 13.5px; }
+  .node-sub { font-size: 11px; }
+  .node-num b { font-size: 15px; }
+  .stat-k, .stat-sub { font-size: 10.5px; }
+  .stat-v { font-size: 21px; }
+  .stat-v-sm { font-size: 14px; }
+  .tl-time { font-size: 11px; }
+  .tl-msg { font-size: 12.5px; }
+  .cm-time { font-size: 10.5px; }
+  .cm-title { font-size: 13.5px; }
+  .cm-body { font-size: 12.5px; }
+  .chip-sm { font-size: 10px; }
+  .link-label { font-size: 10.5px; }
+  .topo-tag { font-size: 10px; }
+  .topo-note { font-size: 10.5px; }
+}
+
 @media (max-width: 430px) {
   h1 .sep { display: none; }
   h1 .h1-sub {
