@@ -1693,7 +1693,7 @@ mark.hl {
 
 /* ── 상단 읽기 바 (1줄 슬림 — 아바타 채널 제목 ↑, 사이는 여백 8px) ──────
    허브 카드가 화면 위로 완전히 사라진 뒤 본문을 읽는 동안에만 내려온다.
-   본문 카드와 같은 가로폭(max 780px, 모바일은 좌우 8px 여백)·같은 바탕·
+   본문 카드와 같은 가로폭(모바일 좌우 8px·600px 이상 좌우 20px, max 780px)·같은 바탕·
    같은 좌우 테 개를 쓰고 위똑·동글림을 없앤다 — '본문 카드의 제목이 1줄로
    접혔서 화면 맨 위에 붙어 있는' 느낌. 글자는 기존 1줄 그대로. */
 .reading-bar {
@@ -1817,7 +1817,9 @@ mark.hl {
   .section-title { font-size: 17px; }
   .rb-channel, .rb-title { font-size: 12.5px; }
   .rb-channel { max-width: 38%; }
-  .reading-bar { padding: 0 20px; }
+  /* 컨테이너 좌우 여백이 8px → 20px 로 넓어지므로 읽기 바 폭도 16px → 40px 만큼 줄인다
+     (본문 카드와 left/right/width 완전 일치 — 폴드7 펼침 600~780px 구간 포함) */
+  .reading-bar { width: calc(100% - 40px); padding: 0 20px; }
 }
 
 @media (max-width: 520px) {
