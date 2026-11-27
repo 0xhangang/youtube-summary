@@ -35,6 +35,14 @@
     win.localStorage.setItem('yts.theme', theme);
     doc.documentElement.setAttribute('data-theme', theme);
 
+    /* Pages CDN이 예전 style.css?v= 를 캐시하고 있어도 최신 CSS로 확인한다 */
+    var link = doc.querySelector('link[rel="stylesheet"][href*="style.css"]');
+    if (link && !link.getAttribute('data-bs')) {
+      link.setAttribute('data-bs', '1');
+      link.href = '../assets/style.css?cb=' + Date.now();
+      return false;
+    }
+
     win.requestAnimationFrame(function () {
       win.requestAnimationFrame(function () {
         var info = card.querySelector('.yt-info');
