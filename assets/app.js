@@ -1261,17 +1261,31 @@
     });
   }
 
-  function sanitizeSvg(src) {
-    var txt = String(src == null ? '' : src).trim();
-    if (!txt || !/^<svg[\s>]/i.test(txt)) return null;
+  function parseSvgDoc(txt) {
     var doc = null;
     try {
       doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
     } catch (e) {
       return null;
     }
+    if (doc && !doc.querySelector('parsererror')) return doc;
+    /* 흔한 작성 실수 보정: 텍스트 속 홀로 쓴 & 를 엔티티로 바꿔 한 번 더.
+       ("S&P" 처럼 XML에서 깨지는 경우 — 이미 엔티티인 &amp;·&#160; 은 건드리지 않는다) */
+    var fixed = txt.replace(/&(?!#?[A-Za-z0-9]+;)/g, '&amp;');
+    if (fixed === txt) return null;
+    try {
+      doc = new DOMParser().parseFromString(fixed, 'image/svg+xml');
+    } catch (e) {
+      return null;
+    }
+    return doc && !doc.querySelector('parsererror') ? doc : null;
+  }
+
+  function sanitizeSvg(src) {
+    var txt = String(src == null ? '' : src).trim();
+    if (!txt || !/^<svg[\s>]/i.test(txt)) return null;
+    var doc = parseSvgDoc(txt);
     if (!doc || !doc.documentElement) return null;
-    if (doc.querySelector('parsererror')) return null;
     var root = doc.documentElement;
     if (String(root.nodeName).toLowerCase() !== 'svg') return null;
 
