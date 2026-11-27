@@ -1785,6 +1785,67 @@
   }
 
   /* ── 카드 ──────────────────────────────────────────── */
+  /* 카드마다 제목칸 바로 아래에 두는 1줄 읽기 바.
+     제목칸이 화면 위로 사라지면 이 바가 카드 테두리 안에서 sticky로 붙어 따라온다. */
+  function buildCardBar(channel, title) {
+    var wrap = document.createElement('div');
+    wrap.className = 'card-sticky';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'card-bar';
+    btn.title = '카드 맨 위로';
+    btn.setAttribute('aria-label', '지금 읽는 글의 맨 위로 이동');
+
+    var line = document.createElement('span');
+    line.className = 'rb-body';
+
+    var av = document.createElement('img');
+    av.className = 'rb-av';
+    av.alt = '';
+    av.width = 16;
+    av.height = 16;
+    av.loading = 'lazy';
+    av.decoding = 'async';
+    av.referrerPolicy = 'no-referrer';
+    av.hidden = true;
+    var avUrl = getChannelAvatar(channel);
+    if (avUrl) {
+      av.hidden = false;
+      av.addEventListener('error', function () { av.hidden = true; });
+      av.src = avUrl;
+    }
+    line.appendChild(av);
+
+    var ch = document.createElement('span');
+    ch.className = 'rb-channel';
+    ch.textContent = channel || '';
+    ch.hidden = !channel;
+    line.appendChild(ch);
+
+    var ti = document.createElement('span');
+    ti.className = 'rb-title';
+    ti.textContent = title || '';
+    line.appendChild(ti);
+
+    btn.appendChild(line);
+
+    var up = document.createElement('span');
+    up.className = 'rb-up';
+    up.setAttribute('aria-hidden', 'true');
+    up.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15.6V5.1"/><path d="m5.7 9.4 4.3-4.3 4.3 4.3"/></svg>';
+    btn.appendChild(up);
+
+    btn.addEventListener('click', function () {
+      var card = btn.closest ? btn.closest('.card') : null;
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
   function buildCard(it) {
     var s = it.s;
     var id = s.videoId || s.id || (it.date + '-' + s.title);
@@ -1905,6 +1966,7 @@
 
     header.appendChild(info);
     card.appendChild(header);
+    card.appendChild(buildCardBar(chTitle, s.title || '(제목 없음)'));
 
     var body = document.createElement('div');
     body.className = 'card-body';
@@ -2735,35 +2797,21 @@
     initTabScroll();
   }
 
-  /* ── 상단 읽기 바 ──────────────────────────────────────
-   * 상단 허브가 숨겨진 뒤 카드 머리(제목)까지 화면 위로 지나가고 본문을
-   * 읽는 동안에만 화면 맨 위에 슬림 1줄 바를 띄운다 —
-   *   한 줄: 채널 아바타 · 채널명 · 영상 제목 · ↑ (구분은 8px 여백, 가운데 점 없음) */
-  var bar = {
-    el: null, channelEl: null, titleEl: null, avEl: null,
-    card: null, shown: false, gap: 8,
-    channel: null, title: null, avatar: null,
-    frame: 0, lockY: 0, lockUntil: 0
-  };
+  /* ── 카드 일체형 읽기 바 ────────────────────────────────
+   * 카드마다 제목칸(.yt-info) 바로 아래에 40px 1줄 바를 두고(sticky, 흐름 차지 없음)
+   * 제목칸이 화면 위로 완전히 사라지는 순간부터 카드 바닥까지, 그 카드의 1px 테두리
+   * 안쪽 폭 그대로 따라 내려오게 한다 — 한 줄: 채널 아바타 · 채널명 · 영상 제목 · ↑.
+   * 한 번에 한 카드만 켜고, 다음 카드로 넘어가면 이전 카드는 카드 바닥과 함께 밀려 올라간다. */
+  var bar = { frame: 0, onCard: null };
 
-  function barHeight() {
-    return (bar.el && bar.el.offsetHeight) || 40;
-  }
+  var BAR_H = 40;
 
-  /* 바는 화면 맨 위(top: 0)에 붙으므로 본문이 가리는 기준선은 바 높이 그대로다.
-     top 값이 있으면 그만큼 더한다. (transform과 무관하게 계산) */
-  function barBottom() {
-    return (bar.gap || 0) + barHeight();
-  }
-
-  function measureBarGap() {
-    if (!bar.el) return;
-    var t = parseFloat(window.getComputedStyle(bar.el).top);
-    bar.gap = isNaN(t) ? 8 : t;
-  }
-
-  function barText(node) {
-    return (node ? node.textContent : '').replace(/\s+/g, ' ').trim();
+  function setCardBar(card, on) {
+    if (!card || !card.isConnected) return;
+    var el = card.querySelector('.card-bar');
+    if (!el) return;
+    if (el.classList.contains('is-on') === on) return;
+    el.classList.toggle('is-on', on);
   }
 
   /* 문서 순서상 topY 위에서 시작한 마지막 카드 (카드 tops는 오름차순) */
@@ -2781,76 +2829,25 @@
     return found < 0 ? null : cards[found];
   }
 
-  function setBarShown(on) {
-    if (!bar.el || bar.shown === on) return;
-    bar.shown = on;
-    bar.el.classList.toggle('is-on', on);
-  }
-
-  function setBarChannel(channel) {
-    if (bar.channel === channel) return;
-    bar.channel = channel;
-    if (bar.channelEl) bar.channelEl.textContent = channel || '';
-    if (bar.channelEl) bar.channelEl.hidden = !channel;
-  }
-
-  function setBarAvatar(url) {
-    url = url || '';
-    if (bar.avatar === url) return;
-    bar.avatar = url;
-    var el = bar.avEl;
-    if (!el) return;
-    if (!url) {
-      el.hidden = true;
-      el.removeAttribute('src');
-      return;
-    }
-    el.hidden = false;
-    el.src = url;
-  }
-
-  function setBarContent(channel, title) {
-    setBarChannel(channel);
-    setBarAvatar(channel ? getChannelAvatar(channel) : '');
-    if (bar.title !== title) {
-      bar.title = title;
-      if (bar.titleEl) bar.titleEl.textContent = title || '';
-    }
-  }
-
   function updateReadingBar() {
-    if (!bar.el || !bar.el.isConnected || !dom.feed) return;
-    /* 바를 눌러 카드 맨 위로 부드럽게 오르는 동안에는 다시 띄우지 않는다 */
-    if (bar.lockUntil) {
-      if (performance.now() < bar.lockUntil && (window.scrollY || 0) > bar.lockY + 2) {
-        setBarShown(false);
-        return;
+    if (!dom.feed) return;
+    var target = null;
+    var modalOpen = dom.syncModal && !dom.syncModal.hidden;
+    if (!modalOpen) {
+      var card = cardAtY(0);
+      if (card) {
+        var info = card.querySelector('.yt-info');
+        var cardRect = card.getBoundingClientRect();
+        /* 제목칸이 화면 위로 완전히 지나갔고, 카드 끝이 아직 화면에 남아 있을 때만 */
+        if (info && info.getBoundingClientRect().bottom <= 0.5 && cardRect.bottom > BAR_H + 2) {
+          target = card;
+        }
       }
-      bar.lockUntil = 0;
     }
-    var hub = document.getElementById('siteHeader');
-    if (dom.syncModal && !dom.syncModal.hidden) { setBarShown(false); return; }
-    /* 허브 카드가 화면 위로 완전히 사라진 뒤에만 읽기 바를 띄운다(겸침 방지).
-       허브는 sticky가 아닌 일반 블록이라 스크롤하면 bottom이 그대로 올라간다. */
-    if (hub && !hub.hidden && hub.getBoundingClientRect().bottom > 0) { setBarShown(false); return; }
-
-    var top = barBottom();
-    var card = cardAtY(top);
-    if (!card) { setBarShown(false); return; }
-
-    var body = card.querySelector('.card-body');
-    if (!body) { setBarShown(false); return; }
-    if (body.getBoundingClientRect().top > 1 || card.getBoundingClientRect().bottom < top + 16) {
-      setBarShown(false);
-      return;
-    }
-
-    setBarContent(
-      barText(card.querySelector('.channel-name')),
-      barText(card.querySelector('.video-title'))
-    );
-    bar.card = card;
-    setBarShown(true);
+    if (bar.onCard === target) return;
+    setCardBar(bar.onCard, false);
+    setCardBar(target, true);
+    bar.onCard = target;
   }
 
   function scheduleReadingBar() {
@@ -2862,30 +2859,7 @@
   }
 
   function initReadingBar() {
-    bar.el = document.getElementById('readingBar');
-    bar.channelEl = document.getElementById('rbChannel');
-    bar.titleEl = document.getElementById('rbTitle');
-    bar.avEl = document.getElementById('rbAvatar');
-    if (!bar.el) return;
-    measureBarGap();
-    if (bar.avEl) {
-      bar.avEl.addEventListener('error', function () {
-        /* 아바타가 없거나 막힌 채널은 그냥 숨긴다 */
-        bar.avEl.hidden = true;
-      });
-    }
-    bar.el.addEventListener('click', function () {
-      var card = bar.card;
-      if (!card || !card.isConnected) card = cardAtY(barBottom());
-      setBarShown(false);
-      if (card) {
-        bar.lockY = card.getBoundingClientRect().top + (window.scrollY || 0);
-        bar.lockUntil = performance.now() + 1100;
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
     window.addEventListener('resize', function () {
-      measureBarGap();
       scheduleReadingBar();
     }, { passive: true });
     scheduleReadingBar();

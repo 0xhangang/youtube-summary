@@ -916,7 +916,9 @@ button.btn.is-on {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  overflow: hidden;
+  /* hidden은 카드가 스크롤 컨테이너가 돼 안쪽 sticky 읽기 바가 붙지 못한다.
+     clip은 스크롤 컨테이너를 만들지 않으면서 같은 모서리 클리핑을 해 준다. */
+  overflow: clip;
   scroll-margin-top: 16px;
   animation: cardEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -1918,49 +1920,52 @@ mark.hl {
   stroke-linejoin: round;
 }
 
-/* ── 상단 읽기 바 (1줄 슬림 — 아바타 채널 제목 ↑, 사이는 여백 8px) ──────
-   허브 카드가 화면 위로 완전히 사라진 뒤 본문을 읽는 동안에만 내려온다.
-   본문 카드와 같은 가로폭(모바일 좌우 8px·600px 이상 좌우 20px, max 780px)·같은 바탕·
-   같은 좌우 테 개를 쓰고 위똑·동글림을 없앤다 — '본문 카드의 제목이 1줄로
-   접혔서 화면 맨 위에 붙어 있는' 느낌. 글자는 기존 1줄 그대로. */
-.reading-bar {
-  position: fixed;
+/* ── 카드 일체형 읽기 바 (1줄 슬림 — 아바타 채널 제목 ↑, 사이는 여백 8px) ─────
+   카드마다 제목칸(.yt-info) 바로 아래에 40px 읽기 바를 두고 sticky로 붙인다.
+   제목칸이 화면 위로 완전히 사라지는 순간부터 카드 바닥까지, 본문 카드의
+   안쪽 폭·1px 테두리 안에서 그대로 따라 내려온다(좌우 테두리·바깥 그림자 없음,
+   아래쪽 1px 선만). 다음 카드가 올라오면 이 카드 바닥과 함께 밀려 올라간다.
+   높이 40px + 아래 여백 -40px 이라 흐름을 차지하지 않고 본문 위에 겹친다. */
+.card-sticky {
+  position: sticky;
   top: 0;
-  left: 50%;
-  right: auto;
-  z-index: 45;
+  z-index: 6;
+  height: 40px;
+  margin-bottom: -40px;
+}
+
+.card-bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: calc(100% - 16px);
-  max-width: 780px;
+  width: 100%;
   height: 40px;
   margin: 0;
   padding: 0 16px;
-  border: 1px solid var(--border);
-  border-top: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
   border-radius: 0;
   background: var(--surface-2);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 6px -2px rgba(15, 23, 42, 0.06);
   color: var(--text);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  overflow: hidden;
   visibility: hidden;
   opacity: 0;
-  transform: translate(-50%, -100%);
+  transform: translateY(-4px);
   pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.24s;
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.2s;
 }
-.reading-bar.is-on {
+[data-theme="dark"] .card-bar { box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.45); }
+.card-bar.is-on {
   visibility: visible;
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: none;
   pointer-events: auto;
-  transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
 }
-.reading-bar:active { transform: translate(-50%, 0); }
 
 .rb-body {
   flex: 1 1 auto;
@@ -1998,7 +2003,7 @@ mark.hl {
   text-overflow: ellipsis;
 }
 .rb-channel[hidden] { display: none; }
-[data-theme="dark"] .reading-bar .rb-channel { color: var(--accent); }
+[data-theme="dark"] .card-bar .rb-channel { color: var(--accent); }
 
 /* 영상 제목 — 한 줄 말줄임 */
 .rb-title {
@@ -2027,9 +2032,10 @@ mark.hl {
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.2s ease;
 }
 .rb-up svg { width: 13px; height: 13px; display: block; }
-.reading-bar:hover .rb-up,
-.reading-bar:focus-visible .rb-up { color: var(--accent-strong); opacity: 0.9; }
-.reading-bar:active .rb-up { transform: translateY(-1px); opacity: 1; }
+.card-bar:hover .rb-up,
+.card-bar:focus-visible .rb-up { color: var(--accent-strong); opacity: 0.9; }
+.card-bar:active .rb-up { transform: translateY(-1px); opacity: 1; }
+.card-bar:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: -2px; }
 
 /* ── 넓은 화면 (태블릿·데스크톱) ─────────────────────────── */
 @media (min-width: 600px) {
@@ -2043,9 +2049,8 @@ mark.hl {
   .section-title { font-size: 17px; }
   .rb-channel, .rb-title { font-size: 12.5px; }
   .rb-channel { max-width: 38%; }
-  /* 컨테이너 좌우 여백이 8px → 20px 로 넓어지므로 읽기 바 폭도 16px → 40px 만큼 줄인다
-     (본문 카드와 left/right/width 완전 일치 — 폴드7 펼침 600~780px 구간 포함) */
-  .reading-bar { width: calc(100% - 40px); padding: 0 20px; }
+  /* 읽기 바 좌우 여백은 제목칸(.yt-info) 좌우 여백과 같은 값을 쓴다 */
+  .card-bar { padding: 0 20px; }
 }
 
 @media (max-width: 520px) {
@@ -2066,6 +2071,7 @@ mark.hl {
   .hub-top { padding: 13px 14px 9px; }
   .hub-tabs { padding: 0 14px 13px; }
   .yt-info { padding: 12px 13px; }
+  .card-bar { padding: 0 13px; }
   .yt-head-row { gap: 10px; }
   .ch-av { flex: 0 0 36px; width: 36px; height: 36px; font-size: 14px; }
   .yt-time-row { padding-left: 46px; }
