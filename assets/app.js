@@ -1548,6 +1548,15 @@
   }
 
   /* ── 렌더 ──────────────────────────────────────────── */
+  // 읽은 카드를 흐릿하게(opacity .45) 보여 주는 곳은 기본 전체 피드 하나뿐.
+  // 그 밖의 진입/필터 뷰(읽음·좋아요·검색·날짜·분류·채널·단일 카드 ?v=)는 모두 선명하게.
+  function isDefaultFeed() {
+    return !state.singleMode &&
+      !state.readOnly && !state.favOnly &&
+      !String(state.q || '').trim() &&
+      state.cat === 'all' && state.channel === 'all' && state.activeDate === 'all';
+  }
+
   function apply() {
     var q = state.q.trim().toLowerCase();
     var isGlobal = state.favOnly || state.readOnly || q !== '';
@@ -1580,7 +1589,7 @@
       state.feedObserver.disconnect();
       state.feedObserver = null;
     }
-    feed.classList.toggle('is-read-view', state.readOnly || state.favOnly || state.cat !== 'all' || state.channel !== 'all' || state.activeDate !== 'all');
+    feed.classList.toggle('is-read-view', !isDefaultFeed());
     feed.innerHTML = '';
     scheduleReadingBar();
     if (!sorted.length) {
@@ -2374,6 +2383,7 @@
       bar.appendChild(themeClone);
 
       dom.feed.innerHTML = '';
+      dom.feed.classList.add('is-read-view');
       dom.feed.appendChild(bar);
       dom.feed.appendChild(buildCard(found));
       scheduleReadingBar();
