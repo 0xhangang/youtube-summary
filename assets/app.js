@@ -473,6 +473,7 @@
 
   function openSyncModal() {
     if (!dom.syncModal) return;
+    scheduleReadingBar();
     if (dom.syncToken) {
       dom.syncToken.value = '';
       dom.syncToken.placeholder = sync.token ? '저장된 토큰 사용 중 · 바꾸려면 새 토큰 입력' : 'ghp_… (classic 토큰)';
@@ -486,6 +487,7 @@
 
   function closeSyncModal() {
     if (!dom.syncModal) return;
+    scheduleReadingBar();
     dom.syncModal.hidden = true;
     document.body.classList.remove('sync-open');
     if (dom.syncBtn) dom.syncBtn.focus();
@@ -1345,6 +1347,7 @@
     }
     feed.classList.toggle('is-read-view', state.readOnly || state.favOnly || state.cat !== 'all' || state.channel !== 'all');
     feed.innerHTML = '';
+    scheduleReadingBar();
     if (!sorted.length) {
       var none = document.createElement('div');
       none.className = 'state';
@@ -1381,6 +1384,7 @@
         frag.appendChild(buildCard(it));
       }
       feed.appendChild(frag);
+      scheduleReadingBar();
       if (cursor < sorted.length) {
         if (!moreWrap) {
           moreWrap = document.createElement('div');
@@ -1932,6 +1936,7 @@
     window.addEventListener('scroll', function () {
       var y = Math.max(0, window.scrollY || 0);
       topBtn.classList.toggle('show', y > 600);
+      scheduleReadingBar();
 
       if (!hub || hub.hidden) return;
       if (dom.search && document.activeElement === dom.search) return;
@@ -1966,6 +1971,134 @@
         }
       }
     }, { passive: true });
+
+    initReadingBar();
+  }
+
+  /* ── 상단 읽기 바 ──────────────────────────────────────
+   * 상단 허브가 숨겨진 뒤 카드 머리(제목)까지 화면 위로 지나가고 본문을
+   * 읽는 동안에만 화면 맨 위에 영상 제목 · 현재 소제목을 얇게 띄운다. */
+  var bar = {
+    el: null, titleEl: null, sepEl: null, sectionEl: null,
+    card: null, shown: false, title: null, section: null, frame: 0,
+    lockY: 0, lockUntil: 0
+  };
+
+  function barHeight() {
+    return (bar.el && bar.el.offsetHeight) || 40;
+  }
+
+  function barText(node) {
+    return (node ? node.textContent : '').replace(/\s+/g, ' ').trim();
+  }
+
+  /* 문서 순서상 topY 위에서 시작한 마지막 카드 (카드 tops는 오름차순) */
+  function cardAtY(topY) {
+    var cards = dom.feed ? dom.feed.querySelectorAll('.card') : null;
+    if (!cards || !cards.length) return null;
+    var lo = 0;
+    var hi = cards.length - 1;
+    var found = -1;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (cards[mid].getBoundingClientRect().top <= topY) { found = mid; lo = mid + 1; }
+      else { hi = mid - 1; }
+    }
+    return found < 0 ? null : cards[found];
+  }
+
+  function sectionAtY(card, topY) {
+    var heads = card.querySelectorAll('.card-body .section-title');
+    if (!heads.length) return null;
+    var lo = 0;
+    var hi = heads.length - 1;
+    var found = -1;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      if (heads[mid].getBoundingClientRect().top <= topY) { found = mid; lo = mid + 1; }
+      else { hi = mid - 1; }
+    }
+    return found < 0 ? null : heads[found];
+  }
+
+  function setBarShown(on) {
+    if (!bar.el || bar.shown === on) return;
+    bar.shown = on;
+    bar.el.classList.toggle('is-on', on);
+  }
+
+  function setBarContent(title, section) {
+    if (bar.title !== title) {
+      bar.title = title;
+      if (bar.titleEl) bar.titleEl.textContent = title;
+    }
+    if (bar.section !== section) {
+      bar.section = section;
+      if (bar.sectionEl) {
+        bar.sectionEl.textContent = section;
+        bar.sectionEl.hidden = !section;
+      }
+      if (bar.sepEl) bar.sepEl.hidden = !section;
+    }
+  }
+
+  function updateReadingBar() {
+    if (!bar.el || !bar.el.isConnected || !dom.feed) return;
+    /* 바를 눌러 카드 맨 위로 부드럽게 오르는 동안에는 다시 띄우지 않는다 */
+    if (bar.lockUntil) {
+      if (performance.now() < bar.lockUntil && (window.scrollY || 0) > bar.lockY + 2) {
+        setBarShown(false);
+        return;
+      }
+      bar.lockUntil = 0;
+    }
+    var hub = document.getElementById('siteHeader');
+    if (dom.syncModal && !dom.syncModal.hidden) { setBarShown(false); return; }
+    if (hub && !hub.hidden && !hub.classList.contains('is-hidden')) { setBarShown(false); return; }
+
+    var top = barHeight();
+    var card = cardAtY(top);
+    if (!card) { setBarShown(false); return; }
+
+    var body = card.querySelector('.card-body');
+    if (!body) { setBarShown(false); return; }
+    if (body.getBoundingClientRect().top > 1 || card.getBoundingClientRect().bottom < top + 16) {
+      setBarShown(false);
+      return;
+    }
+
+    var head = sectionAtY(card, top + 6);
+    setBarContent(barText(card.querySelector('.video-title')), head ? barText(head) : '');
+    bar.card = card;
+    setBarShown(true);
+  }
+
+  function scheduleReadingBar() {
+    if (bar.frame) return;
+    bar.frame = requestAnimationFrame(function () {
+      bar.frame = 0;
+      updateReadingBar();
+    });
+  }
+
+  function initReadingBar() {
+    bar.el = document.getElementById('readingBar');
+    bar.titleEl = document.getElementById('rbTitle');
+    bar.sepEl = document.getElementById('rbSep');
+    bar.sectionEl = document.getElementById('rbSection');
+    if (!bar.el) return;
+    bar.el.addEventListener('click', function () {
+      var card = bar.card;
+      if (!card || !card.isConnected) card = cardAtY(barHeight());
+      setBarShown(false);
+      if (card) {
+        bar.lockY = card.getBoundingClientRect().top + (window.scrollY || 0);
+        bar.lockUntil = performance.now() + 1100;
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    window.addEventListener('resize', scheduleReadingBar, { passive: true });
+    scheduleReadingBar();
   }
 
   function getQueryParam(name) {
@@ -2019,6 +2152,7 @@
       dom.feed.innerHTML = '';
       dom.feed.appendChild(bar);
       dom.feed.appendChild(buildCard(found));
+      scheduleReadingBar();
       document.title = '[' + (found.s.channel || '') + '] ' + (found.s.title || '피클 유튜브 요약');
       renderFooter();
     }

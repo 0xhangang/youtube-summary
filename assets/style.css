@@ -1064,6 +1064,83 @@ mark.hl {
   stroke-linejoin: round;
 }
 
+/* ── 상단 읽기 바 (스크롤 중 현재 영상·소제목) ──────────── */
+.reading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: calc(40px + env(safe-area-inset-top, 0px));
+  margin: 0;
+  padding: env(safe-area-inset-top, 0px) 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.22s;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .reading-bar { background: var(--surface); }
+}
+.reading-bar.is-on {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+.reading-bar:active { transform: scale(0.995); }
+.rb-title,
+.rb-section {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12.5px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.rb-title {
+  flex: 0 1 auto;
+  max-width: 56%;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+.rb-sep {
+  flex: 0 0 auto;
+  margin: 0 7px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.rb-sep[hidden],
+.rb-section[hidden] { display: none; }
+.rb-section {
+  flex: 1 1 auto;
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+[data-theme="dark"] .rb-section { color: var(--accent); }
+@media (min-width: 860px) {
+  .reading-bar {
+    padding-left: calc((100% - 820px) / 2 + 20px);
+    padding-right: calc((100% - 820px) / 2 + 20px);
+  }
+}
+
 /* ── 넓은 화면 (태블릿·데스크톱) ─────────────────────────── */
 @media (min-width: 600px) {
   .container { padding: 12px 20px 96px; }
@@ -1074,6 +1151,7 @@ mark.hl {
   .card-body { padding: 20px 24px 28px; font-size: 16px; }
   .card-actions { padding: 12px 24px 15px; }
   .section-title { font-size: 17px; }
+  .rb-title, .rb-section { font-size: 13px; }
 }
 
 @media (max-width: 520px) {
