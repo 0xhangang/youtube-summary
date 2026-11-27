@@ -1292,6 +1292,11 @@ ol.bullets li::marker {
   text-align: right;
   color: var(--text-faint);
 }
+.lv-unit::before {
+  content: "단위 ";
+  font-weight: 600;
+  opacity: 0.72;
+}
 .lv-list {
   position: relative;
   padding-left: 15px;
