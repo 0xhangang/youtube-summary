@@ -344,7 +344,9 @@
       dom.syncBtn.classList.toggle('is-on', linked && !sync.busy);
       dom.syncBtn.classList.toggle('is-busy', Boolean(sync.busy));
       dom.syncBtn.classList.toggle('is-error', Boolean(sync.error));
-      dom.syncBtn.setAttribute('aria-label', sync.token ? '동기화 설정 · 연동됨' : '동기화 설정');
+      dom.syncBtn.setAttribute('aria-label', sync.error
+        ? '동기화 설정 · 오류'
+        : (linked ? '동기화 설정 · 연동됨' : '동기화 설정'));
     }
     if (dom.syncStatus) {
       dom.syncStatus.textContent = syncLabel();
