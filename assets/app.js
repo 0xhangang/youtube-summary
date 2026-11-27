@@ -34,6 +34,7 @@
     reads: loadReads(),
     sort: loadSort(),
     activeTab: 'toc', // 'cat' | 'channel' | 'toc' | 'read' | 'fav' | 'search' | null
+    calMonth: null, // 'YYYY-MM' — 달력에 띄우는 달
     singleMode: null // { date, videoId }
   };
 
@@ -1514,42 +1515,137 @@
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
-  function renderDateChips() {
-    var box = dom.dateChips;
-    box.innerHTML = '';
-    var total = 0;
-    state.index.dates.forEach(function (d) { total += Number(d.count || 0); });
-    if (dom.dateMeta) {
-      dom.dateMeta.textContent = '총 ' + state.index.dates.length + '일 · ' + total + '편';
+  /* ── 날짜 탭 — 월간 달력 ──────────────────────────────────
+   * data/index.json 의 dates(날짜·편수)만으로 한 장을 그린다.
+   *   · 상단: [전체 보기] + [◀ 2026년 11월 ▶] (데이터가 있는 달로만 이동)
+   *   · 7열 달력: 날짜 숫자 + 그날 편수, 편수에 따라 에메랄드 강약(히트맵)
+   *   · 0편인 날은 흐리게(비활성), 선택한 날은 진한 에메랄드
+   */
+  function calMonths() {
+    var seen = {};
+    var out = [];
+    state.index.dates.forEach(function (d) {
+      var m = String(d.date || '').slice(0, 7);
+      if (!/^\d{4}-\d{2}$/.test(m) || seen[m]) return;
+      seen[m] = true;
+      out.push(m);
+    });
+    return out.sort();
+  }
+
+  function calCounts() {
+    var map = Object.create(null);
+    state.index.dates.forEach(function (d) {
+      map[d.date] = Number(d.count || 0);
+    });
+    return map;
+  }
+
+  function currentCalMonth() {
+    var months = calMonths();
+    if (!months.length) return null;
+    var want = state.calMonth;
+    if (want && months.indexOf(want) >= 0) return want;
+    if (state.activeDate && state.activeDate !== 'all') {
+      var ofActive = state.activeDate.slice(0, 7);
+      if (months.indexOf(ofActive) >= 0) return ofActive;
     }
+    return months[months.length - 1];
+  }
+
+  function renderDateChips() {
     if (dom.tabLabelDate) {
       dom.tabLabelDate.textContent = state.activeDate === 'all'
         ? '날짜'
         : fmtDateLabel(state.activeDate);
     }
-    var all = document.createElement('button');
-    all.type = 'button';
-    all.className = 'chip' + (state.activeDate === 'all' ? ' active' : '');
-    all.innerHTML = '<span class="chip-txt">전체</span><span class="n">' + total + '</span>';
-    all.addEventListener('click', function () {
-      state.activeTab = 'toc';
-      syncTabs();
-      setDate('all');
-    });
-    box.appendChild(all);
+    var grid = dom.calGrid;
+    if (!grid) return;
+    var months = calMonths();
+    var month = currentCalMonth();
+    state.calMonth = month;
+    var counts = calCounts();
+    var total = 0;
+    state.index.dates.forEach(function (d) { total += Number(d.count || 0); });
 
-    state.index.dates.forEach(function (d) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip' + (state.activeDate === d.date ? ' active' : '');
-      b.innerHTML = '<span class="chip-txt">' + esc(fmtDateLabel(d.date)) + '</span><span class="n">' + Number(d.count || 0) + '</span>';
-      b.addEventListener('click', function () {
-        state.activeTab = 'toc';
-        syncTabs();
-        setDate(d.date);
-      });
-      box.appendChild(b);
-    });
+    if (dom.calAll) {
+      dom.calAll.classList.toggle('active', state.activeDate === 'all');
+      dom.calAll.setAttribute('aria-pressed', state.activeDate === 'all' ? 'true' : 'false');
+    }
+
+    var idx = months.indexOf(month);
+    var prevM = idx > 0 ? months[idx - 1] : null;
+    var nextM = (idx >= 0 && idx < months.length - 1) ? months[idx + 1] : null;
+    if (dom.calPrev) {
+      dom.calPrev.disabled = !prevM;
+      dom.calPrev.setAttribute('aria-disabled', prevM ? 'false' : 'true');
+    }
+    if (dom.calNext) {
+      dom.calNext.disabled = !nextM;
+      dom.calNext.setAttribute('aria-disabled', nextM ? 'false' : 'true');
+    }
+    if (dom.calMonth) {
+      if (!month) dom.calMonth.textContent = '—';
+      else dom.calMonth.textContent = Number(month.slice(0, 4)) + '년 ' + Number(month.slice(5, 7)) + '월';
+    }
+    if (dom.dateMeta) {
+      dom.dateMeta.textContent = '기록 ' + state.index.dates.length + '일 · ' + total + '편';
+    }
+
+    grid.innerHTML = '';
+    if (!month) return;
+    var y = Number(month.slice(0, 4));
+    var mo = Number(month.slice(5, 7)) - 1;
+    var first = new Date(y, mo, 1).getDay();
+    var lastDay = new Date(y, mo + 1, 0).getDate();
+
+    // 그 달 최대 편수로 히트맵 단계를 나눈다(1~4단계)
+    var max = 0;
+    for (var day = 1; day <= lastDay; day++) {
+      var k = month + '-' + pad2(day);
+      if (counts[k] > max) max = counts[k];
+    }
+
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < first; i++) {
+      var blank = document.createElement('span');
+      blank.className = 'cal-cell is-blank';
+      blank.setAttribute('aria-hidden', 'true');
+      frag.appendChild(blank);
+    }
+    for (var d = 1; d <= lastDay; d++) {
+      var iso = month + '-' + pad2(d);
+      var n = counts[iso] || 0;
+      var cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-cell';
+      cell.dataset.date = iso;
+      cell.setAttribute('role', 'gridcell');
+      if (!n) {
+        cell.classList.add('is-off');
+        cell.disabled = true;
+        cell.setAttribute('aria-label', d + '일 · 요약 없음');
+        cell.innerHTML = '<span class="cal-d">' + d + '</span>';
+      } else {
+        var ratio = max ? n / max : 1;
+        var lv = ratio >= 0.75 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
+        cell.classList.add('is-live', 'lv' + lv);
+        if (state.activeDate === iso) cell.classList.add('is-active');
+        cell.setAttribute('aria-label', fmtDateLabel(iso) + ' · ' + n + '편');
+        cell.setAttribute('aria-pressed', state.activeDate === iso ? 'true' : 'false');
+        cell.innerHTML = '<span class="cal-d">' + d + '</span><span class="cal-n">' + n + '</span>';
+        (function (date) {
+          cell.addEventListener('click', function () {
+            state.activeTab = 'toc';
+            syncTabs();
+            setDate(date);
+          });
+        })(iso);
+      }
+      frag.appendChild(cell);
+    }
+    grid.appendChild(frag);
+    scheduleTabScroll();
   }
 
   function renderFilterChips(all) {
@@ -1665,8 +1761,11 @@
       if ((all[i].s.category || 'etc') === key && all[i].s.categoryLabel) return all[i].s.categoryLabel;
     }
     var map = {
-      stock: '증시·매크로', coin: '코인·트레이딩', trend: 'AI·사회·트렌드',
-      tech: '테크', economy: '경제', etc: '기타'
+      stock: '증시', coin: '코인', trading: '트레이딩', macro: '매크로',
+      economy: '경제', realestate: '부동산', finance: '재테크', tax: '세금',
+      ai: 'AI', tech: '테크', politics: '정치', society: '사회', defense: '국방',
+      trend: '트렌드', mind: '심리', health: '건강', review: '리뷰', daily: '일상',
+      game: '게임', sports: '스포츠', entertain: '연예', life: '리뷰', etc: '기타'
     };
     return map[key] || key;
   }
@@ -2433,7 +2532,12 @@
   /* ── 초기화 ────────────────────────────────────────── */
   function wire() {
     dom.subtitle = document.getElementById('subtitle');
-    dom.dateChips = document.getElementById('dateChips');
+    dom.dateChips = document.getElementById('calGrid');
+    dom.calGrid = document.getElementById('calGrid');
+    dom.calAll = document.getElementById('calAll');
+    dom.calPrev = document.getElementById('calPrev');
+    dom.calNext = document.getElementById('calNext');
+    dom.calMonth = document.getElementById('calMonth');
     dom.catChips = document.getElementById('catChips');
     dom.channelChips = document.getElementById('channelChips');
     dom.catMeta = document.getElementById('catMeta');
@@ -2504,6 +2608,26 @@
       }
     }
     syncSortBtn();
+
+    /* 날짜 탭 — 달력의 [전체 보기]·[◀ ▶] */
+    var calStep = function (dir) {
+      var months = calMonths();
+      var idx = months.indexOf(currentCalMonth());
+      var next = months[idx + dir];
+      if (!next) return;
+      state.calMonth = next;
+      renderDateChips();
+    };
+    if (dom.calAll) {
+      dom.calAll.addEventListener('click', function () {
+        state.activeTab = 'toc';
+        syncTabs();
+        setDate('all');
+      });
+    }
+    if (dom.calPrev) dom.calPrev.addEventListener('click', function () { calStep(-1); });
+    if (dom.calNext) dom.calNext.addEventListener('click', function () { calStep(1); });
+
     if (dom.sortBtn) {
       dom.sortBtn.addEventListener('click', function () {
         state.sort = (state.sort === 'newest') ? 'oldest' : 'newest';

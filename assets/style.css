@@ -364,12 +364,176 @@ button.btn.is-on {
   flex-shrink: 0;
 }
 .cat-stock .cat-dot { background: var(--c-stock); }
-.cat-coin .cat-dot { background: var(--c-coin); }
-.cat-trend .cat-dot { background: var(--c-trend); }
+.cat-coin .cat-dot,
+.cat-trading .cat-dot,
+.cat-review .cat-dot { background: var(--c-coin); }
+.cat-macro .cat-dot,
+.cat-economy .cat-dot,
+.cat-finance .cat-dot { background: var(--c-economy); }
+.cat-realestate .cat-dot { background: var(--tone-green); }
+.cat-ai .cat-dot,
+.cat-trend .cat-dot,
+.cat-mind .cat-dot { background: var(--c-trend); }
 .cat-tech .cat-dot { background: var(--c-tech); }
-.cat-economy .cat-dot { background: var(--c-economy); }
+.cat-politics .cat-dot,
+.cat-health .cat-dot { background: var(--like); }
+.cat-society .cat-dot,
+.cat-defense .cat-dot,
+.cat-tax .cat-dot,
+.cat-daily .cat-dot,
+.cat-game .cat-dot,
+.cat-sports .cat-dot,
+.cat-entertain .cat-dot,
 .cat-etc .cat-dot { background: var(--c-etc); }
 .chip.active .cat-dot { background: currentColor; }
+
+/* ── 날짜 탭 — 월간 달력 ─────────────────────────────── */
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.cal-all {
+  flex: 0 0 auto;
+  height: 27px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.cal-all:hover { border-color: var(--border-strong); color: var(--text); }
+.cal-all.active {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #ffffff;
+  font-weight: 700;
+}
+[data-theme="dark"] .cal-all.active { background: var(--accent); border-color: var(--accent); color: #06140e; }
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.cal-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.cal-arrow svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.cal-arrow:hover:not(:disabled) { background: var(--surface-3); color: var(--text); }
+.cal-arrow:disabled { opacity: 0.28; cursor: default; }
+.cal-month {
+  min-width: 84px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 3px;
+}
+.cal-week span {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-faint);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-sub);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+.cal-d {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.cal-n {
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+.cal-cell.is-blank { visibility: hidden; pointer-events: none; }
+.cal-cell.is-off {
+  color: var(--text-faint);
+  opacity: 0.38;
+  cursor: default;
+}
+.cal-cell.is-live { color: var(--accent-strong); }
+[data-theme="dark"] .cal-cell.is-live { color: var(--accent); }
+.cal-cell.lv1 { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.cal-cell.lv2 { background: color-mix(in srgb, var(--accent) 19%, transparent); }
+.cal-cell.lv3 { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.cal-cell.lv4 { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.cal-cell.is-live:hover { border-color: color-mix(in srgb, var(--accent-strong) 45%, transparent); }
+.cal-cell.is-live:active { transform: scale(0.96); }
+.cal-cell.is-active,
+.cal-cell.is-active:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: #ffffff;
+}
+[data-theme="dark"] .cal-cell.is-active,
+[data-theme="dark"] .cal-cell.is-active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06140e;
+}
+.cal-cell.is-active .cal-d { font-weight: 800; }
+.cal-cell.is-active .cal-n { opacity: 0.9; }
+.cal-meta {
+  margin-top: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
 
 /* ── 캡슐 세그먼트 5단 탭 바 (분류 · 채널 · 목차 · 좋아요 · 검색) ── */
 .tab-bar {
@@ -820,11 +984,29 @@ button.btn.is-on {
   background: var(--surface-3);
   color: var(--text-sub);
 }
-.cat-tag.cat-stock { background: rgba(37, 99, 235, 0.11); color: var(--c-stock); }
-.cat-tag.cat-coin { background: rgba(217, 119, 6, 0.13); color: var(--c-coin); }
-.cat-tag.cat-trend { background: rgba(124, 58, 237, 0.11); color: var(--c-trend); }
-.cat-tag.cat-tech { background: rgba(5, 150, 105, 0.11); color: var(--c-tech); }
-.cat-tag.cat-economy { background: rgba(8, 145, 178, 0.11); color: var(--c-economy); }
+.cat-tag[class*="cat-"] { background: color-mix(in srgb, currentColor 12%, transparent); }
+.cat-tag.cat-stock { color: var(--c-stock); }
+.cat-tag.cat-coin,
+.cat-tag.cat-trading,
+.cat-tag.cat-review { color: var(--c-coin); }
+.cat-tag.cat-macro,
+.cat-tag.cat-economy,
+.cat-tag.cat-finance { color: var(--c-economy); }
+.cat-tag.cat-realestate { color: var(--tone-green); }
+.cat-tag.cat-ai,
+.cat-tag.cat-trend,
+.cat-tag.cat-mind { color: var(--c-trend); }
+.cat-tag.cat-tech { color: var(--c-tech); }
+.cat-tag.cat-politics,
+.cat-tag.cat-health { color: var(--like); }
+.cat-tag.cat-society,
+.cat-tag.cat-defense,
+.cat-tag.cat-tax,
+.cat-tag.cat-daily,
+.cat-tag.cat-game,
+.cat-tag.cat-sports,
+.cat-tag.cat-entertain,
+.cat-tag.cat-etc { color: var(--c-etc); }
 
 .video-title {
   margin: 0;
@@ -1713,8 +1895,8 @@ mark.hl {
   border: 1px solid var(--border);
   border-top: 0;
   border-radius: 0;
-  background: var(--surface);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-card);
   color: var(--text);
   font: inherit;
   text-align: left;
@@ -1726,7 +1908,6 @@ mark.hl {
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.24s;
 }
-[data-theme="dark"] .reading-bar { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45); }
 .reading-bar.is-on {
   visibility: visible;
   opacity: 1;

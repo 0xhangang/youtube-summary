@@ -15,8 +15,12 @@ summary 필드
     videoId   (필수) 유튜브 영상 ID. 고유 키. 같은 ID는 기본적으로 건너뛴다.
     title     (필수) 영상 제목
     channel   (필수) 채널 이름
-    category  증시·매크로=stock, 코인·트레이딩=coin, AI·사회·트렌드=trend, 테크=tech, 경제=economy, 기타=etc
-    categoryLabel  비우면 category에서 자동 채움
+    category  영단 슬러그 — stock(증시) coin(코인) trading(트레이딩) macro(매크로)
+              economy(경제) realestate(부동산) finance(재테크) tax(세금) ai(AI)
+              tech(테크) politics(정치) society(사회) defense(국방) trend(트렌드)
+              mind(심리) health(건강) review(리뷰) daily(일상) game(게임) 등
+              (`·`으로 묶는 두 단어 라벨은 쓰지 않는다 — 영상 주제에 딱 맞는 1단어)
+    categoryLabel  영상 주제에 딱 맞는 깔끔한 1단어. 비우면 category에서 자동 채움
     blocks    본문 블록 배열 — [{"type":"h|p|ul|callout","text":..,"items":[..]}]
               · flow    {"type":"flow","title":..,"steps":[{"label":..,"note":..}]}      단계·인과 흐름
               · bars    {"type":"bars","title":..,"items":[{"label":..,"value":1.5,"display":"80%","tone":"accent|red|blue|amber"}]}  수치 막대
@@ -64,12 +68,28 @@ SHARE_DIR = os.path.join(ROOT, "s")
 INDEX = os.path.join(DATA, "index.json")
 
 CATEGORY_LABELS = {
-    "stock": "증시·매크로",
-    "coin": "코인·트레이딩",
-    "trend": "트렌드·인사이트",
-    "tech": "AI·테크",
-    "economy": "경제·부동산",
-    "life": "생활·리뷰",
+    "stock": "증시",
+    "coin": "코인",
+    "trading": "트레이딩",
+    "macro": "매크로",
+    "economy": "경제",
+    "realestate": "부동산",
+    "finance": "재테크",
+    "tax": "세금",
+    "ai": "AI",
+    "tech": "테크",
+    "politics": "정치",
+    "society": "사회",
+    "defense": "국방",
+    "trend": "트렌드",
+    "mind": "심리",
+    "health": "건강",
+    "review": "리뷰",
+    "daily": "일상",
+    "game": "게임",
+    "sports": "스포츠",
+    "entertain": "연예",
+    "life": "리뷰",
     "etc": "기타",
 }
 WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]
