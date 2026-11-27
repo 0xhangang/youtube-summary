@@ -536,10 +536,10 @@ button.btn.is-on {
 .cal-cell.is-active .cal-n { color: var(--accent-strong); }
 [data-theme="dark"] .cal-cell.is-active .cal-n { color: var(--accent); }
 
-/* ── 오늘 날짜(KST) — 우상단 주황 점 + 얇은 배경색 링 ──
- * 에메랄드 히트맵(연한 칸~가장 진한 칸) 어디에서도 묻히지 않도록
- * 점은 에메랄드와 반대 계열(주황/코랄)로, 점 둘레에는 배경색과 같은 얇은 링을 둘러
- * 히트맵 농도와 무관하게 타일 색과 분리되게 한다. */
+/* ── 오늘 날짜(KST) — 우상단 에메랄드 점 + 얇은 흰(다크는 surface) 링 ──
+ * 사이트 기본 톤(에메랄드)으로 통일한다. 편수가 많아 히트맵 배경이 진한 에메랄드(lv4)가 되어도,
+ * 선택된 날의 에메랄드 테두리와 겹쳐도 점이 묻히지 않도록 점 둘레에 surface 색 1.5px 링을 둘러
+ * 타일 색과 분리되게 한다. */
 .cal-cell.is-today::after {
   content: "";
   position: absolute;
@@ -548,13 +548,13 @@ button.btn.is-on {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #f97316;
+  background: var(--accent-strong);
   box-shadow: 0 0 0 1.5px var(--surface);
   z-index: 2;
   pointer-events: none;
 }
 [data-theme="dark"] .cal-cell.is-today::after {
-  background: #fb923c;
+  background: var(--accent);
   box-shadow: 0 0 0 1.5px var(--surface);
 }
 .cal-cell.is-off.is-today { opacity: 0.72; }
@@ -562,13 +562,13 @@ button.btn.is-on {
  * 선택은 칸 자체의 inset 테두리가 담당하고, 점은 그 위에 또렷이 놓인다. */
 .cal-cell.is-today.is-active::after,
 .cal-cell.is-today.is-active:hover::after {
-  background: #f97316;
+  background: var(--accent-strong);
   box-shadow: 0 0 0 1.5px var(--surface);
   z-index: 3;
 }
 [data-theme="dark"] .cal-cell.is-today.is-active::after,
 [data-theme="dark"] .cal-cell.is-today.is-active:hover::after {
-  background: #fb923c;
+  background: var(--accent);
   box-shadow: 0 0 0 1.5px var(--surface);
 }
 .cal-meta {
@@ -2087,19 +2087,13 @@ mark.hl {
   border-color: color-mix(in srgb, var(--accent-strong) 38%, var(--border));
 }
 [data-theme="dark"] .btn-sync.is-on { color: var(--accent); }
-.btn-sync.is-on::after,
-.btn-sync.is-error::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 2px var(--bg);
+/* 오류 — 우상단 점 없이 버튼의 테두리·배경·아이콘 색만 빨간/분홍 톤으로.
+ * 점을 두지 않으므로 동그란 버튼 테두리가 찌그러져 보이지 않고 정원을 유지한다. */
+.btn-sync.is-error {
+  color: var(--like);
+  background: var(--like-soft);
+  border-color: color-mix(in srgb, var(--like) 45%, var(--border));
 }
-.btn-sync.is-error::after { background: var(--like); }
 .btn-sync.is-busy .btn-svg { animation: syncSpin 0.9s linear infinite; }
 @keyframes syncSpin { to { transform: rotate(360deg); } }
 
