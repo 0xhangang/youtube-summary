@@ -1264,24 +1264,32 @@
     });
   }
 
-  function parseSvgDoc(txt) {
+  function trySvgDoc(txt) {
     var doc = null;
     try {
       doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
     } catch (e) {
       return null;
     }
-    if (doc && !doc.querySelector('parsererror')) return doc;
-    /* 흔한 작성 실수 보정: 텍스트 속 홀로 쓴 & 를 엔티티로 바꿔 한 번 더.
-       ("S&P" 처럼 XML에서 깨지는 경우 — 이미 엔티티인 &amp;·&#160; 은 건드리지 않는다) */
-    var fixed = txt.replace(/&(?!#?[A-Za-z0-9]+;)/g, '&amp;');
-    if (fixed === txt) return null;
-    try {
-      doc = new DOMParser().parseFromString(fixed, 'image/svg+xml');
-    } catch (e) {
-      return null;
-    }
-    return doc && !doc.querySelector('parsererror') ? doc : null;
+    if (!doc || !doc.documentElement || doc.querySelector('parsererror')) return null;
+    return doc;
+  }
+
+  /* 흔한 작성 실수 보정: ① 텍스트 속 홀 & ② 선언 없는 xlink: 접두어.
+     둘 다 XML 파싱 자체를 깨뜨리므로 한 번 더 시도한다(이미 엔티티는 건드리지 않음). */
+  function repairSvg(txt) {
+    var out = txt.replace(/&(?!#?[A-Za-z0-9]+;)/g, '&amp;');
+    out = out.replace(/\sxmlns:xlink\s*=\s*("[^"]*"|'[^']*')/gi, '');
+    out = out.replace(/\sxlink:/g, ' ');
+    return out;
+  }
+
+  function parseSvgDoc(txt) {
+    var doc = trySvgDoc(txt);
+    if (doc) return doc;
+    var fixed = repairSvg(txt);
+    if (fixed !== txt) return trySvgDoc(fixed);
+    return null;
   }
 
   function sanitizeSvg(src) {
