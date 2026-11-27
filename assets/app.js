@@ -10,6 +10,11 @@
   var LS_SORT = 'yts.sort';
   var LS_LIKES = 'yts.likes';
   var LS_READ = 'yts.read';
+  var LS_SYNC_TOKEN = 'yts.sync_token';
+  var LS_SYNC_GIST = 'yts.sync_gist_id';
+  var LS_SYNC_META = 'yts.sync_meta';
+  var LS_SYNC_LAST = 'yts.sync_last';
+  var LS_SYNC_DEVICE = 'yts.sync_device';
   var PAGE_SIZE = 20;
   var CAT_ORDER = ['stock', 'coin', 'trend', 'tech', 'economy', 'life', 'etc'];
   var AVATAR_COLORS = ['#10b981', '#2563eb', '#d97706', '#7c3aed', '#0891b2', '#dc2626', '#db2777'];
@@ -56,6 +61,8 @@
     if (state.likes[id]) delete state.likes[id];
     else state.likes[id] = true;
     saveLikes();
+    stampSync('likes', id, Boolean(state.likes[id]));
+    schedulePush();
     return Boolean(state.likes[id]);
   }
 
@@ -96,7 +103,456 @@
     if (state.reads[id]) delete state.reads[id];
     else state.reads[id] = true;
     saveReads();
+    stampSync('reads', id, Boolean(state.reads[id]));
+    schedulePush();
     return Boolean(state.reads[id]);
+  }
+
+  /* ── 동기화 (비공개 GitHub Gist) ───────────────────────── */
+  var SYNC_FILE = 'pickle-yts-sync.json';
+  var SYNC_DESC = 'pickle-yts-sync';
+  var SYNC_API = 'https://api.github.com';
+  var SYNC_PUSH_DELAY = 1500;
+  var SYNC_CHECK_COOLDOWN = 30000;
+
+  function lsGet(key, dflt) {
+    try {
+      var v = localStorage.getItem(key);
+      return v == null ? dflt : v;
+    } catch (e) { return dflt; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, val); } catch (e) {}
+  }
+  function newDeviceId() {
+    return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+  function loadSyncMeta() {
+    try {
+      var o = JSON.parse(localStorage.getItem(LS_SYNC_META) || 'null');
+      if (o && o.reads && o.likes) return { reads: o.reads, likes: o.likes };
+    } catch (e) {}
+    return { reads: Object.create(null), likes: Object.create(null) };
+  }
+
+  var sync = {
+    token: lsGet(LS_SYNC_TOKEN, ''),
+    gistId: lsGet(LS_SYNC_GIST, ''),
+    meta: loadSyncMeta(),
+    device: lsGet(LS_SYNC_DEVICE, '') || newDeviceId(),
+    login: '',
+    last: Number(lsGet(LS_SYNC_LAST, 0)) || 0,
+    lastCheck: 0,
+    busy: false,
+    error: '',
+    timer: null,
+    visibilityBound: false
+  };
+  lsSet(LS_SYNC_DEVICE, sync.device);
+
+  function saveSyncMeta() {
+    try { localStorage.setItem(LS_SYNC_META, JSON.stringify(sync.meta)); } catch (e) {}
+  }
+
+  // 읽음·좋아요 변경을 영상별 마지막 변경 시각과 상태로 기록(취소도 기록)
+  function stampSync(kind, id, on) {
+    if (!id || !sync.meta[kind]) return;
+    sync.meta[kind][id] = { t: Date.now(), v: on ? 1 : 0 };
+    saveSyncMeta();
+  }
+
+  // 이 브라우저의 실제 상태를 {id: {t, v}} 로 만든다 (기존 로컬 데이터는 t=0으로 포함)
+  function liveMap(kind) {
+    var metaMap = sync.meta[kind] || {};
+    var live = kind === 'reads' ? state.reads : state.likes;
+    var out = Object.create(null);
+    Object.keys(metaMap).forEach(function (id) {
+      var e = metaMap[id];
+      if (e && typeof e.t === 'number') out[id] = { t: e.t, v: e.v ? 1 : 0 };
+    });
+    Object.keys(live).forEach(function (id) {
+      if (live[id] && !out[id]) out[id] = { t: 0, v: 1 };
+    });
+    return out;
+  }
+
+  function remoteMap(doc, kind) {
+    var src = (doc && doc[kind]) || {};
+    var out = Object.create(null);
+    Object.keys(src).forEach(function (id) {
+      var e = src[id];
+      if (e && typeof e.t === 'number') out[id] = { t: e.t, v: e.v ? 1 : 0 };
+    });
+    return out;
+  }
+
+  // 영상별 Last-Write-Wins 병합 (같은 시각이면 유지(v=1) 우선)
+  function mergeMaps(a, b) {
+    var out = Object.create(null);
+    function take(src) {
+      Object.keys(src || {}).forEach(function (id) {
+        var e = src[id];
+        if (!e || typeof e.t !== 'number') return;
+        var prev = out[id];
+        var v = e.v ? 1 : 0;
+        if (!prev || e.t > prev.t || (e.t === prev.t && v > prev.v)) out[id] = { t: e.t, v: v };
+      });
+    }
+    take(a);
+    take(b);
+    return out;
+  }
+
+  function mapsEqual(a, b) {
+    var ka = Object.keys(a || {});
+    var kb = Object.keys(b || {});
+    if (ka.length !== kb.length) return false;
+    for (var i = 0; i < ka.length; i++) {
+      var x = a[ka[i]];
+      var y = b[ka[i]];
+      if (!y || x.t !== y.t || (x.v ? 1 : 0) !== (y.v ? 1 : 0)) return false;
+    }
+    return true;
+  }
+
+  function sameSet(a, b) {
+    var ka = Object.keys(a).filter(function (k) { return a[k]; });
+    var kb = Object.keys(b).filter(function (k) { return b[k]; });
+    if (ka.length !== kb.length) return false;
+    for (var i = 0; i < ka.length; i++) {
+      if (!b[ka[i]]) return false;
+    }
+    return true;
+  }
+
+  // 병합 결과를 로컬 상태로 반영 (화면 갱신 필요 여부를 반환)
+  function applySynced(mergedReads, mergedLikes) {
+    var nextRead = Object.create(null);
+    var nextLike = Object.create(null);
+    Object.keys(mergedReads).forEach(function (id) { if (mergedReads[id].v) nextRead[id] = true; });
+    Object.keys(mergedLikes).forEach(function (id) { if (mergedLikes[id].v) nextLike[id] = true; });
+    var changed = {
+      read: !sameSet(state.reads, nextRead),
+      like: !sameSet(state.likes, nextLike)
+    };
+    state.reads = nextRead;
+    state.likes = nextLike;
+    sync.meta.reads = mergedReads;
+    sync.meta.likes = mergedLikes;
+    saveReads();
+    saveLikes();
+    saveSyncMeta();
+    return changed;
+  }
+
+  function ghFetch(path, opts) {
+    opts = opts || {};
+    var headers = {
+      Accept: 'application/vnd.github+json',
+      Authorization: 'Bearer ' + sync.token,
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+    var init = { method: opts.method || 'GET', headers: headers, cache: 'no-store', credentials: 'omit' };
+    if (opts.body) {
+      headers['Content-Type'] = 'application/json';
+      init.body = JSON.stringify(opts.body);
+    }
+    return fetch(SYNC_API + path, init).then(function (res) {
+      return res.text().then(function (txt) {
+        var data = null;
+        try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
+        if (!res.ok) {
+          var err = new Error((data && data.message) || ('HTTP ' + res.status));
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  function findSyncGist() {
+    return ghFetch('/gists?per_page=100').then(function (list) {
+      if (!Array.isArray(list)) return '';
+      for (var i = 0; i < list.length; i++) {
+        var g = list[i] || {};
+        if (g.files && g.files[SYNC_FILE]) return g.id;
+        if ((g.description || '') === SYNC_DESC) return g.id;
+      }
+      return '';
+    });
+  }
+
+  function createSyncGist(doc) {
+    var body = { description: SYNC_DESC, public: false, files: {} };
+    body.files[SYNC_FILE] = { content: JSON.stringify(doc) };
+    return ghFetch('/gists', { method: 'POST', body: body }).then(function (g) {
+      if (g && g.id) {
+        sync.gistId = g.id;
+        lsSet(LS_SYNC_GIST, g.id);
+      }
+      return g;
+    });
+  }
+
+  function writeSyncGist(doc) {
+    var body = { files: {} };
+    body.files[SYNC_FILE] = { content: JSON.stringify(doc) };
+    return ghFetch('/gists/' + encodeURIComponent(sync.gistId), { method: 'PATCH', body: body });
+  }
+
+  function readSyncGist() {
+    return ghFetch('/gists/' + encodeURIComponent(sync.gistId)).then(function (g) {
+      var f = g && g.files && g.files[SYNC_FILE];
+      if (!f) return null;
+      if (f.truncated && f.raw_url) {
+        return fetch(f.raw_url, { cache: 'no-store', credentials: 'omit' })
+          .then(function (r) { return r.text(); })
+          .then(function (t) { try { return JSON.parse(t); } catch (e) { return null; } });
+      }
+      if (!f.content) return null;
+      try { return JSON.parse(f.content); } catch (e) { return null; }
+    });
+  }
+
+  function syncErrorText(err) {
+    var st = err && err.status;
+    var msg = (err && err.message) ? String(err.message) : '';
+    if (st === 401) return '토큰이 올바르지 않아요(401). gist 권한이 있는 classic 토큰인지 확인해 주세요.';
+    if (st === 403) return '권한이 없거나 요청 한도를 넘었어요(403).' + (msg ? ' ' + msg : '');
+    if (st === 404) return 'Gist를 찾을 수 없어요(404).';
+    if (st === 422) return 'Gist 형식이 거부됐어요(422).';
+    if (st) return 'HTTP ' + st + (msg ? ' · ' + msg : '');
+    return msg || '네트워크 오류';
+  }
+
+  function syncLabel() {
+    if (!sync.token) return '아직 연동되지 않았어요.';
+    if (sync.busy) return '동기화 중…';
+    if (sync.error) return '동기화 실패 · ' + sync.error;
+    var who = sync.login ? ' · ' + sync.login : '';
+    if (sync.last) {
+      return '연동됨' + who + ' · 마지막 동기화 ' + fmtStamp(new Date(sync.last).toISOString()) +
+        (sync.gistId ? ' · Gist ' + String(sync.gistId).slice(0, 8) : '');
+    }
+    return '연동 대기 중' + who;
+  }
+
+  function updateSyncUi() {
+    var linked = Boolean(sync.token && sync.gistId && !sync.error);
+    if (dom.syncBtn) {
+      dom.syncBtn.classList.toggle('is-on', linked && !sync.busy);
+      dom.syncBtn.classList.toggle('is-busy', Boolean(sync.busy));
+      dom.syncBtn.classList.toggle('is-error', Boolean(sync.error));
+      dom.syncBtn.setAttribute('aria-label', sync.token ? '동기화 설정 · 연동됨' : '동기화 설정');
+    }
+    if (dom.syncStatus) {
+      dom.syncStatus.textContent = syncLabel();
+      dom.syncStatus.classList.toggle('is-on', linked && !sync.busy);
+      dom.syncStatus.classList.toggle('is-error', Boolean(sync.error));
+    }
+    if (dom.syncNow) dom.syncNow.disabled = !sync.token || Boolean(sync.busy);
+    if (dom.syncOff) dom.syncOff.disabled = !sync.token;
+    if (dom.syncSave) dom.syncSave.disabled = Boolean(sync.busy);
+  }
+
+  // 동기화 결과를 화면에 반영: 목록 보기에서는 카드만 갱신, 읽음·좋아요 탭은 다시 그린다
+  function refreshSyncedCards(changed) {
+    if (!changed || (!changed.read && !changed.like)) return;
+    if (state.singleMode || !dom.feed) return;
+    if ((state.readOnly && changed.read) || (state.favOnly && changed.like)) {
+      apply();
+      return;
+    }
+    var hideRead = !state.favOnly && !state.q && state.cat === 'all' && state.channel === 'all';
+    var cards = dom.feed.querySelectorAll('.card[data-vid]');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var id = card.dataset.vid;
+      var readNow = isRead(id);
+      var likeNow = isLiked(id);
+      card.classList.toggle('is-read', readNow);
+      var rb = card.querySelector('.act-btn[data-act="read"]');
+      if (rb) {
+        rb.classList.toggle('is-read', readNow);
+        rb.setAttribute('aria-pressed', readNow ? 'true' : 'false');
+      }
+      var lb = card.querySelector('.act-btn[data-act="like"]');
+      if (lb) {
+        lb.classList.toggle('liked', likeNow);
+        lb.setAttribute('aria-pressed', likeNow ? 'true' : 'false');
+      }
+      if ((hideRead && readNow) || (state.readOnly && !readNow) || (state.favOnly && !likeNow)) {
+        if (card.parentNode) card.parentNode.removeChild(card);
+      }
+    }
+    updateRead();
+    updateFav();
+    if (!dom.feed.querySelector('.card')) apply();
+  }
+
+  function schedulePush() {
+    if (!sync.token) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(function () {
+      if (sync.busy) { schedulePush(); return; }
+      runSync('push');
+    }, SYNC_PUSH_DELAY);
+  }
+
+  function runSync(reason) {
+    if (!sync.token) {
+      updateSyncUi();
+      return Promise.resolve(false);
+    }
+    if (sync.busy) return Promise.resolve(false);
+    sync.busy = true;
+    sync.error = '';
+    sync.lastCheck = Date.now();
+    updateSyncUi();
+
+    var prep = Promise.resolve();
+    if (!sync.gistId) {
+      prep = findSyncGist().then(function (id) {
+        if (id) {
+          sync.gistId = id;
+          lsSet(LS_SYNC_GIST, id);
+        }
+      });
+    }
+
+    return prep.then(function () {
+      if (!sync.gistId) return null;
+      return readSyncGist().catch(function (err) {
+        if (err && err.status === 404) {
+          sync.gistId = '';
+          lsSet(LS_SYNC_GIST, '');
+          return null;
+        }
+        throw err;
+      });
+    }).then(function (doc) {
+      var mergedReads = mergeMaps(liveMap('reads'), remoteMap(doc, 'reads'));
+      var mergedLikes = mergeMaps(liveMap('likes'), remoteMap(doc, 'likes'));
+      var changed = applySynced(mergedReads, mergedLikes);
+      var payload = {
+        v: 1,
+        updatedAt: Date.now(),
+        device: sync.device,
+        reads: mergedReads,
+        likes: mergedLikes
+      };
+      if (!sync.gistId) return createSyncGist(payload).then(function () { return changed; });
+      var same = doc && mapsEqual(mergedReads, remoteMap(doc, 'reads')) &&
+        mapsEqual(mergedLikes, remoteMap(doc, 'likes'));
+      if (same) return changed;
+      return writeSyncGist(payload).then(function () { return changed; }).catch(function (err) {
+        if (err && err.status === 404) {
+          sync.gistId = '';
+          lsSet(LS_SYNC_GIST, '');
+          return createSyncGist(payload).then(function () { return changed; });
+        }
+        throw err;
+      });
+    }).then(function (changed) {
+      sync.busy = false;
+      sync.last = Date.now();
+      lsSet(LS_SYNC_LAST, String(sync.last));
+      updateSyncUi();
+      refreshSyncedCards(changed);
+      return true;
+    }).catch(function (err) {
+      sync.busy = false;
+      sync.error = syncErrorText(err);
+      updateSyncUi();
+      return false;
+    });
+  }
+
+  function openSyncModal() {
+    if (!dom.syncModal) return;
+    if (dom.syncToken) {
+      dom.syncToken.value = '';
+      dom.syncToken.placeholder = sync.token ? '저장된 토큰 사용 중 · 바꾸려면 새 토큰 입력' : 'ghp_… (classic 토큰)';
+    }
+    if (dom.syncGist) dom.syncGist.value = sync.gistId || '';
+    dom.syncModal.hidden = false;
+    document.body.classList.add('sync-open');
+    updateSyncUi();
+    setTimeout(function () { if (dom.syncToken) dom.syncToken.focus(); }, 40);
+  }
+
+  function closeSyncModal() {
+    if (!dom.syncModal) return;
+    dom.syncModal.hidden = true;
+    document.body.classList.remove('sync-open');
+    if (dom.syncBtn) dom.syncBtn.focus();
+  }
+
+  function validateAndSync() {
+    sync.busy = true;
+    sync.error = '';
+    updateSyncUi();
+    ghFetch('/user').then(function (u) {
+      sync.login = '@' + ((u && u.login) || '');
+      sync.busy = false;
+      return runSync('manual');
+    }).catch(function (err) {
+      sync.busy = false;
+      sync.error = syncErrorText(err);
+      updateSyncUi();
+    });
+  }
+
+  function onSyncSave() {
+    var tokenInput = dom.syncToken ? dom.syncToken.value.trim() : '';
+    var gistInput = dom.syncGist ? dom.syncGist.value.trim() : '';
+    var nextToken = tokenInput || sync.token;
+    if (!nextToken) {
+      sync.error = '토큰을 입력해 주세요.';
+      updateSyncUi();
+      if (dom.syncToken) dom.syncToken.focus();
+      return;
+    }
+    sync.token = nextToken;
+    lsSet(LS_SYNC_TOKEN, nextToken);
+    sync.gistId = gistInput;
+    lsSet(LS_SYNC_GIST, gistInput);
+    if (dom.syncToken) dom.syncToken.value = '';
+    validateAndSync();
+  }
+
+  function onSyncOff() {
+    if (!sync.token) return;
+    var ok = false;
+    try {
+      ok = window.confirm('이 브라우저의 동기화 연동을 해제할까요?\n읽음·좋아요 기록과 비공개 Gist는 그대로 남습니다.');
+    } catch (e) { ok = false; }
+    if (!ok) return;
+    sync.token = '';
+    sync.gistId = '';
+    sync.login = '';
+    sync.error = '';
+    sync.last = 0;
+    lsSet(LS_SYNC_TOKEN, '');
+    lsSet(LS_SYNC_GIST, '');
+    lsSet(LS_SYNC_LAST, '0');
+    if (dom.syncToken) dom.syncToken.value = '';
+    if (dom.syncGist) dom.syncGist.value = '';
+    updateSyncUi();
+  }
+
+  function startSync() {
+    updateSyncUi();
+    if (sync.token) setTimeout(function () { runSync('load'); }, 350);
+    if (sync.visibilityBound) return;
+    sync.visibilityBound = true;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (!sync.token || sync.busy) return;
+      if (Date.now() - sync.lastCheck < SYNC_CHECK_COOLDOWN) return;
+      runSync('visible');
+    });
   }
 
   function loadSort() {
@@ -755,6 +1211,7 @@
 
     var readBtn = document.createElement('button');
     readBtn.type = 'button';
+    readBtn.dataset.act = 'read';
     readBtn.className = 'act-btn' + (isRead(id) ? ' is-read' : '');
     readBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M7.4 10.2 9.2 12l3.6-3.8"/></svg>' +
       '<span class="read-lbl">읽음</span>';
@@ -776,6 +1233,7 @@
 
     var likeBtn = document.createElement('button');
     likeBtn.type = 'button';
+    likeBtn.dataset.act = 'like';
     likeBtn.className = 'act-btn' + (isLiked(id) ? ' liked' : '');
     likeBtn.innerHTML = '<svg class="act-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.5s-6-3.7-6-8.3A3.5 3.5 0 0 1 10 5.7a3.5 3.5 0 0 1 6 2.5c0 4.6-6 8.3-6 8.3Z"/></svg>' +
       '<span>좋아요</span>';
@@ -1328,6 +1786,30 @@
     dom.searchMeta = document.getElementById('searchMeta');
     dom.searchResultList = document.getElementById('searchResultList');
 
+    dom.syncBtn = document.getElementById('syncBtn');
+    dom.syncModal = document.getElementById('syncModal');
+    dom.syncToken = document.getElementById('syncToken');
+    dom.syncGist = document.getElementById('syncGist');
+    dom.syncStatus = document.getElementById('syncStatus');
+    dom.syncSave = document.getElementById('syncSave');
+    dom.syncNow = document.getElementById('syncNow');
+    dom.syncOff = document.getElementById('syncOff');
+    dom.syncClose = document.getElementById('syncClose');
+    var syncBackdrop = document.getElementById('syncBackdrop');
+    if (dom.syncBtn) dom.syncBtn.addEventListener('click', openSyncModal);
+    if (dom.syncClose) dom.syncClose.addEventListener('click', closeSyncModal);
+    if (syncBackdrop) syncBackdrop.addEventListener('click', closeSyncModal);
+    if (dom.syncSave) dom.syncSave.addEventListener('click', onSyncSave);
+    if (dom.syncNow) dom.syncNow.addEventListener('click', function () { runSync('manual'); });
+    if (dom.syncOff) dom.syncOff.addEventListener('click', onSyncOff);
+    if (dom.syncGist) dom.syncGist.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); onSyncSave(); }
+    });
+    if (dom.syncToken) dom.syncToken.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); onSyncSave(); }
+    });
+    updateSyncUi();
+
     ['tabBtnDate', 'tabBtnToc', 'tabBtnCat', 'tabBtnChannel', 'tabBtnRead', 'tabBtnFav', 'tabBtnSearch'].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn) {
@@ -1395,6 +1877,13 @@
     });
 
     document.addEventListener('keydown', function (e) {
+      if (dom.syncModal && !dom.syncModal.hidden) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeSyncModal();
+        }
+        return;
+      }
       if (e.key === '/' && document.activeElement !== dom.search && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         state.activeTab = 'search';
@@ -1591,9 +2080,10 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { wire(); boot(); });
+    document.addEventListener('DOMContentLoaded', function () { wire(); boot(); startSync(); });
   } else {
     wire();
     boot();
+    startSync();
   }
 })();
