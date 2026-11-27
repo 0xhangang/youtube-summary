@@ -2180,9 +2180,9 @@
   /* ── 상단 읽기 바 ──────────────────────────────────────
    * 상단 허브가 숨겨진 뒤 카드 머리(제목)까지 화면 위로 지나가고 본문을
    * 읽는 동안에만 화면 맨 위에 슬림 1줄 바를 띄운다 —
-   *   한 줄: 채널 아바타 · 채널명 · · · 영상 제목 · ↑ */
+   *   한 줄: 채널 아바타 · 채널명 · 영상 제목 · ↑ (구분은 8px 여백, 가운데 점 없음) */
   var bar = {
-    el: null, channelEl: null, dotEl: null, titleEl: null, avEl: null,
+    el: null, channelEl: null, titleEl: null, avEl: null,
     card: null, shown: false, gap: 8,
     channel: null, title: null, avatar: null,
     frame: 0, lockY: 0, lockUntil: 0
@@ -2233,7 +2233,7 @@
     if (bar.channel === channel) return;
     bar.channel = channel;
     if (bar.channelEl) bar.channelEl.textContent = channel || '';
-    if (bar.dotEl) bar.dotEl.hidden = !channel;
+    if (bar.channelEl) bar.channelEl.hidden = !channel;
   }
 
   function setBarAvatar(url) {
@@ -2306,7 +2306,6 @@
   function initReadingBar() {
     bar.el = document.getElementById('readingBar');
     bar.channelEl = document.getElementById('rbChannel');
-    bar.dotEl = document.getElementById('rbDot');
     bar.titleEl = document.getElementById('rbTitle');
     bar.avEl = document.getElementById('rbAvatar');
     if (!bar.el) return;

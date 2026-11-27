@@ -1334,7 +1334,7 @@ mark.hl {
   stroke-linejoin: round;
 }
 
-/* ── 상단 읽기 바 (1줄 슬림 — 아바타 · 채널 · · · 제목 · ↑) ──────
+/* ── 상단 읽기 바 (1줄 슬림 — 아바타 채널 제목 ↑, 사이는 여백 8px) ──────
    화면 맨 위에 딱 붙는 슬림 1줄 풀폭 바. 허브 카드가 화면 위로
    완전히 사라진 뒤 본문을 읽는 동안에만 내려온다. 배경은 맑은 유리
    (surface 88% + blur), 아래 경계선 하나로 본문과 구분하고 글자는
@@ -1389,6 +1389,7 @@ mark.hl {
   min-width: 0;
   display: flex;
   align-items: center;
+  gap: 8px; /* 채널명과 제목 사이는 여백만 — 가운데 점 없이 목차·읽음 목록과 같은 구분 */
 }
 
 /* [채널 아바타 16px] — 없으면 통째로 숨긴다 */
@@ -1396,7 +1397,7 @@ mark.hl {
   flex: 0 0 16px;
   width: 16px;
   height: 16px;
-  margin-right: 6px;
+  margin-right: 0;
   border-radius: 50%;
   object-fit: cover;
   background: var(--surface-3);
@@ -1418,15 +1419,8 @@ mark.hl {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.rb-dot {
-  flex: 0 0 auto;
-  margin: 0 6px;
-  font-size: 11px;
-  line-height: 18px;
-  color: var(--text-faint);
-}
+.rb-channel[hidden] { display: none; }
 [data-theme="dark"] .reading-bar .rb-channel { color: var(--accent); }
-.rb-dot[hidden] { display: none; }
 
 /* 영상 제목 — 한 줄 말줄임 */
 .rb-title {
