@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-27T00:18:00+09:00",
+  "updatedAt": "2026-11-28T01:54:02+09:00",
   "schedule": {
     "satoshi": ":00",
     "vitalik": ":05"
@@ -149,6 +149,10 @@
     {
       "name": "매일 실천하는 남자 - 매실남",
       "channelId": "UC1JSQe6GWGZbD7i3wucxQ_A"
+    },
+    {
+      "name": "10억 공무원",
+      "channelId": "UCcAYWARm5WSaCLOMms6jc2w"
     }
   ],
   "satoshi": [
