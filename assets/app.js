@@ -1977,15 +1977,18 @@
 
   /* ── 상단 읽기 바 ──────────────────────────────────────
    * 상단 허브가 숨겨진 뒤 카드 머리(제목)까지 화면 위로 지나가고 본문을
-   * 읽는 동안에만 화면 맨 위에 영상 제목 · 현재 소제목을 얇게 띄운다. */
+   * 읽는 동안에만 화면 맨 위에 슬림 2단 바를 띄운다 —
+   *   윗줄: 채널 아바타 · 채널명 · 영상 제목 / 아랫줄: 현재 소제목 */
   var bar = {
-    el: null, titleEl: null, sepEl: null, sectionEl: null,
-    card: null, shown: false, title: null, section: null, frame: 0,
-    lockY: 0, lockUntil: 0
+    el: null, channelEl: null, dotEl: null, titleEl: null, avEl: null,
+    currentEl: null, sectionEl: null,
+    card: null, shown: false,
+    channel: null, title: null, section: null, avatar: null, swapToken: 0, swapTimer: 0,
+    frame: 0, lockY: 0, lockUntil: 0
   };
 
   function barHeight() {
-    return (bar.el && bar.el.offsetHeight) || 40;
+    return (bar.el && bar.el.offsetHeight) || 53;
   }
 
   function barText(node) {
@@ -2027,19 +2030,63 @@
     bar.el.classList.toggle('is-on', on);
   }
 
-  function setBarContent(title, section) {
+  function setBarChannel(channel) {
+    if (bar.channel === channel) return;
+    bar.channel = channel;
+    if (bar.channelEl) bar.channelEl.textContent = channel || '';
+    if (bar.dotEl) bar.dotEl.hidden = !channel;
+  }
+
+  function setBarAvatar(url) {
+    url = url || '';
+    if (bar.avatar === url) return;
+    bar.avatar = url;
+    var el = bar.avEl;
+    if (!el) return;
+    if (!url) {
+      el.hidden = true;
+      el.removeAttribute('src');
+      return;
+    }
+    el.hidden = false;
+    el.src = url;
+  }
+
+  function setBarSection(section) {
+    if (bar.section === section) return;
+    bar.section = section;
+    if (bar.currentEl) bar.currentEl.hidden = !section;
+    var el = bar.sectionEl;
+    if (!el) return;
+    if (bar.swapTimer) { clearTimeout(bar.swapTimer); bar.swapTimer = 0; }
+    var token = ++bar.swapToken;
+    if (!section) {
+      el.classList.remove('is-leaving', 'is-entering');
+      el.textContent = '';
+      return;
+    }
+    /* 소제목이 바뀔 때만 부드럽게 넘긴다 — 기존 글자는 살짝 위로, 새 글자는 아래에서 */
+    el.classList.remove('is-entering');
+    el.classList.add('is-leaving');
+    bar.swapTimer = setTimeout(function () {
+      bar.swapTimer = 0;
+      if (token !== bar.swapToken || !el.isConnected) return;
+      el.textContent = section;
+      el.classList.remove('is-leaving');
+      el.classList.add('is-entering');
+      void el.offsetWidth;
+      el.classList.remove('is-entering');
+    }, 120);
+  }
+
+  function setBarContent(channel, title, section) {
+    setBarChannel(channel);
+    setBarAvatar(channel ? getChannelAvatar(channel) : '');
     if (bar.title !== title) {
       bar.title = title;
-      if (bar.titleEl) bar.titleEl.textContent = title;
+      if (bar.titleEl) bar.titleEl.textContent = title || '';
     }
-    if (bar.section !== section) {
-      bar.section = section;
-      if (bar.sectionEl) {
-        bar.sectionEl.textContent = section;
-        bar.sectionEl.hidden = !section;
-      }
-      if (bar.sepEl) bar.sepEl.hidden = !section;
-    }
+    setBarSection(section);
   }
 
   function updateReadingBar() {
@@ -2068,7 +2115,11 @@
     }
 
     var head = sectionAtY(card, top + 6);
-    setBarContent(barText(card.querySelector('.video-title')), head ? barText(head) : '');
+    setBarContent(
+      barText(card.querySelector('.channel-name')),
+      barText(card.querySelector('.video-title')),
+      head ? barText(head) : ''
+    );
     bar.card = card;
     setBarShown(true);
   }
@@ -2083,10 +2134,19 @@
 
   function initReadingBar() {
     bar.el = document.getElementById('readingBar');
+    bar.channelEl = document.getElementById('rbChannel');
+    bar.dotEl = document.getElementById('rbDot');
     bar.titleEl = document.getElementById('rbTitle');
-    bar.sepEl = document.getElementById('rbSep');
+    bar.avEl = document.getElementById('rbAvatar');
+    bar.currentEl = document.getElementById('rbCurrent');
     bar.sectionEl = document.getElementById('rbSection');
     if (!bar.el) return;
+    if (bar.avEl) {
+      bar.avEl.addEventListener('error', function () {
+        /* 아바타가 없거나 막힌 채널은 그냥 숨긴다 */
+        bar.avEl.hidden = true;
+      });
+    }
     bar.el.addEventListener('click', function () {
       var card = bar.card;
       if (!card || !card.isConnected) card = cardAtY(barHeight());
