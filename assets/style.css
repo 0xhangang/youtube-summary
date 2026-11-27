@@ -1141,11 +1141,11 @@ mark.hl {
   stroke-linejoin: round;
 }
 
-/* ── 상단 읽기 바 (2단 — 윗줄 채널·제목 / 아랫줄 현재 소제목) ──────
-   상단 허브 카드(.hub-card)와 똑같은 플로팅 글래스 카드 한 세트로 맞춘다.
-   화면 위에 딱 붙은 띠가 아니라, 상단에서 8px 띄운 둥근 유리 조각
-   (같은 --glass-bg · blur(24px) saturate(1.8) · --shadow-hub 유리 반사광 ·
-   border-radius 22px · 컨테이너 좌우 여백 정렬)로 띄운다. */
+/* ── 상단 읽기 바 (1줄 슬림 — 아바타 · 채널 · · · 제목 · ↑) ──────
+   상단 허브 카드(.hub-card)와 똑같은 플로팅 글래스 조각을 그대로 쓰되,
+   높이만 38px 슬림하게 줄인 한 줄 바. 화면 위에 붙은 띠가 아니라 상단에서
+   8px 띄운 둥근 유리 조각(같은 --glass-bg · blur(24px) saturate(1.8) ·
+   --shadow-hub 유리 반사광 · border-radius 22px · 컨테이너 좌우 여백 정렬). */
 .reading-bar {
   position: fixed;
   top: calc(8px + env(safe-area-inset-top, 0px));
@@ -1157,8 +1157,9 @@ mark.hl {
   gap: 8px;
   width: calc(100% - 16px);
   max-width: 780px;
+  height: 38px;
   margin: 0 auto;
-  padding: 9px 16px;
+  padding: 0 14px;
   border: 1px solid var(--border);
   border-radius: 22px;
   background: var(--glass-bg);
@@ -1193,16 +1194,10 @@ mark.hl {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.rb-row {
-  display: flex;
   align-items: center;
-  min-width: 0;
 }
 
-/* 윗줄 — 채널 아바타 · 채널명 · · · 영상 제목 */
+/* [채널 아바타 16px] — 없으면 통째로 숨긴다 */
 .rb-av {
   flex: 0 0 16px;
   width: 16px;
@@ -1214,14 +1209,16 @@ mark.hl {
   box-shadow: 0 0 0 1px var(--border);
 }
 .rb-av[hidden] { display: none; }
+
+/* 채널명 — 굵게 */
 .rb-channel {
-  flex: 0 0 auto;
-  max-width: 44%;
+  flex: 0 1 auto;
+  max-width: 42%;
   min-width: 0;
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: -0.01em;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: -0.012em;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -1229,56 +1226,26 @@ mark.hl {
 }
 .rb-dot {
   flex: 0 0 auto;
-  margin: 0 5px;
+  margin: 0 6px;
   font-size: 11px;
-  line-height: 16px;
+  line-height: 18px;
   color: var(--text-faint);
 }
 .rb-dot[hidden] { display: none; }
+
+/* 영상 제목 — 한 줄 말줄임 */
 .rb-title {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 16px;
-  letter-spacing: -0.01em;
+  line-height: 18px;
+  letter-spacing: -0.012em;
   color: var(--text-sub);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* 아랫줄 — 본문 소제목과 같은 에메랄드 세로 마커 · 현재 소제목 */
-.rb-current[hidden] { display: none; }
-.rb-mark {
-  flex: 0 0 3px;
-  width: 3px;
-  height: 13px;
-  margin-right: 7px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #10b981, #84cc16);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.26);
-}
-[data-theme="dark"] .rb-mark {
-  background: linear-gradient(180deg, #34d399, #a3e635);
-  box-shadow: 0 0 9px rgba(52, 211, 153, 0.32);
-}
-.rb-section {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 13.5px;
-  font-weight: 700;
-  line-height: 18px;
-  letter-spacing: -0.015em;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
-.rb-section.is-leaving { opacity: 0; transform: translateY(-3px); }
-.rb-section.is-entering { opacity: 0; transform: translateY(4px); transition: none; }
 
 /* 오른쪽 끝 위로 화살표 */
 .rb-up {
@@ -1286,18 +1253,16 @@ mark.hl {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: var(--text-faint);
   opacity: 0.55;
   transition: opacity 0.18s ease, color 0.18s ease, transform 0.2s ease;
 }
-.rb-up svg { width: 14px; height: 14px; display: block; }
+.rb-up svg { width: 13px; height: 13px; display: block; }
 .reading-bar:hover .rb-up,
 .reading-bar:focus-visible .rb-up { color: var(--accent-strong); opacity: 0.9; }
 .reading-bar:active .rb-up { transform: translateY(-1px); opacity: 1; }
-
-
 
 /* ── 넓은 화면 (태블릿·데스크톱) ─────────────────────────── */
 @media (min-width: 600px) {
@@ -1311,8 +1276,8 @@ mark.hl {
   .card-body { padding: 20px 24px 28px; font-size: 16px; }
   .card-actions { padding: 12px 24px 15px; }
   .section-title { font-size: 17px; }
-  .rb-channel, .rb-title { font-size: 12px; }
-  .rb-section { font-size: 14px; }
+  .rb-channel, .rb-title { font-size: 12.5px; }
+  .rb-channel { max-width: 38%; }
 }
 
 @media (max-width: 520px) {

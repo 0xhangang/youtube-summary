@@ -2051,13 +2051,12 @@
 
   /* ── 상단 읽기 바 ──────────────────────────────────────
    * 상단 허브가 숨겨진 뒤 카드 머리(제목)까지 화면 위로 지나가고 본문을
-   * 읽는 동안에만 화면 맨 위에 슬림 2단 바를 띄운다 —
-   *   윗줄: 채널 아바타 · 채널명 · 영상 제목 / 아랫줄: 현재 소제목 */
+   * 읽는 동안에만 화면 맨 위에 슬림 1줄 바를 띄운다 —
+   *   한 줄: 채널 아바타 · 채널명 · · · 영상 제목 · ↑ */
   var bar = {
     el: null, channelEl: null, dotEl: null, titleEl: null, avEl: null,
-    currentEl: null, sectionEl: null,
     card: null, shown: false, gap: 8,
-    channel: null, title: null, section: null, avatar: null, swapToken: 0, swapTimer: 0,
+    channel: null, title: null, avatar: null,
     frame: 0, lockY: 0, lockUntil: 0
   };
 
@@ -2096,20 +2095,6 @@
     return found < 0 ? null : cards[found];
   }
 
-  function sectionAtY(card, topY) {
-    var heads = card.querySelectorAll('.card-body .section-title');
-    if (!heads.length) return null;
-    var lo = 0;
-    var hi = heads.length - 1;
-    var found = -1;
-    while (lo <= hi) {
-      var mid = (lo + hi) >> 1;
-      if (heads[mid].getBoundingClientRect().top <= topY) { found = mid; lo = mid + 1; }
-      else { hi = mid - 1; }
-    }
-    return found < 0 ? null : heads[found];
-  }
-
   function setBarShown(on) {
     if (!bar.el || bar.shown === on) return;
     bar.shown = on;
@@ -2138,41 +2123,13 @@
     el.src = url;
   }
 
-  function setBarSection(section) {
-    if (bar.section === section) return;
-    bar.section = section;
-    if (bar.currentEl) bar.currentEl.hidden = !section;
-    var el = bar.sectionEl;
-    if (!el) return;
-    if (bar.swapTimer) { clearTimeout(bar.swapTimer); bar.swapTimer = 0; }
-    var token = ++bar.swapToken;
-    if (!section) {
-      el.classList.remove('is-leaving', 'is-entering');
-      el.textContent = '';
-      return;
-    }
-    /* 소제목이 바뀔 때만 부드럽게 넘긴다 — 기존 글자는 살짝 위로, 새 글자는 아래에서 */
-    el.classList.remove('is-entering');
-    el.classList.add('is-leaving');
-    bar.swapTimer = setTimeout(function () {
-      bar.swapTimer = 0;
-      if (token !== bar.swapToken || !el.isConnected) return;
-      el.textContent = section;
-      el.classList.remove('is-leaving');
-      el.classList.add('is-entering');
-      void el.offsetWidth;
-      el.classList.remove('is-entering');
-    }, 120);
-  }
-
-  function setBarContent(channel, title, section) {
+  function setBarContent(channel, title) {
     setBarChannel(channel);
     setBarAvatar(channel ? getChannelAvatar(channel) : '');
     if (bar.title !== title) {
       bar.title = title;
       if (bar.titleEl) bar.titleEl.textContent = title || '';
     }
-    setBarSection(section);
   }
 
   function updateReadingBar() {
@@ -2200,11 +2157,9 @@
       return;
     }
 
-    var head = sectionAtY(card, top + 6);
     setBarContent(
       barText(card.querySelector('.channel-name')),
-      barText(card.querySelector('.video-title')),
-      head ? barText(head) : ''
+      barText(card.querySelector('.video-title'))
     );
     bar.card = card;
     setBarShown(true);
@@ -2224,8 +2179,6 @@
     bar.dotEl = document.getElementById('rbDot');
     bar.titleEl = document.getElementById('rbTitle');
     bar.avEl = document.getElementById('rbAvatar');
-    bar.currentEl = document.getElementById('rbCurrent');
-    bar.sectionEl = document.getElementById('rbSection');
     if (!bar.el) return;
     measureBarGap();
     if (bar.avEl) {
