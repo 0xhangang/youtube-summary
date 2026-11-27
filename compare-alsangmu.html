@@ -135,98 +135,78 @@
     .cg-tab-m { display: none; }
   }
 
-  /* ══ 4차 · B안 필기 마킹 ══════════════════════════════════ */
-  .cg-wrap {
-    --hl-g: rgba(16, 185, 129, 0.34);
-    --hl-y: rgba(250, 204, 21, 0.50);
-    --hl-r: rgba(244, 63, 94, 0.26);
-    --hl-b: rgba(59, 130, 246, 0.20);
+  /* ══ 5차 · B안 구조 분리 (나열·대립·종속) ═════════════════ */
+  #cmpBody.v-b p { line-height: 1.9; }
+
+  .v-b .struct { margin: 16px 0 1.15em; }
+  .v-b .st-tag {
+    display: flex; align-items: center; gap: 5px;
+    margin: 0 0 6px;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.08em; line-height: 1.2;
+    color: var(--text-faint);
   }
-  [data-theme="dark"] .cg-wrap {
-    --hl-g: rgba(52, 211, 153, 0.30);
-    --hl-y: rgba(250, 204, 21, 0.26);
-    --hl-r: rgba(251, 113, 133, 0.30);
-    --hl-b: rgba(96, 165, 250, 0.26);
+  .v-b .st-tag-ar { font-size: 11px; letter-spacing: 0; }
+
+  /* 나열 — 연한 회색 박스 */
+  .v-b .st-list {
+    padding: 11px 14px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+  }
+  .v-b .st-list .st-tag { margin-bottom: 7px; }
+  .v-b .st-items { margin: 0; padding: 0; list-style: none; }
+  .v-b .st-items li {
+    position: relative;
+    margin: 0 0 9px; padding-left: 15px;
+    line-height: 1.85; word-break: keep-all; overflow-wrap: break-word;
+  }
+  .v-b .st-items li:last-child { margin-bottom: 0; }
+  .v-b .st-items li::before {
+    content: ""; position: absolute; left: 2px; top: 0.82em;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: color-mix(in srgb, var(--text-faint) 72%, transparent);
   }
 
-  .v-b p { line-height: 1.98; }
-  .v-b strong { background-image: none; padding: 0; border-radius: 0; }
+  /* 대립 — 좌우 2열 (모바일은 상하 + 얇은 연결선) */
+  .v-b .st-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .v-b .st-col {
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .v-b .st-col-txt { line-height: 1.84; word-break: keep-all; overflow-wrap: break-word; }
+  .v-b .st-mid { position: relative; display: flex; align-items: center; justify-content: center; }
+  .v-b .st-vs {
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--surface-3); color: var(--text-sub);
+    font-size: 10px; font-weight: 800; line-height: 1;
+  }
+  @media (max-width: 559px) {
+    .v-b .st-pair { grid-template-columns: minmax(0, 1fr); }
+    .v-b .st-mid { height: 30px; }
+    .v-b .st-mid::before, .v-b .st-mid::after {
+      content: ""; position: absolute; left: 50%;
+      width: 1px; height: 10px; margin-left: -0.5px;
+      background: var(--border-strong);
+    }
+    .v-b .st-mid::before { top: 0; }
+    .v-b .st-mid::after { bottom: 0; }
+  }
 
-  .mk-hl {
-    padding: 0 1px; border-radius: 3px;
-    background-repeat: no-repeat;
-    background-size: 100% 0.92em;
-    background-position: 0 74%;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
+  /* 종속 — 왼쪽 얇은 세로선 + 살짝 들여쓰기 */
+  .v-b .st-sub {
+    margin: -0.3em 0 1.1em; padding: 1px 0 1px 13px;
+    border-left: 2px solid color-mix(in srgb, var(--text-faint) 42%, transparent);
   }
-  .mk-hl.mk-g { background-image: linear-gradient(var(--hl-g), var(--hl-g)); }
-  .mk-hl.mk-y { background-image: linear-gradient(var(--hl-y), var(--hl-y)); }
-  .mk-hl.mk-r { background-image: linear-gradient(var(--hl-r), var(--hl-r)); }
-  .mk-hl.mk-b { background-image: linear-gradient(var(--hl-b), var(--hl-b)); }
-
-  .mk-ul {
-    text-decoration-line: underline;
-    text-decoration-thickness: 1.4px;
-    text-underline-offset: 3px;
-    text-decoration-color: color-mix(in srgb, var(--text) 42%, transparent);
-  }
-  .mk-u-u { text-decoration-style: solid; }
-  .mk-u-d { text-decoration-style: dashed; }
-  .mk-u-w { text-decoration-style: wavy; text-decoration-thickness: 1.1px; }
-  .mk-g.mk-u-u, .mk-g.mk-u-d, .mk-g.mk-u-w { text-decoration-color: var(--tone-green); }
-  .mk-y.mk-u-u, .mk-y.mk-u-d, .mk-y.mk-u-w { text-decoration-color: #b45309; }
-  [data-theme="dark"] .mk-y.mk-u-u,
-  [data-theme="dark"] .mk-y.mk-u-d,
-  [data-theme="dark"] .mk-y.mk-u-w { text-decoration-color: #fbbf24; }
-  .mk-r.mk-u-u, .mk-r.mk-u-d, .mk-r.mk-u-w { text-decoration-color: var(--tone-red); }
-  .mk-b.mk-u-u, .mk-b.mk-u-d, .mk-b.mk-u-w { text-decoration-color: var(--tone-blue); }
-
-  .mk-sym { font-weight: 900; font-size: 0.92em; margin: 0 1px; }
-  .mk-sym-s {
-    display: inline-block; padding: 0 3px; border-radius: 4px;
-    color: #b45309; background: rgba(245, 158, 11, 0.14);
-  }
-  [data-theme="dark"] .mk-sym-s { color: #fbbf24; background: rgba(251, 191, 36, 0.14); }
-  .mk-sym-g { color: var(--tone-green); }
-  .mk-sym-a { color: var(--tone-amber); }
-  .mk-sym-r { color: var(--tone-red); }
-
-  .tag-pill {
-    display: inline-block; padding: 0 7px; border-radius: 999px;
-    background: var(--accent-soft);
-    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-    font-weight: 700; font-size: 0.94em; line-height: 1.55;
-  }
-  .v-b .tag-pill strong { color: inherit; }
-  .tag-box {
-    padding: 0 5px; border-radius: 5px;
-    border: 1.4px solid color-mix(in srgb, var(--text-sub) 55%, transparent);
-    font-weight: 700;
-  }
-  .mk-arrow {
-    display: inline-block; padding: 0 7px 0 5px; border-radius: 999px;
-    background: color-mix(in srgb, var(--tone-blue) 12%, transparent);
-    color: var(--tone-blue); font-weight: 700; font-size: 0.94em;
-    word-break: keep-all;
-  }
-  .mk-arrow::before { content: "→ "; font-weight: 800; }
-
-  .mk-legend {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 9px;
-    margin: 0 0 16px; padding: 7px 10px;
-    border: 1px dashed var(--border-strong); border-radius: 10px;
-    background: color-mix(in srgb, var(--surface-2) 90%, transparent);
-    font-size: 10.5px; line-height: 1.5; color: var(--text-faint);
-  }
-  .mk-legend .lg { display: inline-flex; align-items: center; gap: 4px; }
-  .mk-legend .lg-ch { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
-  .mk-legend .lg-ch.g { background: var(--hl-g); }
-  .mk-legend .lg-ch.y { background: var(--hl-y); }
-  .mk-legend .lg-ch.r { background: var(--hl-r); }
-  .mk-legend .lg-ch.b { background: var(--hl-b); }
-  .mk-legend .lg-sym { font-weight: 900; font-size: 11px; line-height: 1; }
-  .mk-legend .lg-sep { color: var(--border-strong); font-weight: 700; }
+  .v-b .st-sub .st-tag { margin-bottom: 3px; }
+  .v-b .st-sub .st-txt { font-size: 15px; line-height: 1.86; word-break: keep-all; overflow-wrap: break-word; }
 
   /* ══ 4차 · C안 인포그래픽 ═════════════════════════════════ */
   .ig-map {
@@ -367,7 +347,7 @@
       <img class="cg-thumb" id="cmpThumb" alt="" width="84" height="48" decoding="async" referrerpolicy="no-referrer" />
     </a>
     <div class="cg-head-txt">
-      <div class="cg-kicker">🧪 요약 스타일 실험 · 피드백 반영 4차 · A/B/C 신구도</div>
+      <div class="cg-kicker">🧪 요약 스타일 실험 · 피드백 반영 5차 · A/B/C 신구도</div>
       <h1 class="cg-title" id="cmpTitle">알상무 R's Trading Station (11월 27일 금) 풀버젼</h1>
       <div class="cg-sub">A/B/C는 <b>같은 방송·같은 팩트</b>를 다르게 담은 3버전입니다</div>
     </div>
@@ -385,7 +365,7 @@
     </button>
     <button class="cg-tab" type="button" role="tab" id="tab-b" data-v="b" aria-selected="false" aria-controls="cmpBody">
       <span class="cg-tab-k">B안</span>
-      <span class="cg-tab-t">필기 마킹</span>
+      <span class="cg-tab-t">구조 분리</span>
       <span class="cg-tab-m" data-meta="b"></span>
     </button>
     <button class="cg-tab" type="button" role="tab" id="tab-c" data-v="c" aria-selected="false" aria-controls="cmpBody">
@@ -430,10 +410,10 @@
 (function () {
   'use strict';
 
-  var DATA = {"meta":{"videoId":"9fRzwt_Dflk","title":"R's Trading Station (11월 27일 금) 풀버젼","channel":"알상무","channelUrl":"https://www.youtube.com/channel/UCiDmfbYvuMEVbRxPmFP4sng","avatar":"https://yt3.googleusercontent.com/JDoKWhh8olpWRLOfuwhoEMrc00B6-WEFF6Sp1pBFiAzjMGslkbePCTJghMauB_t3rG9uuVPHSA=s900-c-k-c0x00ffffff-no-rj","publishedAt":"2026-11-28T02:00:04+09:00","url":"https://www.youtube.com/watch?v=9fRzwt_Dflk","categoryLabel":"증시","category":"stock"},"versions":{"a":{"key":"A","name":"순수 텍스트","diff":"박스·시각화 0 — 1인칭 구어체 줄글과 소제목 6개만, 형광펜은 핵심 단어·숫자에만","blocks":[{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"p","text":"금요일 RTS(알스 트레이딩 스테이션) 시작하겠습니다. 이번에 코스닥을 어떻게 대해야 하는지 다들 다시 한번 경험하셨을 텐데요, 코스닥에다 대고 \"네 가치를 증명해 봐\"라며 밸류를 따지면 안 됩니다. 코스닥은 그냥 **금쪽이** 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, 잔뜩 들어가서 물려버리면 답이 없습니다."},{"type":"p","text":"사실 코스닥이 상대적으로 유리해 보이는 이유를 여덟 가지 정도 꼽을 수는 있지만, 그걸 머리에 넣고 고집을 부리면 또 잃습니다. 저는 650 부근에서 조금씩 담다가 **666** 돌파를 보고(실제 체결은 669) 코스닥 150 추종 ETF를 들어갔는데, 오늘 **6~7%** 급등이 나와서 감사히 일부 차익 실현을 했습니다. 코스닥은 가볍게 먹고 빠져서 자신감과 수익을 쌓는 용도지, 이걸로 일가를 이루겠다고 덤비면 안 됩니다. 진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다."},{"type":"p","text":"단기 차익 실현이 좋은 이유는 밤에 잠을 잘 수 있고 주말에 편히 놀 수 있으며, 번 돈으로 다음 베팅을 할 수 있기 때문입니다. 코스피 고점(6월 19일) 이후 6개월가량 조정을 받았으니 시간적으로도 반등이 나올 만한 구간에 와 있습니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"p","text":"오늘 코스피는 장 초반 약세를 딛고 양봉으로 **+4.34%** 상승 마감했고, 외국인도 프리장 포함 약 **11.5조 원** 순매수하며 오랜만에 힘을 보탰습니다. 다만 주봉으로 보면 겨우 **+0.94%** 양봉이고 여전히 20일·60일·120일 이평선이 위에 있어 추세 자체가 완전히 돌았다고 보기엔 이릅니다. 그래도 개인들이 절망해서 던지기보다 멘탈을 다잡고 미련을 버린 점이 반등의 준비 신호로 읽힙니다."},{"type":"p","text":"코스닥은 **+8%**, 주간으로는 +9.8% 오른 708포인트로 마감했는데, 신용잔고가 2025년 1월 이후 약 2년 내 최저치까지 줄어들어 악성 매물이 싹 정리된 클린한 지수입니다. 내년 1월 중순쯤 주요 이평선들이 내려와 만나는 지점에서 추가 돌파 시 CTA 추종 매수와 쇼트커버가 붙을 여지도 있습니다."},{"type":"p","text":"원/달러 환율은 5일선이 60일선에 붙었고 다음 주 20일선과 60일선이 만나는 자리라, 다음 주에도 검은선 위에서 버틴다면 기술적으로 다시 위쪽 방향을 볼 수 있는 흐름입니다."},{"type":"p","text":"어제·오늘은 미국 추수감사절 연휴라 양놈 형님들이 안 계신 가벼운 장이었습니다. 월요일(11월 30일) 11월 마지막 영업일에 형님들이 돌아와서 \"어? 많이 올랐네\" 하고 두들겨 팰 수도 있으니 들뜨지 마세요. 크리스마스 연휴(12월 FOMC 이후 12일경부터)엔 플레이어가 아예 사라지므로 **12월 둘째 주**까지 적정 수익을 내고 올해 매매를 정리하는 걸 목표로 삼으시길 권합니다."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"p","text":"주간으로 삼성전자·하이닉스가 약했던 건 외국인이 개별 기업이 싫어서가 아니라 아시아와 AI 반도체를 묶어서 팔고 있기 때문입니다. 우리나라는 패시브·액티브·가치주·배당주 펀드까지 전부 삼성전자 비중을 의무적으로 채워야 하는 구조라 다양성이 없고, 배당 세제 변화 같은 이슈로 펀드가 깨지면 삼성전자 매물이 쏟아지는 취약점이 있습니다."},{"type":"p","text":"이번 주 코스피에서는 한진칼(경영권 분쟁으로 월간 **+105%**), 코스맥스, 한미사이언스가, 코스닥에서는 화장품 용기 테마의 펌텍코리아와 정치 테마가 붙은 안랩이 52주 신고가를 기록했습니다. 시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증이기도 합니다."},{"type":"p","text":"미국 3분기 GDP가 **4.3%**, 근원 PCE가 **3.3%**로 나오면서 명목상 약 7%대 상승 압력이 확인됐고 12월 금리 인상 우려가 커졌습니다. 시중에 \"현금을 두면 돈이 녹으니 무조건 투자해야 한다\"는 말이 돌지만, 잘못 투자하면 녹는 게 아니라 그냥 타서 사라진다는 점도 기억하셔야 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"p","text":"가격 지표를 여러 개 같이 보다 보면 먼저 방향을 틀기 시작하는 녀석들이 보입니다. 지금 원/달러, 코스닥, 금리(한 달 전 전환), 원유(15~20일 전 전환)가 변화를 보여주고 있어 시장 전체의 변곡점이 가까워지고 있는 건 맞지만, 대형 기술주 차트는 아직 갈 길이 멉니다."},{"type":"p","text":"삼성전자와 하이닉스가 돌아서지 않으면 지수 전체가 몇 달 더 횡보할 수 있습니다. 현대차도 20일선에 간신히 붙었지만 차트상 매수할 매력은 아직 안 보입니다. 반면 APR은 실적은 탄탄한데 수급·환율 이슈로 눌려 있던 거라 다음 주 양봉이 서면 위쪽 여력이 있습니다."},{"type":"p","text":"엔비디아와 마이크론 테크놀로지, 일본 키옥시아, 소프트뱅크 그룹은 하락 가속도가 붙거나 악성 매물이 많아 당분간 어렵습니다. 차라리 미국장에 가실 거면 구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다. 인텔은 정부 지원금을 넣기 직전 자리까지 밀려나며 상업적 경쟁력 한계가 드러났습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"p","text":"오늘은 주식 차트 너머의 미국 정치 지형 변화를 말씀드리고 싶습니다. 최근 일론 머스크가 아이들을 데리고 젠슨 황을 찾아가 사진을 찍었는데, 불과 며칠 전(11월 18~19일) 머스크는 뉴욕타임스 딜북 서밋과 CNBC 인터뷰에서 **\"나는 MAGA가 아니다(I'm not sure what MAGA is)\"**라며 공화당 후원을 후회하는 듯한 발언을 했습니다. 뭔가 불안감을 느낀 두 사람이 동지애로 뭉친 모양새입니다."},{"type":"p","text":"미국 최대 단일 개신교 교단인 남침례회(등록 교인 1,233만 명)는 '브랜트우드 선언(Brentwood Declaration)'을 통해 AI로 고인을 모방하거나 인간과 기계의 경계를 모호하게 만드는 디지털 불멸 기술에 선을 그었습니다. 이들은 MAGA와 트럼프의 핵심 지지 기반이지만, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 충돌할 수밖에 없습니다."},{"type":"p","text":"젠슨 황의 초고속 복귀를 두고 세속 언론은 중국 관련 리스크를 따지지만, 보수 기독교 지지층은 트럼프가 불륜 및 윤리적 문제에 노골적인 면제부를 주는 모습에 큰 배신감과 괴리감을 느끼고 있습니다. 실제로 악시오스(Axios)에서도 젠슨 황 복귀를 계기로 MAGA 진영이 분열되고 있다는 보도가 나왔습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"p","text":"중요한 건 팩트가 아니라 대중의 머릿속에 어떤 이미지가 자리 잡느냐입니다. 마리 앙투아네트가 \"빵이 없으면 케이크(고기)를 먹으면 되지\"라고 실제로 말했는지는 불분명하지만 대중의 증오를 샀듯, 미국 드라마 **〈홈랜드(Homeland)〉 시즌 1 에피소드 11**에서도 테러 위험 속 벙커에 격리된 부통령이 \"사우디아라비아는 건드리지 말고 아무나 한 명 잘라\"라고 지시하는 모습이 그려집니다. 미국 남부 보수층이 혐오하던 '딥스테이트'의 전형을 이제는 **트럼프 본인이 닮아가고 있다**는 인식이 MAGA 내부에 퍼지고 있습니다."},{"type":"p","text":"트럼프가 공화당 내 레임덕에 빠져 집단지도체제(J.D. 밴스 등)로 빠르게 넘어가면 불확실성이 줄어 증시에 호재겠지만, 그립을 놓지 않으려 버티면 향후 6개월간 미국 정치발 혼란이 이어질 수 있습니다. 오히려 스타게이트 등 트럼프 관련 사업들이 정리되면서 **당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다**는 게 제 생각입니다."},{"type":"p","text":"오늘 낮에 KB증권 **이은택 연구원**과 만나 대중 앞에서 이야기하는 고충에 대해 대화를 나눴는데, 결국 세상도 시장도 우리가 생각하는 것만큼 정교하거나 합리적이지 않습니다. 올해 역대급 상승장에서 아쉽게 수익을 못 내셨더라도 너무 자책하지 마시고 운이 조금 없었을 뿐이라 생각하시며, 다음 반등 타이밍을 저와 함께 차분히 노려보시죠. 금요일 RTS 여기서 마치겠습니다. 감사합니다."}]},"b":{"key":"B","name":"필기 마킹","diff":"A안 문장 56개·문단 25개를 그대로 두고 4색 형광펜·기호·밑줄·태그만 — 책에 필기한 노트처럼","blocks":[{"type":"legend","items":[{"cls":"g","label":"결론·방향"},{"cls":"y","label":"수치·타점"},{"cls":"r","label":"리스크·경고"},{"cls":"b","label":"종목·키워드"}],"syms":[{"s":"★","label":"핵심"},{"s":"●","label":"호재"},{"s":"▲","label":"유보"},{"s":"■","label":"주의"}]},{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"p","text":"금요일 RTS(알스 트레이딩 스테이션) 시작하겠습니다. 이번에 {{B|코스닥을 어떻게 대해야 하는지}} 다들 다시 한번 경험하셨을 텐데요, 코스닥에다 대고 \"네 가치를 증명해 봐\"라며 {{R|밸류를 따지면 안 됩니다}}. ★코스닥은 그냥 {{P|**금쪽이**}} 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, {{RW|잔뜩 들어가서 물려버리면 답이 없습니다}}."},{"type":"p","text":"사실 코스닥이 상대적으로 유리해 보이는 이유를 {{U|여덟 가지 정도 꼽을 수는 있지만}}, 그걸 머리에 넣고 고집을 부리면 또 잃습니다. ●저는 {{Y|650 부근에서 조금씩 담다가}} {{YU|**666**}} 돌파를 보고{{A|(실제 체결은 669)}} {{P|코스닥 150 추종 ETF}}를 들어갔는데, {{Y|오늘 **6~7%** 급등}}이 나와서 감사히 {{G|일부 차익 실현을 했습니다}}. 코스닥은 가볍게 먹고 빠져서 자신감과 수익을 쌓는 용도지, {{RW|이걸로 일가를 이루겠다고 덤비면 안 됩니다}}. {{G|진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다}}."},{"type":"p","text":"{{G|단기 차익 실현이 좋은 이유}}는 밤에 잠을 잘 수 있고 주말에 편히 놀 수 있으며, 번 돈으로 다음 베팅을 할 수 있기 때문입니다. {{Y|코스피 고점(6월 19일)}} 이후 {{Y|6개월가량 조정}}을 받았으니 시간적으로도 {{G|반등이 나올 만한 구간}}에 와 있습니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"p","text":"오늘 {{B|코스피는 장 초반 약세를 딛고}} 양봉으로 {{Y|**+4.34%**}} 상승 마감했고, 외국인도 프리장 포함 {{Y|약 **11.5조 원**}} 순매수하며 오랜만에 힘을 보탰습니다. 다만 주봉으로 보면 겨우 {{Y|**+0.94%**}} 양봉이고 여전히 {{Y|20일·60일·120일 이평선이 위에 있어}} {{R|추세 자체가 완전히 돌았다고 보기엔 이릅니다}}. 그래도 개인들이 절망해서 던지기보다 멘탈을 다잡고 미련을 버린 점이 {{G|반등의 준비 신호로 읽힙니다}}."},{"type":"p","text":"코스닥은 {{Y|**+8%**}}, 주간으로는 {{Y|+9.8% 오른 708포인트}}로 마감했는데, 신용잔고가 {{Y|2025년 1월 이후 약 2년 내 최저치}}까지 줄어들어 {{A|악성 매물이 싹 정리된}} {{G|클린한 지수입니다}}. 내년 1월 중순쯤 주요 이평선들이 내려와 만나는 지점에서 추가 돌파 시 {{P|CTA 추종 매수와 쇼트커버}}가 붙을 여지도 있습니다."},{"type":"p","text":"원/달러 환율은 {{D|5일선이 60일선에 붙었고}} 다음 주 {{Y|20일선과 60일선이 만나는 자리}}라, 다음 주에도 {{U|검은선 위에서 버틴다면}} 기술적으로 {{G|다시 위쪽 방향을 볼 수 있는 흐름}}입니다."},{"type":"p","text":"어제·오늘은 {{B|미국 추수감사절 연휴}}라 양놈 형님들이 안 계신 가벼운 장이었습니다. {{Y|월요일(11월 30일)}} 11월 마지막 영업일에 형님들이 돌아와서 \"어? 많이 올랐네\" 하고 {{RW|두들겨 팰 수도 있으니 들뜨지 마세요}}. ★{{Y|크리스마스 연휴(12월 FOMC 이후 12일경부터)}}엔 플레이어가 아예 사라지므로 {{YU|**12월 둘째 주**}}까지 적정 수익을 내고 올해 매매를 정리하는 걸 {{G|목표로 삼으시길 권합니다}}."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"p","text":"주간으로 {{B|삼성전자·하이닉스}}가 약했던 건 외국인이 개별 기업이 싫어서가 아니라 {{R|아시아와 AI 반도체를 묶어서 팔고 있기}} 때문입니다. 우리나라는 패시브·액티브·가치주·배당주 펀드까지 전부 삼성전자 비중을 {{R|의무적으로 채워야 하는 구조라 다양성이 없고}}, ■배당 세제 변화 같은 이슈로 펀드가 깨지면 {{RW|삼성전자 매물이 쏟아지는 취약점}}이 있습니다."},{"type":"p","text":"이번 주 코스피에서는 {{X|한진칼}}{{Y|(경영권 분쟁으로 월간 **+105%**)}}, {{B|코스맥스}}, {{B|한미사이언스}}가, 코스닥에서는 화장품 용기 테마의 {{B|펌텍코리아}}와 정치 테마가 붙은 {{B|안랩}}이 {{P|52주 신고가}}를 기록했습니다. ★시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 {{A|전체 장이 아직 강하지 않다는 방증이기도 합니다}}."},{"type":"p","text":"{{Y|미국 3분기 GDP가 **4.3%**}}, {{Y|근원 PCE가 **3.3%**}}로 나오면서 {{Y|명목상 약 7%대 상승 압력}}이 확인됐고 {{R|12월 금리 인상 우려}}가 커졌습니다. 시중에 \"현금을 두면 돈이 녹으니 {{U|무조건 투자해야 한다}}\"는 말이 돌지만, 잘못 투자하면 녹는 게 아니라 {{RW|그냥 타서 사라진다}}는 점도 기억하셔야 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"p","text":"가격 지표를 여러 개 같이 보다 보면 먼저 방향을 틀기 시작하는 녀석들이 보입니다. 지금 {{B|원/달러, 코스닥, 금리(한 달 전 전환), 원유(15~20일 전 전환)}}가 변화를 보여주고 있어 시장 전체의 {{G|변곡점이 가까워지고}} 있는 건 맞지만, {{R|대형 기술주 차트는 아직 갈 길이 멉니다}}."},{"type":"p","text":"{{B|삼성전자와 하이닉스}}가 돌아서지 않으면 지수 전체가 {{R|몇 달 더 횡보}}할 수 있습니다. ▲{{X|현대차}}도 20일선에 {{D|간신히 붙었지만}} 차트상 매수할 매력은 아직 안 보입니다. ●반면 {{X|APR}}은 실적은 탄탄한데 수급·환율 이슈로 눌려 있던 거라 {{G|다음 주 양봉이 서면 위쪽 여력이 있습니다}}."},{"type":"p","text":"■{{B|엔비디아와 마이크론 테크놀로지, 일본 키옥시아, 소프트뱅크 그룹}}은 하락 가속도가 붙거나 악성 매물이 많아 {{R|당분간 어렵습니다}}. ★차라리 미국장에 가실 거면 {{G|구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다}}. {{RW|인텔은 정부 지원금을 넣기 직전 자리까지 밀려나며}} 상업적 경쟁력 한계가 드러났습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"p","text":"오늘은 주식 차트 너머의 미국 정치 지형 변화를 말씀드리고 싶습니다. 최근 일론 머스크가 아이들을 데리고 젠슨 황을 찾아가 사진을 찍었는데, 불과 며칠 전({{Y|11월 18~19일}}) 머스크는 {{U|뉴욕타임스 딜북 서밋과 CNBC 인터뷰}}에서 {{R|**\"나는 MAGA가 아니다(I'm not sure what MAGA is)\"**}}라며 공화당 후원을 후회하는 듯한 발언을 했습니다. 뭔가 불안감을 느낀 두 사람이 동지애로 뭉친 모양새입니다."},{"type":"p","text":"★미국 최대 단일 개신교 교단인 {{X|남침례회}}{{Y|(등록 교인 1,233만 명)}}는 {{B|'브랜트우드 선언(Brentwood Declaration)'}}을 통해 AI로 고인을 모방하거나 인간과 기계의 경계를 모호하게 만드는 {{G|디지털 불멸 기술에 선을 그었습니다}}. 이들은 MAGA와 트럼프의 {{U|핵심 지지 기반이지만}}, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 {{R|충돌할 수밖에 없습니다}}."},{"type":"p","text":"젠슨 황의 초고속 복귀를 두고 세속 언론은 {{R|중국 관련 리스크}}를 따지지만, 보수 기독교 지지층은 트럼프가 불륜 및 윤리적 문제에 노골적인 면제부를 주는 모습에 {{RW|큰 배신감과 괴리감}}을 느끼고 있습니다. ■실제로 {{X|악시오스(Axios)}}에서도 젠슨 황 복귀를 계기로 {{R|MAGA 진영이 분열되고 있다는 보도}}가 나왔습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"p","text":"중요한 건 팩트가 아니라 {{G|대중의 머릿속에 어떤 이미지가 자리 잡느냐}}입니다. 마리 앙투아네트가 \"빵이 없으면 케이크(고기)를 먹으면 되지\"라고 실제로 말했는지는 불분명하지만 대중의 증오를 샀듯, 미국 드라마 {{B|**〈홈랜드(Homeland)〉 시즌 1 에피소드 11**}}에서도 테러 위험 속 벙커에 격리된 부통령이 \"사우디아라비아는 건드리지 말고 아무나 한 명 잘라\"라고 지시하는 모습이 그려집니다. 미국 남부 보수층이 혐오하던 '딥스테이트'의 전형을 이제는 {{R|**트럼프 본인이 닮아가고 있다**}}는 인식이 MAGA 내부에 퍼지고 있습니다."},{"type":"p","text":"트럼프가 공화당 내 레임덕에 빠져 {{G|집단지도체제(J.D. 밴스 등)로 빠르게 넘어가면}} {{A|불확실성이 줄어 증시에 호재겠지만}}, 그립을 놓지 않으려 버티면 {{Y|향후 6개월간 미국 정치발 혼란}}이 이어질 수 있습니다. ★오히려 스타게이트 등 트럼프 관련 사업들이 정리되면서 {{G|**당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다**}}는 게 제 생각입니다."},{"type":"p","text":"오늘 낮에 KB증권 {{X|**이은택 연구원**}}과 만나 대중 앞에서 이야기하는 고충에 대해 대화를 나눴는데, 결국 세상도 시장도 우리가 생각하는 것만큼 {{U|정교하거나 합리적이지 않습니다}}. 올해 역대급 상승장에서 아쉽게 수익을 못 내셨더라도 너무 {{G|자책하지 마시고}} 운이 조금 없었을 뿐이라 생각하시며, 다음 반등 타이밍을 저와 함께 차분히 노려보시죠. 금요일 RTS 여기서 마치겠습니다. 감사합니다."}]},"c":{"key":"C","name":"시각화 몰빵","diff":"긴 줄글 대신 인포그래픽 12개 + 화자 한마디 — 같은 방송·같은 수치로 재구성","blocks":[{"type":"map","title":"방송 요약 맵 — 6개 주제","cards":[{"n":"①","t":"코스닥 타점","d":"650 분할 → 666 돌파 → 669 체결 · 6~7% 익절","tone":"accent"},{"n":"②","t":"시장 · 연말","d":"코스피 +4.34% · 코스닥 708p · 12월 둘째 주 정리","tone":"blue"},{"n":"③","t":"반도체 · 신고가","d":"52주 신고가 5종목 · GDP 4.3% / 근원 PCE 3.3%","tone":"violet"},{"n":"④","t":"빅테크 · AI","d":"AI 반도체·장비는 어렵다 → 하이퍼스케일러","tone":"amber"},{"n":"⑤","t":"디지털 불멸 · MAGA","d":"등록 교인 1,233만 명의 선언 ↔ 역린","tone":"red"},{"n":"⑥","t":"홈랜드 · 한국장","d":"집단지도체제 호재 vs 6개월 혼란","tone":"green"}]},{"type":"callout","text":"코스닥은 그냥 **금쪽이** 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, 잔뜩 들어가서 물려버리면 답이 없습니다."},{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"svg","title":"내 코스닥 진입 경로 — 650 → 666 → 669","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 154\" class=\"ig\" role=\"img\"><rect x=\"18\" y=\"10\" width=\"112\" height=\"22\" rx=\"11\" class=\"sf-a\"/><text x=\"74\" y=\"25\" class=\"t2 c-a\" text-anchor=\"middle\">오늘 6~7% 익절</text><rect x=\"72.0\" y=\"74\" width=\"172.8\" height=\"30\" rx=\"7\" class=\"sf-g\"/><text x=\"158.4\" y=\"93\" class=\"t2 c-g\" text-anchor=\"middle\">650 부근 분할 매수</text><line x1=\"244.8\" y1=\"44\" x2=\"244.8\" y2=\"104\" class=\"dash\"/><text x=\"241.8\" y=\"38\" class=\"t2 c-a\" text-anchor=\"end\">666 돌파선</text><line x1=\"18\" y1=\"104\" x2=\"342\" y2=\"104\" class=\"axis\"/><line x1=\"18.0\" y1=\"104\" x2=\"18.0\" y2=\"109\" class=\"tick\"/><text x=\"18.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">645</text><line x1=\"72.0\" y1=\"104\" x2=\"72.0\" y2=\"109\" class=\"tick\"/><text x=\"72.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">650</text><line x1=\"126.0\" y1=\"104\" x2=\"126.0\" y2=\"109\" class=\"tick\"/><text x=\"126.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">655</text><line x1=\"180.0\" y1=\"104\" x2=\"180.0\" y2=\"109\" class=\"tick\"/><text x=\"180.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">660</text><line x1=\"234.0\" y1=\"104\" x2=\"234.0\" y2=\"109\" class=\"tick\"/><text x=\"234.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">665</text><line x1=\"288.0\" y1=\"104\" x2=\"288.0\" y2=\"109\" class=\"tick\"/><text x=\"288.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">670</text><line x1=\"342.0\" y1=\"104\" x2=\"342.0\" y2=\"109\" class=\"tick\"/><text x=\"342.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">675</text><circle cx=\"277.2\" cy=\"104\" r=\"5.5\" class=\"dot-ac\"/><text x=\"277.20000000000005\" y=\"66\" class=\"t1 c-ac\" text-anchor=\"middle\">669 체결</text><text x=\"18\" y=\"144\" class=\"t3\">650 부근 분할 → 666 돌파 확인 → 실제 669 체결</text></svg>","caption":"650 부근에서 조금씩 담다가 666 돌파를 보고 들어갔습니다. 실제 체결은 669 — 오늘 6~7% 급등에 일부 차익 실현."},{"type":"vs","title":"단타 vs 본진 — 어디에 힘을 싣나","left":{"title":"코스닥 150 추종 ETF","badge":"가볍게 먹고 빠지기","tone":"accent","points":["650 부근 분할 → 666 돌파 확인 후 진입","실제 체결 669 · 오늘 6~7% 급등","일부 차익 실현 완료"]},"right":{"title":"본진 — 삼성전자 · SK하이닉스","badge":"진짜 큰돈","tone":"blue","points":["큰돈은 결국 본진이 돌아설 때","코스닥은 자신감과 수익을 쌓는 용도","일가를 이루겠다고 덤비면 안 됨"]}},{"type":"callout","text":"진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"stats","kpi":true,"title":"오늘의 숫자","items":[{"label":"코스피","value":"+4.34%","sub":"양봉 마감 · 주봉 +0.94%","tone":"accent"},{"label":"코스닥","value":"708p","sub":"+8% · 주간 +9.8%","tone":"accent"},{"label":"외국인 순매수","value":"11.5조 원","sub":"프리장 포함","tone":"blue"},{"label":"코스닥 신용잔고","value":"2년 내 최저","sub":"2025년 1월 이후","tone":"violet"}]},{"type":"svg","title":"연말까지 남은 세 자리 — 언제 정리하나","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 128\" class=\"ig\" role=\"img\"><rect x=\"262\" y=\"8\" width=\"78\" height=\"20\" rx=\"10\" class=\"sf-g\"/><text x=\"301\" y=\"22\" class=\"t3 c-g\" text-anchor=\"middle\">정리 목표</text><line x1=\"24\" y1=\"78\" x2=\"326\" y2=\"78\" class=\"axis\"/><polygon points=\"336,78 325,72.5 325,83.5\" class=\"ar\"/><circle cx=\"72\" cy=\"78\" r=\"6\" class=\"dot-a\"/><text x=\"72\" y=\"56\" class=\"t1\" text-anchor=\"middle\">11월 30일(월)</text><text x=\"72\" y=\"96\" class=\"t3\" text-anchor=\"middle\">미국 트레이더 복귀</text><text x=\"72\" y=\"110\" class=\"t3\" text-anchor=\"middle\">\"많이 올랐네\" 경계</text><circle cx=\"186\" cy=\"78\" r=\"6\" class=\"dot-v\"/><text x=\"186\" y=\"56\" class=\"t1\" text-anchor=\"middle\">12월 FOMC 이후</text><text x=\"186\" y=\"96\" class=\"t3\" text-anchor=\"middle\">12일경~크리스마스</text><text x=\"186\" y=\"110\" class=\"t3\" text-anchor=\"middle\">플레이어 소멸</text><circle cx=\"300\" cy=\"78\" r=\"6\" class=\"dot-g\"/><text x=\"300\" y=\"56\" class=\"t1\" text-anchor=\"middle\">12월 둘째 주</text><text x=\"300\" y=\"96\" class=\"t3\" text-anchor=\"middle\">적정 수익</text><text x=\"300\" y=\"110\" class=\"t3\" text-anchor=\"middle\">올해 매매 정리</text></svg>","caption":"11월 30일 형님들 복귀 → 12월 FOMC 이후 12일경부터 연휴 장 → 12월 둘째 주 정리."},{"type":"callout","text":"**12월 둘째 주**까지 적정 수익을 내고 올해 매매를 정리하는 걸 목표로 삼으시길 권합니다."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"svg","title":"주도주가 막히면 — 소외주 테마로 도는 장","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 168\" class=\"ig\" role=\"img\"><rect x=\"8\" y=\"26\" width=\"160\" height=\"62\" rx=\"9\" class=\"box\"/><text x=\"88\" y=\"46\" class=\"t1\" text-anchor=\"middle\">주도주 · 시총 상위</text><text x=\"88\" y=\"64\" class=\"t3\" text-anchor=\"middle\">삼성전자 · 하이닉스 막힘</text><text x=\"88\" y=\"78\" class=\"t3\" text-anchor=\"middle\">외국인 아시아·AI 반도체 매도</text><rect x=\"192\" y=\"26\" width=\"160\" height=\"62\" rx=\"9\" class=\"box\"/><text x=\"272\" y=\"46\" class=\"t1\" text-anchor=\"middle\">소외주 테마</text><text x=\"272\" y=\"64\" class=\"t3\" text-anchor=\"middle\">로봇 · 화장품 순환</text><text x=\"272\" y=\"78\" class=\"t3\" text-anchor=\"middle\">지엽적 테마</text><line x1=\"88\" y1=\"88\" x2=\"88\" y2=\"102\" class=\"arw\"/><polygon points=\"88,108 82.5,98 93.5,98\" class=\"ar\"/><line x1=\"272\" y1=\"88\" x2=\"272\" y2=\"102\" class=\"arw\"/><polygon points=\"272,108 266.5,98 277.5,98\" class=\"ar\"/><rect x=\"28\" y=\"108\" width=\"304\" height=\"32\" rx=\"9\" class=\"sf-g\"/><text x=\"180\" y=\"129\" class=\"t2 c-g\" text-anchor=\"middle\">전체 장이 아직 강하지 않다는 방증</text><text x=\"18\" y=\"158\" class=\"t3\">펀드가 삼성전자 비중을 의무적으로 채우는 구조 — 펀드가 깨지면 매물이 쏟아지는 취약점</text></svg>","caption":"시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증."},{"type":"cards","title":"이번 주 52주 신고가 — 5종목","items":[{"title":"한진칼","tag":"코스피","note":"경영권 분쟁 · 월간 +105%","tone":"red"},{"title":"코스맥스","tag":"코스피","note":"—","tone":"blue"},{"title":"한미사이언스","tag":"코스피","note":"—","tone":"blue"},{"title":"펌텍코리아","tag":"코스닥","note":"화장품 용기 테마","tone":"violet"},{"title":"안랩","tag":"코스닥","note":"정치 테마","tone":"amber"}]},{"type":"svg","title":"미국 3분기 매크로 — 성장 vs 물가","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 144\" class=\"ig\" role=\"img\"><line x1=\"70.0\" y1=\"26\" x2=\"70.0\" y2=\"120\" class=\"grid\"/><text x=\"70.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">0</text><line x1=\"132.0\" y1=\"26\" x2=\"132.0\" y2=\"120\" class=\"grid\"/><text x=\"132.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">2</text><line x1=\"194.0\" y1=\"26\" x2=\"194.0\" y2=\"120\" class=\"grid\"/><text x=\"194.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">4</text><line x1=\"256.0\" y1=\"26\" x2=\"256.0\" y2=\"120\" class=\"grid\"/><text x=\"256.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">6</text><line x1=\"318.0\" y1=\"26\" x2=\"318.0\" y2=\"120\" class=\"grid\"/><text x=\"318.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">8</text><text x=\"62\" y=\"48\" class=\"t2\" text-anchor=\"end\">GDP</text><rect x=\"70\" y=\"36\" width=\"133.3\" height=\"16\" rx=\"4\" class=\"bf-b\"/><text x=\"211.29999999999998\" y=\"49\" class=\"n1\">4.3%</text><text x=\"62\" y=\"82\" class=\"t2\" text-anchor=\"end\">근원 PCE</text><rect x=\"70\" y=\"70\" width=\"102.3\" height=\"16\" rx=\"4\" class=\"bf-a\"/><text x=\"180.3\" y=\"83\" class=\"n1\">3.3%</text><text x=\"62\" y=\"116\" class=\"t2\" text-anchor=\"end\">명목 상승 압력</text><rect x=\"70\" y=\"104\" width=\"217.0\" height=\"16\" rx=\"4\" class=\"bf-r\"/><text x=\"295.0\" y=\"117\" class=\"n1\">약 7%대</text></svg>","caption":"GDP 4.3% · 근원 PCE 3.3% → 명목상 약 7%대 상승 압력, 12월 금리 인상 우려."},{"type":"callout","text":"시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증이기도 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"svg","title":"AI 돈의 흐름 — 하이퍼스케일러 vs 반도체·장비","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 176\" class=\"ig\" role=\"img\"><rect x=\"10\" y=\"28\" width=\"140\" height=\"84\" rx=\"9\" class=\"box\"/><text x=\"80\" y=\"48\" class=\"t1\" text-anchor=\"middle\">하이퍼스케일러</text><text x=\"80\" y=\"66\" class=\"t2\" text-anchor=\"middle\">구글 · 메타</text><text x=\"80\" y=\"92\" class=\"t3 c-g\" text-anchor=\"middle\">미국장은 이쪽</text><line x1=\"152\" y1=\"70\" x2=\"200\" y2=\"70\" class=\"arw\"/><polygon points=\"208,70 197,64.5 197,75.5\" class=\"ar\"/><text x=\"180\" y=\"60\" class=\"t3\" text-anchor=\"middle\">자금</text><rect x=\"210\" y=\"28\" width=\"140\" height=\"84\" rx=\"9\" class=\"box\"/><text x=\"280\" y=\"46\" class=\"t1\" text-anchor=\"middle\">AI 반도체 · 장비</text><text x=\"280\" y=\"62\" class=\"t3\" text-anchor=\"middle\">엔비디아 · 마이크론</text><text x=\"280\" y=\"76\" class=\"t3\" text-anchor=\"middle\">키옥시아 · 소프트뱅크</text><text x=\"280\" y=\"92\" class=\"t3 c-r\" text-anchor=\"middle\">하락 가속도 · 악성 매물</text><text x=\"280\" y=\"106\" class=\"t2 c-r\" text-anchor=\"middle\">당분간 어렵다</text><rect x=\"10\" y=\"124\" width=\"340\" height=\"40\" rx=\"9\" class=\"box2\"/><text x=\"24\" y=\"146\" class=\"t1 c-r\">인텔</text><text x=\"64\" y=\"146\" class=\"t2\">정부 지원금 직전까지 밀림 — 상업 경쟁력 한계</text></svg>","caption":"미국장에 갈 거면 반도체·장비보다 구글·메타 같은 하이퍼스케일러 쪽."},{"type":"signal","title":"국내 3종목 신호등","items":[{"name":"삼성전자 · SK하이닉스","state":"bad","badge":"■ 주의","note":"돌아서지 않으면 지수 전체가 몇 달 더 횡보"},{"name":"현대차","state":"warn","badge":"▲ 유보","note":"20일선에 간신히 붙음 — 차트상 매수 매력은 아직"},{"name":"APR","state":"good","badge":"● 호재","note":"실적은 탄탄 · 수급·환율에 눌림 → 다음 주 양봉이면 위쪽 여력"}]},{"type":"callout","text":"차라리 미국장에 가실 거면 구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"svg","title":"핵심 지지 기반의 균열 — 남침례회 ↔ 트럼프·MAGA","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 198\" class=\"ig\" role=\"img\"><rect x=\"8\" y=\"30\" width=\"162\" height=\"96\" rx=\"9\" class=\"box\"/><text x=\"89\" y=\"50\" class=\"t1\" text-anchor=\"middle\">남침례회</text><text x=\"89\" y=\"68\" class=\"t3\" text-anchor=\"middle\">미국 최대 단일 개신교 교단</text><text x=\"89\" y=\"90\" class=\"t2 c-b\" text-anchor=\"middle\">등록 교인 1,233만 명</text><text x=\"89\" y=\"108\" class=\"t3\" text-anchor=\"middle\">'브랜트우드 선언'</text><rect x=\"190\" y=\"30\" width=\"162\" height=\"96\" rx=\"9\" class=\"box\"/><text x=\"271\" y=\"50\" class=\"t1\" text-anchor=\"middle\">트럼프 · MAGA</text><text x=\"271\" y=\"68\" class=\"t3\" text-anchor=\"middle\">핵심 지지 기반</text><text x=\"271\" y=\"90\" class=\"n1 c-r\" text-anchor=\"middle\">역린</text><text x=\"271\" y=\"108\" class=\"t3\" text-anchor=\"middle\">불륜 · 윤리 면제부</text><path d=\"M180 34 L185 52 L174 72 L185 92 L174 112\" class=\"zap\"/><text x=\"180\" y=\"148\" class=\"t3 c-r\" text-anchor=\"middle\">균열</text><text x=\"18\" y=\"168\" class=\"t3\">악시오스 — 젠슨 황 복귀 계기 MAGA 진영 분열 보도</text><text x=\"18\" y=\"186\" class=\"t3\">머스크: 나는 MAGA가 아니다(I'm not sure what MAGA is)</text></svg>","caption":"등록 교인 1,233만 명의 브랜트우드 선언 ↔ 불륜·윤리 면제부, 악시오스가 보도한 MAGA 분열."},{"type":"callout","text":"이들은 MAGA와 트럼프의 핵심 지지 기반이지만, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 충돌할 수밖에 없습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"svg","title":"트럼프 향방 — 두 갈래 분기","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 218\" class=\"ig\" role=\"img\"><rect x=\"96\" y=\"8\" width=\"168\" height=\"36\" rx=\"10\" class=\"box2\"/><text x=\"180\" y=\"31\" class=\"t1\" text-anchor=\"middle\">트럼프 레임덕 이후</text><path d=\"M180 44 V58 H86 V66 M86 58 H274 V66\" class=\"arw\"/><polygon points=\"86,72 80.5,62 91.5,62\" class=\"ar\"/><polygon points=\"274,72 268.5,62 279.5,62\" class=\"ar\"/><rect x=\"8\" y=\"66\" width=\"156\" height=\"44\" rx=\"9\" class=\"box\"/><text x=\"86\" y=\"85\" class=\"t1\" text-anchor=\"middle\">집단지도체제 이행</text><text x=\"86\" y=\"101\" class=\"t3\" text-anchor=\"middle\">J.D. 밴스 등</text><rect x=\"196\" y=\"66\" width=\"156\" height=\"44\" rx=\"9\" class=\"box\"/><text x=\"274\" y=\"85\" class=\"t1\" text-anchor=\"middle\">그립 유지</text><text x=\"274\" y=\"101\" class=\"t3\" text-anchor=\"middle\">레임덕에도 버팀</text><line x1=\"86\" y1=\"110\" x2=\"86\" y2=\"120\" class=\"arw\"/><polygon points=\"86,126 80.5,116 91.5,116\" class=\"ar\"/><line x1=\"274\" y1=\"110\" x2=\"274\" y2=\"120\" class=\"arw\"/><polygon points=\"274,126 268.5,116 279.5,116\" class=\"ar\"/><rect x=\"8\" y=\"126\" width=\"156\" height=\"42\" rx=\"9\" class=\"box\"/><text x=\"86\" y=\"152\" class=\"t2 c-g\" text-anchor=\"middle\">불확실성 감소</text><rect x=\"196\" y=\"126\" width=\"156\" height=\"42\" rx=\"9\" class=\"box\"/><text x=\"274\" y=\"152\" class=\"t2 c-r\" text-anchor=\"middle\">6개월 정치 혼란</text><rect x=\"28\" y=\"178\" width=\"116\" height=\"30\" rx=\"15\" class=\"sf-g\"/><text x=\"86\" y=\"197\" class=\"t2 c-g\" text-anchor=\"middle\">● 증시에 호재</text><rect x=\"216\" y=\"178\" width=\"116\" height=\"30\" rx=\"15\" class=\"sf-r\"/><text x=\"274\" y=\"197\" class=\"t2 c-r\" text-anchor=\"middle\">■ 미국장 불안</text></svg>","caption":"집단지도체제 이행이면 불확실성 감소로 호재, 그립을 놓지 않으면 6개월 혼란."},{"type":"callout","text":"당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다는 게 제 생각입니다."}]}}};
+  var DATA = {"meta":{"videoId":"9fRzwt_Dflk","title":"R's Trading Station (11월 27일 금) 풀버젼","channel":"알상무","channelUrl":"https://www.youtube.com/channel/UCiDmfbYvuMEVbRxPmFP4sng","avatar":"https://yt3.googleusercontent.com/JDoKWhh8olpWRLOfuwhoEMrc00B6-WEFF6Sp1pBFiAzjMGslkbePCTJghMauB_t3rG9uuVPHSA=s900-c-k-c0x00ffffff-no-rj","publishedAt":"2026-11-28T02:00:04+09:00","url":"https://www.youtube.com/watch?v=9fRzwt_Dflk","categoryLabel":"증시","category":"stock"},"versions":{"a":{"key":"A","name":"순수 텍스트","diff":"박스·시각화 0 — 1인칭 구어체 줄글과 소제목 6개만, 형광펜은 핵심 단어·숫자에만","blocks":[{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"p","text":"금요일 RTS(알스 트레이딩 스테이션) 시작하겠습니다. 이번에 코스닥을 어떻게 대해야 하는지 다들 다시 한번 경험하셨을 텐데요, 코스닥에다 대고 \"네 가치를 증명해 봐\"라며 밸류를 따지면 안 됩니다. 코스닥은 그냥 **금쪽이** 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, 잔뜩 들어가서 물려버리면 답이 없습니다."},{"type":"p","text":"사실 코스닥이 상대적으로 유리해 보이는 이유를 여덟 가지 정도 꼽을 수는 있지만, 그걸 머리에 넣고 고집을 부리면 또 잃습니다. 저는 650 부근에서 조금씩 담다가 **666** 돌파를 보고(실제 체결은 669) 코스닥 150 추종 ETF를 들어갔는데, 오늘 **6~7%** 급등이 나와서 감사히 일부 차익 실현을 했습니다. 코스닥은 가볍게 먹고 빠져서 자신감과 수익을 쌓는 용도지, 이걸로 일가를 이루겠다고 덤비면 안 됩니다. 진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다."},{"type":"p","text":"단기 차익 실현이 좋은 이유는 밤에 잠을 잘 수 있고 주말에 편히 놀 수 있으며, 번 돈으로 다음 베팅을 할 수 있기 때문입니다. 코스피 고점(6월 19일) 이후 6개월가량 조정을 받았으니 시간적으로도 반등이 나올 만한 구간에 와 있습니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"p","text":"오늘 코스피는 장 초반 약세를 딛고 양봉으로 **+4.34%** 상승 마감했고, 외국인도 프리장 포함 약 **11.5조 원** 순매수하며 오랜만에 힘을 보탰습니다. 다만 주봉으로 보면 겨우 **+0.94%** 양봉이고 여전히 20일·60일·120일 이평선이 위에 있어 추세 자체가 완전히 돌았다고 보기엔 이릅니다. 그래도 개인들이 절망해서 던지기보다 멘탈을 다잡고 미련을 버린 점이 반등의 준비 신호로 읽힙니다."},{"type":"p","text":"코스닥은 **+8%**, 주간으로는 +9.8% 오른 708포인트로 마감했는데, 신용잔고가 2025년 1월 이후 약 2년 내 최저치까지 줄어들어 악성 매물이 싹 정리된 클린한 지수입니다. 내년 1월 중순쯤 주요 이평선들이 내려와 만나는 지점에서 추가 돌파 시 CTA 추종 매수와 쇼트커버가 붙을 여지도 있습니다."},{"type":"p","text":"원/달러 환율은 5일선이 60일선에 붙었고 다음 주 20일선과 60일선이 만나는 자리라, 다음 주에도 검은선 위에서 버틴다면 기술적으로 다시 위쪽 방향을 볼 수 있는 흐름입니다."},{"type":"p","text":"어제·오늘은 미국 추수감사절 연휴라 양놈 형님들이 안 계신 가벼운 장이었습니다. 월요일(11월 30일) 11월 마지막 영업일에 형님들이 돌아와서 \"어? 많이 올랐네\" 하고 두들겨 팰 수도 있으니 들뜨지 마세요. 크리스마스 연휴(12월 FOMC 이후 12일경부터)엔 플레이어가 아예 사라지므로 **12월 둘째 주**까지 적정 수익을 내고 올해 매매를 정리하는 걸 목표로 삼으시길 권합니다."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"p","text":"주간으로 삼성전자·하이닉스가 약했던 건 외국인이 개별 기업이 싫어서가 아니라 아시아와 AI 반도체를 묶어서 팔고 있기 때문입니다. 우리나라는 패시브·액티브·가치주·배당주 펀드까지 전부 삼성전자 비중을 의무적으로 채워야 하는 구조라 다양성이 없고, 배당 세제 변화 같은 이슈로 펀드가 깨지면 삼성전자 매물이 쏟아지는 취약점이 있습니다."},{"type":"p","text":"이번 주 코스피에서는 한진칼(경영권 분쟁으로 월간 **+105%**), 코스맥스, 한미사이언스가, 코스닥에서는 화장품 용기 테마의 펌텍코리아와 정치 테마가 붙은 안랩이 52주 신고가를 기록했습니다. 시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증이기도 합니다."},{"type":"p","text":"미국 3분기 GDP가 **4.3%**, 근원 PCE가 **3.3%**로 나오면서 명목상 약 7%대 상승 압력이 확인됐고 12월 금리 인상 우려가 커졌습니다. 시중에 \"현금을 두면 돈이 녹으니 무조건 투자해야 한다\"는 말이 돌지만, 잘못 투자하면 녹는 게 아니라 그냥 타서 사라진다는 점도 기억하셔야 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"p","text":"가격 지표를 여러 개 같이 보다 보면 먼저 방향을 틀기 시작하는 녀석들이 보입니다. 지금 원/달러, 코스닥, 금리(한 달 전 전환), 원유(15~20일 전 전환)가 변화를 보여주고 있어 시장 전체의 변곡점이 가까워지고 있는 건 맞지만, 대형 기술주 차트는 아직 갈 길이 멉니다."},{"type":"p","text":"삼성전자와 하이닉스가 돌아서지 않으면 지수 전체가 몇 달 더 횡보할 수 있습니다. 현대차도 20일선에 간신히 붙었지만 차트상 매수할 매력은 아직 안 보입니다. 반면 APR은 실적은 탄탄한데 수급·환율 이슈로 눌려 있던 거라 다음 주 양봉이 서면 위쪽 여력이 있습니다."},{"type":"p","text":"엔비디아와 마이크론 테크놀로지, 일본 키옥시아, 소프트뱅크 그룹은 하락 가속도가 붙거나 악성 매물이 많아 당분간 어렵습니다. 차라리 미국장에 가실 거면 구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다. 인텔은 정부 지원금을 넣기 직전 자리까지 밀려나며 상업적 경쟁력 한계가 드러났습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"p","text":"오늘은 주식 차트 너머의 미국 정치 지형 변화를 말씀드리고 싶습니다. 최근 일론 머스크가 아이들을 데리고 젠슨 황을 찾아가 사진을 찍었는데, 불과 며칠 전(11월 18~19일) 머스크는 뉴욕타임스 딜북 서밋과 CNBC 인터뷰에서 **\"나는 MAGA가 아니다(I'm not sure what MAGA is)\"**라며 공화당 후원을 후회하는 듯한 발언을 했습니다. 뭔가 불안감을 느낀 두 사람이 동지애로 뭉친 모양새입니다."},{"type":"p","text":"미국 최대 단일 개신교 교단인 남침례회(등록 교인 1,233만 명)는 '브랜트우드 선언(Brentwood Declaration)'을 통해 AI로 고인을 모방하거나 인간과 기계의 경계를 모호하게 만드는 디지털 불멸 기술에 선을 그었습니다. 이들은 MAGA와 트럼프의 핵심 지지 기반이지만, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 충돌할 수밖에 없습니다."},{"type":"p","text":"젠슨 황의 초고속 복귀를 두고 세속 언론은 중국 관련 리스크를 따지지만, 보수 기독교 지지층은 트럼프가 불륜 및 윤리적 문제에 노골적인 면제부를 주는 모습에 큰 배신감과 괴리감을 느끼고 있습니다. 실제로 악시오스(Axios)에서도 젠슨 황 복귀를 계기로 MAGA 진영이 분열되고 있다는 보도가 나왔습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"p","text":"중요한 건 팩트가 아니라 대중의 머릿속에 어떤 이미지가 자리 잡느냐입니다. 마리 앙투아네트가 \"빵이 없으면 케이크(고기)를 먹으면 되지\"라고 실제로 말했는지는 불분명하지만 대중의 증오를 샀듯, 미국 드라마 **〈홈랜드(Homeland)〉 시즌 1 에피소드 11**에서도 테러 위험 속 벙커에 격리된 부통령이 \"사우디아라비아는 건드리지 말고 아무나 한 명 잘라\"라고 지시하는 모습이 그려집니다. 미국 남부 보수층이 혐오하던 '딥스테이트'의 전형을 이제는 **트럼프 본인이 닮아가고 있다**는 인식이 MAGA 내부에 퍼지고 있습니다."},{"type":"p","text":"트럼프가 공화당 내 레임덕에 빠져 집단지도체제(J.D. 밴스 등)로 빠르게 넘어가면 불확실성이 줄어 증시에 호재겠지만, 그립을 놓지 않으려 버티면 향후 6개월간 미국 정치발 혼란이 이어질 수 있습니다. 오히려 스타게이트 등 트럼프 관련 사업들이 정리되면서 **당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다**는 게 제 생각입니다."},{"type":"p","text":"오늘 낮에 KB증권 **이은택 연구원**과 만나 대중 앞에서 이야기하는 고충에 대해 대화를 나눴는데, 결국 세상도 시장도 우리가 생각하는 것만큼 정교하거나 합리적이지 않습니다. 올해 역대급 상승장에서 아쉽게 수익을 못 내셨더라도 너무 자책하지 마시고 운이 조금 없었을 뿐이라 생각하시며, 다음 반등 타이밍을 저와 함께 차분히 노려보시죠. 금요일 RTS 여기서 마치겠습니다. 감사합니다."}]},"b":{"type":"b","key":"B","name":"구조 분리","diff":"A안 텍스트 그대로 + 나열·대립·종속 레이아웃 — 형광펜·기호 없이 박스 모양만으로 관계를 드러냄","blocks":[{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"p","text":"금요일 RTS(알스 트레이딩 스테이션) 시작하겠습니다. 이번에 코스닥을 어떻게 대해야 하는지 다들 다시 한번 경험하셨을 텐데요, 코스닥에다 대고 \"네 가치를 증명해 봐\"라며 밸류를 따지면 안 됩니다."},{"type":"callout","text":"코스닥은 그냥 **금쪽이** 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, 잔뜩 들어가서 물려버리면 답이 없습니다."},{"type":"p","text":"사실 코스닥이 상대적으로 유리해 보이는 이유를 여덟 가지 정도 꼽을 수는 있지만, 그걸 머리에 넣고 고집을 부리면 또 잃습니다."},{"type":"struct-sub","label":"근거","text":"저는 650 부근에서 조금씩 담다가 **666** 돌파를 보고(실제 체결은 669) 코스닥 150 추종 ETF를 들어갔는데, 오늘 **6~7%** 급등이 나와서 감사히 일부 차익 실현을 했습니다."},{"type":"struct-contrast","label":"대립","left":"코스닥은 가볍게 먹고 빠져서 자신감과 수익을 쌓는 용도지, 이걸로 일가를 이루겠다고 덤비면 안 됩니다.","right":"진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다."},{"type":"p","text":"단기 차익 실현이 좋은 이유는 밤에 잠을 잘 수 있고 주말에 편히 놀 수 있으며, 번 돈으로 다음 베팅을 할 수 있기 때문입니다. 코스피 고점(6월 19일) 이후 6개월가량 조정을 받았으니 시간적으로도 반등이 나올 만한 구간에 와 있습니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"struct-list","label":"나열","items":["오늘 코스피는 장 초반 약세를 딛고 양봉으로 **+4.34%** 상승 마감했고, 외국인도 프리장 포함 약 **11.5조 원** 순매수하며 오랜만에 힘을 보탰습니다. 다만 주봉으로 보면 겨우 **+0.94%** 양봉이고 여전히 20일·60일·120일 이평선이 위에 있어 추세 자체가 완전히 돌았다고 보기엔 이릅니다. 그래도 개인들이 절망해서 던지기보다 멘탈을 다잡고 미련을 버린 점이 반등의 준비 신호로 읽힙니다.","코스닥은 **+8%**, 주간으로는 +9.8% 오른 708포인트로 마감했는데, 신용잔고가 2025년 1월 이후 약 2년 내 최저치까지 줄어들어 악성 매물이 싹 정리된 클린한 지수입니다. 내년 1월 중순쯤 주요 이평선들이 내려와 만나는 지점에서 추가 돌파 시 CTA 추종 매수와 쇼트커버가 붙을 여지도 있습니다.","원/달러 환율은 5일선이 60일선에 붙었고 다음 주 20일선과 60일선이 만나는 자리라, 다음 주에도 검은선 위에서 버틴다면 기술적으로 다시 위쪽 방향을 볼 수 있는 흐름입니다."]},{"type":"p","text":"어제·오늘은 미국 추수감사절 연휴라 양놈 형님들이 안 계신 가벼운 장이었습니다."},{"type":"struct-sub","label":"예외","text":"월요일(11월 30일) 11월 마지막 영업일에 형님들이 돌아와서 \"어? 많이 올랐네\" 하고 두들겨 팰 수도 있으니 들뜨지 마세요."},{"type":"callout","text":"크리스마스 연휴(12월 FOMC 이후 12일경부터)엔 플레이어가 아예 사라지므로 **12월 둘째 주**까지 적정 수익을 내고 올해 매매를 정리하는 걸 목표로 삼으시길 권합니다."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"p","text":"주간으로 삼성전자·하이닉스가 약했던 건 외국인이 개별 기업이 싫어서가 아니라 아시아와 AI 반도체를 묶어서 팔고 있기 때문입니다."},{"type":"struct-sub","label":"근거","text":"우리나라는 패시브·액티브·가치주·배당주 펀드까지 전부 삼성전자 비중을 의무적으로 채워야 하는 구조라 다양성이 없고, 배당 세제 변화 같은 이슈로 펀드가 깨지면 삼성전자 매물이 쏟아지는 취약점이 있습니다."},{"type":"p","text":"이번 주 코스피에서는 한진칼(경영권 분쟁으로 월간 **+105%**), 코스맥스, 한미사이언스가, 코스닥에서는 화장품 용기 테마의 펌텍코리아와 정치 테마가 붙은 안랩이 52주 신고가를 기록했습니다."},{"type":"callout","text":"시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증이기도 합니다."},{"type":"p","text":"미국 3분기 GDP가 **4.3%**, 근원 PCE가 **3.3%**로 나오면서 명목상 약 7%대 상승 압력이 확인됐고 12월 금리 인상 우려가 커졌습니다. 시중에 \"현금을 두면 돈이 녹으니 무조건 투자해야 한다\"는 말이 돌지만, 잘못 투자하면 녹는 게 아니라 그냥 타서 사라진다는 점도 기억하셔야 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"p","text":"가격 지표를 여러 개 같이 보다 보면 먼저 방향을 틀기 시작하는 녀석들이 보입니다."},{"type":"struct-sub","label":"세부","text":"지금 원/달러, 코스닥, 금리(한 달 전 전환), 원유(15~20일 전 전환)가 변화를 보여주고 있어 시장 전체의 변곡점이 가까워지고 있는 건 맞지만, 대형 기술주 차트는 아직 갈 길이 멉니다."},{"type":"struct-list","label":"나열","items":["삼성전자와 하이닉스가 돌아서지 않으면 지수 전체가 몇 달 더 횡보할 수 있습니다.","현대차도 20일선에 간신히 붙었지만 차트상 매수할 매력은 아직 안 보입니다.","반면 APR은 실적은 탄탄한데 수급·환율 이슈로 눌려 있던 거라 다음 주 양봉이 서면 위쪽 여력이 있습니다."]},{"type":"struct-contrast","label":"대립","left":"엔비디아와 마이크론 테크놀로지, 일본 키옥시아, 소프트뱅크 그룹은 하락 가속도가 붙거나 악성 매물이 많아 당분간 어렵습니다.","right":"차라리 미국장에 가실 거면 구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다."},{"type":"struct-sub","label":"세부","text":"인텔은 정부 지원금을 넣기 직전 자리까지 밀려나며 상업적 경쟁력 한계가 드러났습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"p","text":"오늘은 주식 차트 너머의 미국 정치 지형 변화를 말씀드리고 싶습니다."},{"type":"struct-sub","label":"근거","text":"최근 일론 머스크가 아이들을 데리고 젠슨 황을 찾아가 사진을 찍었는데, 불과 며칠 전(11월 18~19일) 머스크는 뉴욕타임스 딜북 서밋과 CNBC 인터뷰에서 **\"나는 MAGA가 아니다(I'm not sure what MAGA is)\"**라며 공화당 후원을 후회하는 듯한 발언을 했습니다."},{"type":"p","text":"뭔가 불안감을 느낀 두 사람이 동지애로 뭉친 모양새입니다."},{"type":"struct-contrast","label":"대립","left":"미국 최대 단일 개신교 교단인 남침례회(등록 교인 1,233만 명)는 '브랜트우드 선언(Brentwood Declaration)'을 통해 AI로 고인을 모방하거나 인간과 기계의 경계를 모호하게 만드는 디지털 불멸 기술에 선을 그었습니다.","right":"이들은 MAGA와 트럼프의 핵심 지지 기반이지만, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 충돌할 수밖에 없습니다."},{"type":"p","text":"젠슨 황의 초고속 복귀를 두고 세속 언론은 중국 관련 리스크를 따지지만, 보수 기독교 지지층은 트럼프가 불륜 및 윤리적 문제에 노골적인 면제부를 주는 모습에 큰 배신감과 괴리감을 느끼고 있습니다."},{"type":"struct-sub","label":"근거","text":"실제로 악시오스(Axios)에서도 젠슨 황 복귀를 계기로 MAGA 진영이 분열되고 있다는 보도가 나왔습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"p","text":"중요한 건 팩트가 아니라 대중의 머릿속에 어떤 이미지가 자리 잡느냐입니다."},{"type":"struct-sub","label":"세부","text":"마리 앙투아네트가 \"빵이 없으면 케이크(고기)를 먹으면 되지\"라고 실제로 말했는지는 불분명하지만 대중의 증오를 샀듯, 미국 드라마 **〈홈랜드(Homeland)〉 시즌 1 에피소드 11**에서도 테러 위험 속 벙커에 격리된 부통령이 \"사우디아라비아는 건드리지 말고 아무나 한 명 잘라\"라고 지시하는 모습이 그려집니다."},{"type":"p","text":"미국 남부 보수층이 혐오하던 '딥스테이트'의 전형을 이제는 **트럼프 본인이 닮아가고 있다**는 인식이 MAGA 내부에 퍼지고 있습니다."},{"type":"struct-contrast","label":"대립","left":"트럼프가 공화당 내 레임덕에 빠져 집단지도체제(J.D. 밴스 등)로 빠르게 넘어가면 불확실성이 줄어 증시에 호재겠지만,","right":"그립을 놓지 않으려 버티면 향후 6개월간 미국 정치발 혼란이 이어질 수 있습니다."},{"type":"callout","text":"오히려 스타게이트 등 트럼프 관련 사업들이 정리되면서 **당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다**는 게 제 생각입니다."},{"type":"p","text":"오늘 낮에 KB증권 **이은택 연구원**과 만나 대중 앞에서 이야기하는 고충에 대해 대화를 나눴는데, 결국 세상도 시장도 우리가 생각하는 것만큼 정교하거나 합리적이지 않습니다. 올해 역대급 상승장에서 아쉽게 수익을 못 내셨더라도 너무 자책하지 마시고 운이 조금 없었을 뿐이라 생각하시며, 다음 반등 타이밍을 저와 함께 차분히 노려보시죠. 금요일 RTS 여기서 마치겠습니다. 감사합니다."}]},"c":{"key":"C","name":"시각화 몰빵","diff":"긴 줄글 대신 인포그래픽 12개 + 화자 한마디 — 같은 방송·같은 수치로 재구성","blocks":[{"type":"map","title":"방송 요약 맵 — 6개 주제","cards":[{"n":"①","t":"코스닥 타점","d":"650 분할 → 666 돌파 → 669 체결 · 6~7% 익절","tone":"accent"},{"n":"②","t":"시장 · 연말","d":"코스피 +4.34% · 코스닥 708p · 12월 둘째 주 정리","tone":"blue"},{"n":"③","t":"반도체 · 신고가","d":"52주 신고가 5종목 · GDP 4.3% / 근원 PCE 3.3%","tone":"violet"},{"n":"④","t":"빅테크 · AI","d":"AI 반도체·장비는 어렵다 → 하이퍼스케일러","tone":"amber"},{"n":"⑤","t":"디지털 불멸 · MAGA","d":"등록 교인 1,233만 명의 선언 ↔ 역린","tone":"red"},{"n":"⑥","t":"홈랜드 · 한국장","d":"집단지도체제 호재 vs 6개월 혼란","tone":"green"}]},{"type":"callout","text":"코스닥은 그냥 **금쪽이** 같은 친구라 올라가면 잘한다 잘한다 해주고, 내려가면 안타깝구나 하며 내버려 둬야지, 잔뜩 들어가서 물려버리면 답이 없습니다."},{"type":"h","text":"코스닥 트레이딩 복기: '금쪽이'에게 밸류를 묻지 마세요"},{"type":"svg","title":"내 코스닥 진입 경로 — 650 → 666 → 669","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 154\" class=\"ig\" role=\"img\"><rect x=\"18\" y=\"10\" width=\"112\" height=\"22\" rx=\"11\" class=\"sf-a\"/><text x=\"74\" y=\"25\" class=\"t2 c-a\" text-anchor=\"middle\">오늘 6~7% 익절</text><rect x=\"72.0\" y=\"74\" width=\"172.8\" height=\"30\" rx=\"7\" class=\"sf-g\"/><text x=\"158.4\" y=\"93\" class=\"t2 c-g\" text-anchor=\"middle\">650 부근 분할 매수</text><line x1=\"244.8\" y1=\"44\" x2=\"244.8\" y2=\"104\" class=\"dash\"/><text x=\"241.8\" y=\"38\" class=\"t2 c-a\" text-anchor=\"end\">666 돌파선</text><line x1=\"18\" y1=\"104\" x2=\"342\" y2=\"104\" class=\"axis\"/><line x1=\"18.0\" y1=\"104\" x2=\"18.0\" y2=\"109\" class=\"tick\"/><text x=\"18.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">645</text><line x1=\"72.0\" y1=\"104\" x2=\"72.0\" y2=\"109\" class=\"tick\"/><text x=\"72.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">650</text><line x1=\"126.0\" y1=\"104\" x2=\"126.0\" y2=\"109\" class=\"tick\"/><text x=\"126.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">655</text><line x1=\"180.0\" y1=\"104\" x2=\"180.0\" y2=\"109\" class=\"tick\"/><text x=\"180.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">660</text><line x1=\"234.0\" y1=\"104\" x2=\"234.0\" y2=\"109\" class=\"tick\"/><text x=\"234.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">665</text><line x1=\"288.0\" y1=\"104\" x2=\"288.0\" y2=\"109\" class=\"tick\"/><text x=\"288.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">670</text><line x1=\"342.0\" y1=\"104\" x2=\"342.0\" y2=\"109\" class=\"tick\"/><text x=\"342.0\" y=\"122\" class=\"t3 ax\" text-anchor=\"middle\">675</text><circle cx=\"277.2\" cy=\"104\" r=\"5.5\" class=\"dot-ac\"/><text x=\"277.20000000000005\" y=\"66\" class=\"t1 c-ac\" text-anchor=\"middle\">669 체결</text><text x=\"18\" y=\"144\" class=\"t3\">650 부근 분할 → 666 돌파 확인 → 실제 669 체결</text></svg>","caption":"650 부근에서 조금씩 담다가 666 돌파를 보고 들어갔습니다. 실제 체결은 669 — 오늘 6~7% 급등에 일부 차익 실현."},{"type":"vs","title":"단타 vs 본진 — 어디에 힘을 싣나","left":{"title":"코스닥 150 추종 ETF","badge":"가볍게 먹고 빠지기","tone":"accent","points":["650 부근 분할 → 666 돌파 확인 후 진입","실제 체결 669 · 오늘 6~7% 급등","일부 차익 실현 완료"]},"right":{"title":"본진 — 삼성전자 · SK하이닉스","badge":"진짜 큰돈","tone":"blue","points":["큰돈은 결국 본진이 돌아설 때","코스닥은 자신감과 수익을 쌓는 용도","일가를 이루겠다고 덤비면 안 됨"]}},{"type":"callout","text":"진짜 큰돈은 결국 우리 본진인 삼성전자와 SK하이닉스가 다시 돌아설 때 벌어야 합니다."},{"type":"h","text":"코스피·코스닥·환율 차트 점검과 연말 매매 전략"},{"type":"stats","kpi":true,"title":"오늘의 숫자","items":[{"label":"코스피","value":"+4.34%","sub":"양봉 마감 · 주봉 +0.94%","tone":"accent"},{"label":"코스닥","value":"708p","sub":"+8% · 주간 +9.8%","tone":"accent"},{"label":"외국인 순매수","value":"11.5조 원","sub":"프리장 포함","tone":"blue"},{"label":"코스닥 신용잔고","value":"2년 내 최저","sub":"2025년 1월 이후","tone":"violet"}]},{"type":"svg","title":"연말까지 남은 세 자리 — 언제 정리하나","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 128\" class=\"ig\" role=\"img\"><rect x=\"262\" y=\"8\" width=\"78\" height=\"20\" rx=\"10\" class=\"sf-g\"/><text x=\"301\" y=\"22\" class=\"t3 c-g\" text-anchor=\"middle\">정리 목표</text><line x1=\"24\" y1=\"78\" x2=\"326\" y2=\"78\" class=\"axis\"/><polygon points=\"336,78 325,72.5 325,83.5\" class=\"ar\"/><circle cx=\"72\" cy=\"78\" r=\"6\" class=\"dot-a\"/><text x=\"72\" y=\"56\" class=\"t1\" text-anchor=\"middle\">11월 30일(월)</text><text x=\"72\" y=\"96\" class=\"t3\" text-anchor=\"middle\">미국 트레이더 복귀</text><text x=\"72\" y=\"110\" class=\"t3\" text-anchor=\"middle\">\"많이 올랐네\" 경계</text><circle cx=\"186\" cy=\"78\" r=\"6\" class=\"dot-v\"/><text x=\"186\" y=\"56\" class=\"t1\" text-anchor=\"middle\">12월 FOMC 이후</text><text x=\"186\" y=\"96\" class=\"t3\" text-anchor=\"middle\">12일경~크리스마스</text><text x=\"186\" y=\"110\" class=\"t3\" text-anchor=\"middle\">플레이어 소멸</text><circle cx=\"300\" cy=\"78\" r=\"6\" class=\"dot-g\"/><text x=\"300\" y=\"56\" class=\"t1\" text-anchor=\"middle\">12월 둘째 주</text><text x=\"300\" y=\"96\" class=\"t3\" text-anchor=\"middle\">적정 수익</text><text x=\"300\" y=\"110\" class=\"t3\" text-anchor=\"middle\">올해 매매 정리</text></svg>","caption":"11월 30일 형님들 복귀 → 12월 FOMC 이후 12일경부터 연휴 장 → 12월 둘째 주 정리."},{"type":"callout","text":"**12월 둘째 주**까지 적정 수익을 내고 올해 매매를 정리하는 걸 목표로 삼으시길 권합니다."},{"type":"h","text":"반도체 쏠림의 함정과 52주 신고가·매크로 지표"},{"type":"svg","title":"주도주가 막히면 — 소외주 테마로 도는 장","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 168\" class=\"ig\" role=\"img\"><rect x=\"8\" y=\"26\" width=\"160\" height=\"62\" rx=\"9\" class=\"box\"/><text x=\"88\" y=\"46\" class=\"t1\" text-anchor=\"middle\">주도주 · 시총 상위</text><text x=\"88\" y=\"64\" class=\"t3\" text-anchor=\"middle\">삼성전자 · 하이닉스 막힘</text><text x=\"88\" y=\"78\" class=\"t3\" text-anchor=\"middle\">외국인 아시아·AI 반도체 매도</text><rect x=\"192\" y=\"26\" width=\"160\" height=\"62\" rx=\"9\" class=\"box\"/><text x=\"272\" y=\"46\" class=\"t1\" text-anchor=\"middle\">소외주 테마</text><text x=\"272\" y=\"64\" class=\"t3\" text-anchor=\"middle\">로봇 · 화장품 순환</text><text x=\"272\" y=\"78\" class=\"t3\" text-anchor=\"middle\">지엽적 테마</text><line x1=\"88\" y1=\"88\" x2=\"88\" y2=\"102\" class=\"arw\"/><polygon points=\"88,108 82.5,98 93.5,98\" class=\"ar\"/><line x1=\"272\" y1=\"88\" x2=\"272\" y2=\"102\" class=\"arw\"/><polygon points=\"272,108 266.5,98 277.5,98\" class=\"ar\"/><rect x=\"28\" y=\"108\" width=\"304\" height=\"32\" rx=\"9\" class=\"sf-g\"/><text x=\"180\" y=\"129\" class=\"t2 c-g\" text-anchor=\"middle\">전체 장이 아직 강하지 않다는 방증</text><text x=\"18\" y=\"158\" class=\"t3\">펀드가 삼성전자 비중을 의무적으로 채우는 구조 — 펀드가 깨지면 매물이 쏟아지는 취약점</text></svg>","caption":"시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증."},{"type":"cards","title":"이번 주 52주 신고가 — 5종목","items":[{"title":"한진칼","tag":"코스피","note":"경영권 분쟁 · 월간 +105%","tone":"red"},{"title":"코스맥스","tag":"코스피","note":"—","tone":"blue"},{"title":"한미사이언스","tag":"코스피","note":"—","tone":"blue"},{"title":"펌텍코리아","tag":"코스닥","note":"화장품 용기 테마","tone":"violet"},{"title":"안랩","tag":"코스닥","note":"정치 테마","tone":"amber"}]},{"type":"svg","title":"미국 3분기 매크로 — 성장 vs 물가","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 144\" class=\"ig\" role=\"img\"><line x1=\"70.0\" y1=\"26\" x2=\"70.0\" y2=\"120\" class=\"grid\"/><text x=\"70.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">0</text><line x1=\"132.0\" y1=\"26\" x2=\"132.0\" y2=\"120\" class=\"grid\"/><text x=\"132.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">2</text><line x1=\"194.0\" y1=\"26\" x2=\"194.0\" y2=\"120\" class=\"grid\"/><text x=\"194.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">4</text><line x1=\"256.0\" y1=\"26\" x2=\"256.0\" y2=\"120\" class=\"grid\"/><text x=\"256.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">6</text><line x1=\"318.0\" y1=\"26\" x2=\"318.0\" y2=\"120\" class=\"grid\"/><text x=\"318.0\" y=\"134\" class=\"t3 ax\" text-anchor=\"middle\">8</text><text x=\"62\" y=\"48\" class=\"t2\" text-anchor=\"end\">GDP</text><rect x=\"70\" y=\"36\" width=\"133.3\" height=\"16\" rx=\"4\" class=\"bf-b\"/><text x=\"211.29999999999998\" y=\"49\" class=\"n1\">4.3%</text><text x=\"62\" y=\"82\" class=\"t2\" text-anchor=\"end\">근원 PCE</text><rect x=\"70\" y=\"70\" width=\"102.3\" height=\"16\" rx=\"4\" class=\"bf-a\"/><text x=\"180.3\" y=\"83\" class=\"n1\">3.3%</text><text x=\"62\" y=\"116\" class=\"t2\" text-anchor=\"end\">명목 상승 압력</text><rect x=\"70\" y=\"104\" width=\"217.0\" height=\"16\" rx=\"4\" class=\"bf-r\"/><text x=\"295.0\" y=\"117\" class=\"n1\">약 7%대</text></svg>","caption":"GDP 4.3% · 근원 PCE 3.3% → 명목상 약 7%대 상승 압력, 12월 금리 인상 우려."},{"type":"callout","text":"시총 상위주가 막힐 때 로봇·화장품 같은 지엽적 테마가 도는 건 전체 장이 아직 강하지 않다는 방증이기도 합니다."},{"type":"h","text":"글로벌 빅테크·AI 인프라 점검: 엔비디아·마이크론·인텔"},{"type":"svg","title":"AI 돈의 흐름 — 하이퍼스케일러 vs 반도체·장비","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 176\" class=\"ig\" role=\"img\"><rect x=\"10\" y=\"28\" width=\"140\" height=\"84\" rx=\"9\" class=\"box\"/><text x=\"80\" y=\"48\" class=\"t1\" text-anchor=\"middle\">하이퍼스케일러</text><text x=\"80\" y=\"66\" class=\"t2\" text-anchor=\"middle\">구글 · 메타</text><text x=\"80\" y=\"92\" class=\"t3 c-g\" text-anchor=\"middle\">미국장은 이쪽</text><line x1=\"152\" y1=\"70\" x2=\"200\" y2=\"70\" class=\"arw\"/><polygon points=\"208,70 197,64.5 197,75.5\" class=\"ar\"/><text x=\"180\" y=\"60\" class=\"t3\" text-anchor=\"middle\">자금</text><rect x=\"210\" y=\"28\" width=\"140\" height=\"84\" rx=\"9\" class=\"box\"/><text x=\"280\" y=\"46\" class=\"t1\" text-anchor=\"middle\">AI 반도체 · 장비</text><text x=\"280\" y=\"62\" class=\"t3\" text-anchor=\"middle\">엔비디아 · 마이크론</text><text x=\"280\" y=\"76\" class=\"t3\" text-anchor=\"middle\">키옥시아 · 소프트뱅크</text><text x=\"280\" y=\"92\" class=\"t3 c-r\" text-anchor=\"middle\">하락 가속도 · 악성 매물</text><text x=\"280\" y=\"106\" class=\"t2 c-r\" text-anchor=\"middle\">당분간 어렵다</text><rect x=\"10\" y=\"124\" width=\"340\" height=\"40\" rx=\"9\" class=\"box2\"/><text x=\"24\" y=\"146\" class=\"t1 c-r\">인텔</text><text x=\"64\" y=\"146\" class=\"t2\">정부 지원금 직전까지 밀림 — 상업 경쟁력 한계</text></svg>","caption":"미국장에 갈 거면 반도체·장비보다 구글·메타 같은 하이퍼스케일러 쪽."},{"type":"signal","title":"국내 3종목 신호등","items":[{"name":"삼성전자 · SK하이닉스","state":"bad","badge":"■ 주의","note":"돌아서지 않으면 지수 전체가 몇 달 더 횡보"},{"name":"현대차","state":"warn","badge":"▲ 유보","note":"20일선에 간신히 붙음 — 차트상 매수 매력은 아직"},{"name":"APR","state":"good","badge":"● 호재","note":"실적은 탄탄 · 수급·환율에 눌림 → 다음 주 양봉이면 위쪽 여력"}]},{"type":"callout","text":"차라리 미국장에 가실 거면 구글이나 메타 같은 하이퍼스케일러 쪽이 낫습니다."},{"type":"h","text":"디지털 불멸, 젠슨 황의 복귀, 그리고 마가(MAGA) 진영의 균열"},{"type":"svg","title":"핵심 지지 기반의 균열 — 남침례회 ↔ 트럼프·MAGA","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 198\" class=\"ig\" role=\"img\"><rect x=\"8\" y=\"30\" width=\"162\" height=\"96\" rx=\"9\" class=\"box\"/><text x=\"89\" y=\"50\" class=\"t1\" text-anchor=\"middle\">남침례회</text><text x=\"89\" y=\"68\" class=\"t3\" text-anchor=\"middle\">미국 최대 단일 개신교 교단</text><text x=\"89\" y=\"90\" class=\"t2 c-b\" text-anchor=\"middle\">등록 교인 1,233만 명</text><text x=\"89\" y=\"108\" class=\"t3\" text-anchor=\"middle\">'브랜트우드 선언'</text><rect x=\"190\" y=\"30\" width=\"162\" height=\"96\" rx=\"9\" class=\"box\"/><text x=\"271\" y=\"50\" class=\"t1\" text-anchor=\"middle\">트럼프 · MAGA</text><text x=\"271\" y=\"68\" class=\"t3\" text-anchor=\"middle\">핵심 지지 기반</text><text x=\"271\" y=\"90\" class=\"n1 c-r\" text-anchor=\"middle\">역린</text><text x=\"271\" y=\"108\" class=\"t3\" text-anchor=\"middle\">불륜 · 윤리 면제부</text><path d=\"M180 34 L185 52 L174 72 L185 92 L174 112\" class=\"zap\"/><text x=\"180\" y=\"148\" class=\"t3 c-r\" text-anchor=\"middle\">균열</text><text x=\"18\" y=\"168\" class=\"t3\">악시오스 — 젠슨 황 복귀 계기 MAGA 진영 분열 보도</text><text x=\"18\" y=\"186\" class=\"t3\">머스크: 나는 MAGA가 아니다(I'm not sure what MAGA is)</text></svg>","caption":"등록 교인 1,233만 명의 브랜트우드 선언 ↔ 불륜·윤리 면제부, 악시오스가 보도한 MAGA 분열."},{"type":"callout","text":"이들은 MAGA와 트럼프의 핵심 지지 기반이지만, 본질적으로 AI 만능주의나 세속적 도덕 해이와는 충돌할 수밖에 없습니다."},{"type":"h","text":"드라마 〈홈랜드〉로 본 미국의 균열과 한국 증시의 상대적 기회"},{"type":"svg","title":"트럼프 향방 — 두 갈래 분기","svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 218\" class=\"ig\" role=\"img\"><rect x=\"96\" y=\"8\" width=\"168\" height=\"36\" rx=\"10\" class=\"box2\"/><text x=\"180\" y=\"31\" class=\"t1\" text-anchor=\"middle\">트럼프 레임덕 이후</text><path d=\"M180 44 V58 H86 V66 M86 58 H274 V66\" class=\"arw\"/><polygon points=\"86,72 80.5,62 91.5,62\" class=\"ar\"/><polygon points=\"274,72 268.5,62 279.5,62\" class=\"ar\"/><rect x=\"8\" y=\"66\" width=\"156\" height=\"44\" rx=\"9\" class=\"box\"/><text x=\"86\" y=\"85\" class=\"t1\" text-anchor=\"middle\">집단지도체제 이행</text><text x=\"86\" y=\"101\" class=\"t3\" text-anchor=\"middle\">J.D. 밴스 등</text><rect x=\"196\" y=\"66\" width=\"156\" height=\"44\" rx=\"9\" class=\"box\"/><text x=\"274\" y=\"85\" class=\"t1\" text-anchor=\"middle\">그립 유지</text><text x=\"274\" y=\"101\" class=\"t3\" text-anchor=\"middle\">레임덕에도 버팀</text><line x1=\"86\" y1=\"110\" x2=\"86\" y2=\"120\" class=\"arw\"/><polygon points=\"86,126 80.5,116 91.5,116\" class=\"ar\"/><line x1=\"274\" y1=\"110\" x2=\"274\" y2=\"120\" class=\"arw\"/><polygon points=\"274,126 268.5,116 279.5,116\" class=\"ar\"/><rect x=\"8\" y=\"126\" width=\"156\" height=\"42\" rx=\"9\" class=\"box\"/><text x=\"86\" y=\"152\" class=\"t2 c-g\" text-anchor=\"middle\">불확실성 감소</text><rect x=\"196\" y=\"126\" width=\"156\" height=\"42\" rx=\"9\" class=\"box\"/><text x=\"274\" y=\"152\" class=\"t2 c-r\" text-anchor=\"middle\">6개월 정치 혼란</text><rect x=\"28\" y=\"178\" width=\"116\" height=\"30\" rx=\"15\" class=\"sf-g\"/><text x=\"86\" y=\"197\" class=\"t2 c-g\" text-anchor=\"middle\">● 증시에 호재</text><rect x=\"216\" y=\"178\" width=\"116\" height=\"30\" rx=\"15\" class=\"sf-r\"/><text x=\"274\" y=\"197\" class=\"t2 c-r\" text-anchor=\"middle\">■ 미국장 불안</text></svg>","caption":"집단지도체제 이행이면 불확실성 감소로 호재, 그립을 놓지 않으면 6개월 혼란."},{"type":"callout","text":"당분간 미국장보다 먼저 빠진 한국장이 상대적으로 나을 수도 있다는 게 제 생각입니다."}]}}};
   var META = DATA.meta;
   var VERSIONS = DATA.versions;
-  var state = { v: 'a', marks: false };
+  var state = { v: 'a' };
 
   /* ── 유틸 (assets/app.js 와 동일 규칙) ─────────────────── */
   function esc(s) {
@@ -445,30 +425,54 @@
     return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   }
 
-  /* ── B안 필기 마킹 ──────────────────────────────────────
-     {{G|..}} 4색 형광펜 · {{GU|..}} 형광펜+실선 밑줄(U/W/D)
-     {{P|..}} 둥근 태그 · {{X|..}} 네모 태그 · {{A|..}} → 인과 배지
-     ★ 핵심 · ● 호재 · ▲ 유보 · ■ 주의 */
-  var MK_SYM = { '★': 's', '●': 'g', '▲': 'a', '■': 'r' };
-  function markHtml(s) {
-    var h = esc(s).replace(/\{\{([A-Z0-9]{1,2})\|([\s\S]*?)\}\}/g,
-      function (m, code, body) {
-        if (/^[GYRB][UWD]?$/.test(code)) {
-          var cls = 'mk-hl mk-' + code.charAt(0).toLowerCase();
-          if (code.length === 2) cls += ' mk-ul mk-u-' + code.charAt(1).toLowerCase();
-          return '<span class="' + cls + '">' + body + '</span>';
-        }
-        if (/^[UWD]$/.test(code)) return '<span class="mk-ul mk-u-' + code.toLowerCase() + '">' + body + '</span>';
-        if (code === 'P') return '<span class="tag-pill">' + body + '</span>';
-        if (code === 'X') return '<span class="tag-box">' + body + '</span>';
-        if (code === 'A') return '<span class="mk-arrow">' + body + '</span>';
-        return body;
-      });
-    h = h.replace(/\*\*([^*<>]+)\*\*/g, '<strong>$1</strong>');
-    h = h.replace(/([★●▲■])/g, function (m, c) {
-      return '<span class="mk-sym mk-sym-' + MK_SYM[c] + '">' + c + '</span>';
+  /* ── B안 구조 컨테이너 (나열·대립·종속) ─────────────────
+     문장은 한 글자도 손대지 않고, 문단 사이 관계만 박스 모양으로 드러낸다. */
+  function stTag(mark, label) {
+    var tg = mk('span', 'st-tag');
+    if (mark) {
+      var ar = mk('span', 'st-tag-ar');
+      ar.setAttribute('aria-hidden', 'true');
+      ar.textContent = mark;
+      tg.appendChild(ar);
+    }
+    tg.appendChild(document.createTextNode(label));
+    return tg;
+  }
+  function buildStructList(b) {
+    var box = mk('div', 'struct st-list');
+    if (b.label) box.appendChild(stTag('', b.label));
+    var ul = mk('ul', 'st-items');
+    (b.items || []).forEach(function (it) {
+      ul.appendChild(mk('li', '', rich(it)));
     });
-    return h;
+    box.appendChild(ul);
+    return box;
+  }
+  function buildStructContrast(b) {
+    var box = mk('div', 'struct st-contrast');
+    if (b.label) box.appendChild(stTag('', b.label));
+    var pair = mk('div', 'st-pair');
+    ['left', 'right'].forEach(function (side, i) {
+      if (i) {
+        var mid = mk('div', 'st-mid');
+        var vs = mk('span', 'st-vs');
+        vs.setAttribute('aria-hidden', 'true');
+        vs.textContent = '\u2194';
+        mid.appendChild(vs);
+        pair.appendChild(mid);
+      }
+      var col = mk('div', 'st-col');
+      col.appendChild(mk('div', 'st-col-txt', rich(b[side] || '')));
+      pair.appendChild(col);
+    });
+    box.appendChild(pair);
+    return box;
+  }
+  function buildStructSub(b) {
+    var box = mk('div', 'struct st-sub');
+    if (b.label) box.appendChild(stTag('\u21b3', b.label));
+    box.appendChild(mk('div', 'st-txt', rich(b.text || '')));
+    return box;
   }
   function splitParagraph(text) {
     var t = String(text || '').trim();
@@ -666,26 +670,6 @@
   }
 
   /* ── C안 카드형 인포그래픽 ─────────────────────────── */
-  function buildLegend(b) {
-    var box = mk('div', 'mk-legend');
-    (b.items || []).forEach(function (it) {
-      if (!it) return;
-      var lg = mk('span', 'lg');
-      lg.appendChild(mk('span', 'lg-ch ' + it.cls));
-      lg.appendChild(mk('span', '', rich(it.label || '')));
-      box.appendChild(lg);
-    });
-    box.appendChild(mk('span', 'lg-sep', '|'));
-    (b.syms || []).forEach(function (it) {
-      if (!it || !it.s) return;
-      var lg = mk('span', 'lg');
-      lg.appendChild(mk('span', 'lg-sym mk-sym mk-sym-' + (MK_SYM[it.s] || 's'), esc(it.s)));
-      lg.appendChild(mk('span', '', rich(it.label || '')));
-      box.appendChild(lg);
-    });
-    return box;
-  }
-
   function buildMap(b) {
     var box = vizShell('map', b.title);
     var grid = mk('div', 'ig-map');
@@ -865,21 +849,22 @@
       co.appendChild(mk('div', 'callout-txt', rich(b.text || '')));
       return co;
     }
+    if (b.type === 'struct-list') return buildStructList(b);
+    if (b.type === 'struct-contrast') return buildStructContrast(b);
+    if (b.type === 'struct-sub') return buildStructSub(b);
     if (b.type === 'stats') return buildStats(b);
     if (b.type === 'levels') return buildLevels(b);
     if (b.type === 'flow') return buildFlow(b);
     if (b.type === 'compare') return buildCompare(b);
     if (b.type === 'table') return buildTable(b);
     if (b.type === 'svg') return buildSvg(b);
-    if (b.type === 'legend') return buildLegend(b);
     if (b.type === 'map') return buildMap(b);
     if (b.type === 'vs') return buildVs(b);
     if (b.type === 'cards') return buildCards(b);
     if (b.type === 'signal') return buildSignal(b);
     var frag = document.createDocumentFragment();
-    var fmt = state.marks ? markHtml : rich;
     splitParagraph(b.text || '').forEach(function (chunk) {
-      frag.appendChild(mk('p', '', fmt(chunk)));
+      frag.appendChild(mk('p', '', rich(chunk)));
     });
     return frag;
   }
@@ -917,6 +902,9 @@
     var sym = (txt.match(/[★●▲■]/g) || []).length;
     var boxes = blocks.filter(function (b) { return b && (b.type === 'callout' || b.type === 'ul' || b.type === 'ol'); }).length;
     var vizs = blocks.filter(function (b) { return b && VIZ_KEYS[b.type]; }).length;
+    var lists = blocks.filter(function (b) { return b && b.type === 'struct-list'; }).length;
+    var contrasts = blocks.filter(function (b) { return b && b.type === 'struct-contrast'; }).length;
+    var subs = blocks.filter(function (b) { return b && b.type === 'struct-sub'; }).length;
     var cards = blocks.reduce(function (n, b) {
       if (!b) return n;
       return n + (b.type === 'map' ? (b.cards || []).length : 0)
@@ -925,7 +913,7 @@
         + (b.type === 'stats' ? (b.items || []).length : 0)
         + (b.type === 'vs' ? 2 : 0);
     }, 0);
-    return { hl: hl, ul: ul, sym: sym, boxes: boxes, vizs: vizs, cards: cards };
+    return { hl: hl, ul: ul, sym: sym, boxes: boxes, vizs: vizs, cards: cards, lists: lists, contrasts: contrasts, subs: subs };
   }
 
   /* ── 테마 ──────────────────────────────────────────── */
@@ -990,14 +978,14 @@
     var el = document.querySelector('.cg-tab-m[data-meta="' + k + '"]');
     el.textContent = k === 'c'
       ? '시각화 ' + m.vizs + ' · 카드 ' + m.cards
-      : '박스 ' + m.boxes + ' · 형광펜 ' + m.hl
-        + (k === 'b' ? ' · 밑줄 ' + m.ul + ' · 기호 ' + m.sym : '');
+      : k === 'b'
+        ? '나열 ' + m.lists + ' · 대립 ' + m.contrasts + ' · 종속 ' + m.subs
+        : '박스 ' + m.boxes + ' · 형광펜 ' + m.hl;
   });
 
   function setVersion(v, opts) {
     if (!VERSIONS[v]) v = 'a';
     state.v = v;
-    state.marks = v === 'b';
     var ver = VERSIONS[v];
     body.className = 'body-inner v-' + v;
     body.innerHTML = '';
