@@ -31,7 +31,8 @@ summary 필드
               · stats   {"type":"stats","title":..,"items":[{"label":..,"value":..,"sub":..,"tone":..}]}  지표 타일
               · table   {"type":"table","title":..,"headers":[..],"rows":[[..],..]}             비교 표
               · svg     {"type":"svg","title":..,"caption":..,"svg":"<svg viewBox=..>..</svg>"}  자유형 도식
-              (본문 p·ul·callout 을 축약하지 말고 그 아래에 걸맞은 시각화 블록을 덧붙인다)
+              (시각화 블록은 기본값이 아니다 — 표준은 순수 줄글. 쓴다면 본문을 축약하지 않고
+              아래에 최소한으로만 덧붙인다)
               svg 내부 문자열은 임의 축약·손상 없이 그대로 보존한다(스크립트·이벤트
               속성·foreignObject 등은 웹페이지 app.js가 삽입 전에 걷어낸다).
     text      blocks 대신 줄글 하나로 줄 때. 아래 규칙으로 blocks로 변환된다.
@@ -39,7 +40,7 @@ summary 필드
                 "- 항목" / "* 항목"      -> ul
                 "> 인용"                 -> callout
                 빈 줄로 나뉜 덩어리      -> p
-              (본문 안의 **굵게** 표기는 그대로 유지된다)
+              (본문 안의 **주제어** = 배경 없는 굵은 글씨, ==판단·결론== = 45% 하프 형광펜)
     publishedAt / duration / thumbnail / kind / url  선택
       publishedAt  업로드 시각. 유튜브 표기 그대로("2026-11-17T14:01:14+09:00", "...Z",
                    "2026-11-17 14:01") — 시간대가 없으면 KST로 보고, 저장은 KST ISO로 맞춘다.

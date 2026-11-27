@@ -21,6 +21,7 @@
   --accent-2: #2563eb;
   --accent-soft: rgba(16, 185, 129, 0.09);
   --mark: rgba(16, 185, 129, 0.16);
+  --mark-half: rgba(16, 185, 129, 0.22);
   --like: #e11d48;
   --like-soft: rgba(225, 29, 72, 0.1);
 
@@ -66,6 +67,7 @@
   --accent-2: #60a5fa;
   --accent-soft: rgba(52, 211, 153, 0.11);
   --mark: rgba(52, 211, 153, 0.19);
+  --mark-half: rgba(52, 211, 153, 0.26);
   --like: #fb7185;
   --like-soft: rgba(251, 113, 133, 0.14);
 
@@ -1762,23 +1764,50 @@ svg.svg-canvas text {
   word-break: keep-all;
 }
 
+/* ── 본문 서식 표준 (2026-11-28 확정) ─────────────────────
+   ① 굵은 글씨 = 그 문단의 주제·핵심 대상 1~3단어. 배경 없는 순수 볼드.
+   ② 형광펜   = 화자의 판단·결론·경고·핵심 의견. 45% 하프, 굵기 없음. */
 .card-body strong {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
-  background-image: linear-gradient(to top, var(--mark) 0.45em, transparent 0.45em);
-  padding: 0 2px;
-  border-radius: 2px;
+  background-image: none;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.card-body mark,
+.card-body mark.hl-half {
+  background: transparent;
+  background-image: linear-gradient(to top, var(--mark-half) 0.45em, transparent 0.45em);
+  color: inherit;
+  font-weight: 400;
+  padding: 0 1px;
+  border-radius: 0;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+/* 검색어 하이라이트는 기존 노란 표시 유지 (본문 형광펜과 별개) */
 mark.hl {
   background: rgba(250, 204, 21, 0.42);
   color: var(--text);
   padding: 0 2px;
   border-radius: 3px;
 }
+.card-body mark.hl {
+  background: rgba(250, 204, 21, 0.42);
+  background-image: none;
+  color: var(--text);
+  font-weight: inherit;
+  padding: 0 2px;
+  border-radius: 3px;
+}
 [data-theme="dark"] mark.hl {
   background: rgba(250, 204, 21, 0.28);
+  color: #fef08a;
+}
+[data-theme="dark"] .card-body mark.hl {
+  background: rgba(250, 204, 21, 0.28);
+  background-image: none;
   color: #fef08a;
 }
 
