@@ -1249,7 +1249,10 @@
       if (ch.nodeType === 1) {
         var name = String(ch.nodeName || '').toLowerCase();
         if (name.indexOf(':') >= 0) name = name.split(':').pop();
-        if (!SVG_TAGS[name] || ch.namespaceURI !== SVG_NS) {
+        /* DOMParser 는 xmlns 없는 <svg>의 자식을 이름공간 없음(null)으로 주기도 한다.
+           이름공간이 아예 없거나 SVG면 허용하고, 다른 이름공간(HTML 등)은 지운다. */
+        var ns = ch.namespaceURI;
+        if (!SVG_TAGS[name] || (ns && ns !== SVG_NS)) {
           node.removeChild(ch);
           return;
         }
