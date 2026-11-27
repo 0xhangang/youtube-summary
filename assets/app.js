@@ -875,6 +875,7 @@
       setTimeout(function () { dom.search.focus(); }, 40);
     }
     scheduleTabScroll();
+    schedulePageScroll();
   }
 
   /* ── 탭 패널 커스텀 스크롤바 ───────────────────────────────
@@ -945,6 +946,74 @@
       for (var i = 0; i < panes.length; i++) tabBar.ro.observe(panes[i]);
     }
     scheduleTabScroll();
+  }
+
+  /* ── 전체 페이지 커스텀 스크롤바 ────────────────────────────────
+   * 메뉴 패널과 똑같은 4px 트랙·썸을 화면 우측 끝(.page-track)에 고정해
+   * 그린다. 네이티브 페이지 스크롤바는 CSS로 숨겼고 window 스크롤 구조는
+   * 그대로 쓴다(삼성 인터넷 주소창 숨김·sticky 허브 동작 보존).
+   *   - 내용이 넘칠 때(documentElement.scrollHeight > innerHeight + 4)만 표시
+   *   - 썸 높이 = trackH * (innerHeight / scrollHeight), 최소 28px
+   *   - 스크롤 위치 비율에 맞춰 translateY 로 부드럽게 따라간다 */
+  var pageBar = { track: null, thumb: null, frame: 0, ro: null, thumbH: 0 };
+
+  function updatePageScroll() {
+    var track = pageBar.track;
+    var thumb = pageBar.thumb;
+    if (!track || !thumb) return;
+    var doc = document.documentElement;
+    var body = document.body;
+    /* 동기화 모달이 페이지 스크롤을 잠근 동안에는 감춘다 */
+    if (body && body.classList.contains('sync-open')) {
+      track.hidden = true;
+      return;
+    }
+    var vh = window.innerHeight || doc.clientHeight;
+    var sh = Math.max(doc.scrollHeight, body ? body.scrollHeight : 0);
+    if (sh <= vh + 4) {
+      track.hidden = true;
+      pageBar.thumbH = 0;
+      return;
+    }
+    track.hidden = false;
+    var trackH = track.clientHeight;
+    if (!trackH) { track.hidden = true; return; }
+    var h = Math.round(trackH * (vh / sh));
+    if (h < 28) h = 28;
+    if (h > trackH) h = trackH;
+    if (h !== pageBar.thumbH) {
+      pageBar.thumbH = h;
+      thumb.style.height = h + 'px';
+    }
+    var travel = trackH - h;
+    var max = sh - vh;
+    var y = window.scrollY || doc.scrollTop || 0;
+    var k = max > 0 ? (y / max) : 0;
+    if (k < 0) k = 0; else if (k > 1) k = 1;
+    thumb.style.transform = 'translateY(' + (k * travel).toFixed(2) + 'px)';
+  }
+
+  function schedulePageScroll() {
+    if (pageBar.frame) return;
+    pageBar.frame = requestAnimationFrame(function () {
+      pageBar.frame = 0;
+      updatePageScroll();
+    });
+  }
+
+  function initPageScroll() {
+    pageBar.track = document.getElementById('pageTrack');
+    pageBar.thumb = document.getElementById('pageThumb');
+    if (!pageBar.track || !pageBar.thumb) return;
+    window.addEventListener('scroll', schedulePageScroll, { passive: true });
+    window.addEventListener('resize', schedulePageScroll, { passive: true });
+    window.addEventListener('orientationchange', schedulePageScroll, { passive: true });
+    window.addEventListener('load', schedulePageScroll);
+    if (typeof ResizeObserver !== 'undefined') {
+      pageBar.ro = new ResizeObserver(function () { schedulePageScroll(); });
+      if (document.body) pageBar.ro.observe(document.body);
+    }
+    schedulePageScroll();
   }
 
   /* ── 칩 ───────────────────────────────────────────── */
@@ -1432,6 +1501,7 @@
       updateSearchResults(sorted, all.length);
       updateSubtitle(all.length, sorted.length);
       scheduleTabScroll();
+      schedulePageScroll();
       return;
     }
 
@@ -1457,6 +1527,7 @@
       }
       feed.appendChild(frag);
       scheduleReadingBar();
+      schedulePageScroll();
       if (cursor < sorted.length) {
         if (!moreWrap) {
           moreWrap = document.createElement('div');
@@ -1503,6 +1574,7 @@
     updateSearchResults(sorted, all.length);
     updateSubtitle(all.length, sorted.length);
     scheduleTabScroll();
+    schedulePageScroll();
   }
 
   function updateSearchResults(sortedItems, totalCount) {
@@ -2047,6 +2119,7 @@
 
     initReadingBar();
     initTabScroll();
+    initPageScroll();
   }
 
   /* ── 상단 읽기 바 ──────────────────────────────────────
@@ -2256,6 +2329,7 @@
       dom.feed.appendChild(bar);
       dom.feed.appendChild(buildCard(found));
       scheduleReadingBar();
+      schedulePageScroll();
       document.title = '[' + (found.s.channel || '') + '] ' + (found.s.title || '피클 유튜브 요약');
       renderFooter();
     }

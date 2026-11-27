@@ -79,22 +79,32 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  /* 전체 페이지 스크롤바 — 본문 에메랄드 톤 (Firefox) */
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--accent) 45%, transparent) transparent;
 }
 
-/* 전체 페이지 스크롤바 — 본문 에메랄드 톤 (WebKit/Blink 계열) */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
+/* ── 전체 페이지 스크롤바 ────────────────────────────────────────
+   메뉴 패널(.tab-track·.tab-thumb)과 똑같은 4px 커스텀 트랙·썸을 화면
+   우측 끝에 고정해 그린다(.page-track·.page-thumb, app.js가 갱신).
+   삼성 인터넷 같은 안드로이드 브라우저는 OS 오버레이 스크롤바 정책 때문에
+   ::-webkit-scrollbar 를 스크롤이 멈추면 감춰 버리므로, 네이티브 페이지
+   스크롤바는 완전히 숨긴다. window 스크롤 구조 자체는 그대로 둔다. */
+html, body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* 동기화 모달 안쪽처럼 남는 내부 스크롤 영역은 얇은 에메랄드 톤 유지 */
+.sync-panel::-webkit-scrollbar { width: 6px; height: 6px; }
+.sync-panel::-webkit-scrollbar-track { background: transparent; }
+.sync-panel::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 45%, transparent);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--accent-strong) 68%, transparent);
-}
-::-webkit-scrollbar-corner { background: transparent; }
 body {
   margin: 0;
   padding: 0;
@@ -518,6 +528,41 @@ button.btn.is-on {
   will-change: transform;
 }
 [data-theme="dark"] .tab-track { background: color-mix(in srgb, var(--border-strong) 38%, transparent); }
+
+/* ── 전체 페이지 스크롤바 (메뉴 패널과 100% 동일한 4px 트랙·썸) ─────
+   .tab-track · .tab-thumb 와 같은 폭·트랙 배경·에메랄드 그라데이션·둥근
+   모서리를 화면 우측 끝에 고정(position: fixed)해 나란히 통일한다.
+   표시 여부·높이·위치는 app.js가 계산하고, 터치는 통과시킨다. */
+.page-track {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: 3px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 35;
+}
+.page-track[hidden] { display: none; }
+[data-theme="dark"] .page-track { background: color-mix(in srgb, var(--border-strong) 38%, transparent); }
+.page-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 68%, transparent),
+    color-mix(in srgb, var(--accent-strong) 55%, transparent)
+  );
+  transform: translateY(0);
+  transition: transform 0.09s linear, height 0.12s ease;
+  will-change: transform;
+}
 
 /* 검색 탭 입력 */
 .search-row {
