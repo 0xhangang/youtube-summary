@@ -93,7 +93,7 @@
 
 자막을 읽어 요약을 쓸 때, **원문에 담긴 순서·확신의 세기·말한 주체**까지 그대로 옮기기 위한 5원칙이다. 아래 다섯 가지는 요약을 다듬을 때도 지킨다.
 
-- 기준 예시: [`sample-alsangmu.html`](https://0xhangang.github.io/youtube-summary/sample-alsangmu.html)(커밋 `ed9968e`) — **16차 최종 확정 예시**. 이 5원칙이 실제로 적용된 판본이므로 새 요약을 쓸 때 대조한다.
+- 기준 예시: [`sample-alsangmu.html`](https://0xhangang.github.io/youtube-summary/sample-alsangmu.html)(커밋 `e9d3af4`) — **17차 최종 확정 예시**(소제목 10·문단 34·볼드 72·형광펜 19). 이 5원칙과 §2-3이 실제로 적용된 판본이므로 새 요약을 쓸 때 대조한다.
 - 실전 샘플 2호: [`sample-2.html`](https://0xhangang.github.io/youtube-summary/sample-2.html)(커밋 `b17420c`, 김단테 「트렌드포스 메모리 슈퍼사이클 끝」 15:00) — 같은 표준을 다른 화자·주제에 적용한 판본(소제목 10·문단 38·형광펜 15).
 
 1. **방송 순서를 지킨다.** 앞에서 소개한 사실을 뒤에서 다시 해석하면, 각각 원래 위치에 둔다.
