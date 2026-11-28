@@ -588,15 +588,26 @@
       return text.replace(re, '<mark class="hl">$1</mark>');
     });
   }
+  // 본문 서식 — **굵게**(배경 없음) · ==형광펜==(45% 하프). 겹쳐 쓴 경우도 그대로 살린다.
   function rich(s, q) {
-    var html = esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    var html = esc(s)
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/==((?:[^=]|=(?!=))+?)==/g, '<mark class="hl-half">$1</mark>');
     return q ? highlightHtml(html, q) : html;
   }
   // 긴 문단을 모바일에서 읽기 편하게 2~3문장 단위로 자연 분할
   function splitParagraph(text) {
     var t = String(text || '').trim();
     if (t.length < 210) return [t];
-    var parts = t.split(/(?<=[.?!])\s+(?=[가-힣A-Za-z0-9"'(\[])/);
+    // 문장 부호로만 자르면 ==형광펜== 짝이 두 토막에 걸치므로, 자르는 동안만 같은 길이의 토큰으로 가린다.
+    var pool = [];
+    var src = t.replace(/==((?:[^=]|=(?!=))+?)==/g, function (m) {
+      pool.push(m);
+      var head = '\u0000' + (pool.length - 1);
+      var pad = m.length - head.length - 1;
+      return head + new Array(pad > 0 ? pad + 1 : 1).join(' ') + '\u0001';
+    });
+    var parts = src.split(/(?<=[.?!])\s+(?=[가-힣A-Za-z0-9"'(\[])/);
     if (parts.length <= 2) return [t];
     var out = [];
     var buf = '';
@@ -614,7 +625,13 @@
       if (out.length && buf.length < 55) out[out.length - 1] += ' ' + buf;
       else out.push(buf);
     }
-    return out.length ? out : [t];
+    if (!out.length) return [t];
+    return out.map(function (chunk) {
+      return chunk.replace(/\u0000(\d+) *\u0001/g, function (_, n) {
+        var back = pool[Number(n)];
+        return back == null ? '' : back;
+      });
+    });
   }
   function fmtDateLabel(iso) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');

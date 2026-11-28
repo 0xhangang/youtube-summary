@@ -1762,15 +1762,32 @@ svg.svg-canvas text {
   word-break: keep-all;
 }
 
+/* 굵은 글씨(What) — 객관적 재료·주제어. 배경 없는 순수 굵은 글씨만 쓴다. */
 .card-body strong {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
-  background-image: linear-gradient(to top, var(--mark) 0.45em, transparent 0.45em);
-  padding: 0 2px;
-  border-radius: 2px;
+}
+/* 45% 하프 형광펜(So What) — 화자의 판단·결론. ==...== → <mark class="hl-half"> */
+.card-body mark:not(.hl) {
+  background: transparent;
+  background-image: linear-gradient(to top, rgba(16, 185, 129, 0.22) 0.45em, transparent 0.45em);
+  color: inherit;
+  font-weight: 400;
+  padding: 0 1px;
+  border-radius: 0;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+[data-theme="dark"] .card-body mark:not(.hl) {
+  background-image: linear-gradient(to top, rgba(52, 211, 153, 0.26) 0.45em, transparent 0.45em);
+}
+/* 형광펜 안의 핵심 주제어는 그대로 굵게 중첩한다 */
+.card-body mark:not(.hl) strong {
+  font-weight: 800;
+  color: var(--text);
+  background-image: none;
+}
+/* 검색어 강조(mark.hl)는 노란 표시 그대로 둔다 */
 mark.hl {
   background: rgba(250, 204, 21, 0.42);
   color: var(--text);
