@@ -1108,36 +1108,42 @@ button.btn.is-on {
 .card-body {
   padding: 18px 18px 26px;
   color: var(--text-body);
-  font-size: 15.5px;
-  line-height: 1.84;
+  font-size: 16px;
+  line-height: 1.75;
   letter-spacing: -0.012em;
 }
 .body-inner { max-width: var(--measure); margin: 0 auto; }
 
-.section-title {
+.section-title,
+.card-body .section-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  margin: 26px 0 11px;
-  font-size: 16.5px;
-  font-weight: 800;
-  line-height: 1.45;
-  letter-spacing: -0.38px;
+  margin: 34px 0 10px;
+  font-size: 18.5px;
+  font-weight: 750;
+  line-height: 1.42;
+  letter-spacing: -0.45px;
   color: var(--text);
   word-break: keep-all;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
+/* 두 줄 소제목이어도 막대는 첫 줄 왼쪽에만 붙는다 (줄 높이 1.42em의 가운데) */
 .section-title::before {
   content: "";
-  flex: 0 0 4.5px;
+  flex: 0 0 4px;
   height: 1.05em;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #10b981, #84cc16);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.24);
+  margin-top: 0.2em;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: none;
 }
-.body-inner > .section-title:first-child { margin-top: 2px; }
+.body-inner > .section-title:first-child,
+.card-body .section-title:first-child { margin-top: 4px; }
 
 .card-body p {
-  margin: 0 0 1em;
+  margin: 0 0 14px;
   word-break: keep-all;
   overflow-wrap: break-word;
   text-wrap: pretty;
@@ -1774,9 +1780,10 @@ svg.svg-canvas text {
   word-break: keep-all;
 }
 
-/* 굵은 글씨(What) — 객관적 재료·주제어. 배경 없는 순수 굵은 글씨만 쓴다. */
+/* 굵은 글씨(What) — 객관적 재료·주제어. 배경 없는 순수 굵은 글씨만 쓰고,
+   650으로 소제목 750과 분명히 갈라지게 한다. */
 .card-body strong {
-  font-weight: 800;
+  font-weight: 650;
   color: var(--text);
 }
 /* 45% 하프 형광펜(So What) — 화자의 판단·결론. ==...== → <mark class="hl-half"> */
@@ -1793,9 +1800,9 @@ svg.svg-canvas text {
 [data-theme="dark"] .card-body mark:not(.hl) {
   background-image: linear-gradient(to top, rgba(52, 211, 153, 0.26) 0.45em, transparent 0.45em);
 }
-/* 형광펜 안의 핵심 주제어는 그대로 굵게 중첩한다 */
+/* 형광펜 안의 핵심 주제어는 700으로 한 단계만 남겨 강조를 살린다 */
 .card-body mark:not(.hl) strong {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text);
   background-image: none;
 }
@@ -2183,7 +2190,7 @@ mark.hl {
   .video-title { font-size: 18px; }
   .card-body { padding: 20px 24px 28px; font-size: 16px; }
   .card-actions { padding: 12px 24px 15px; }
-  .section-title { font-size: 17px; }
+  .card-body .section-title { font-size: 20px; margin: 34px 0 10px; }
   .rb-channel, .rb-title { font-size: 12.5px; }
   .rb-channel { max-width: 38%; }
   /* 읽기 바 좌우 여백은 제목칸(.yt-info) 좌우 여백과 같은 값을 쓴다 */
