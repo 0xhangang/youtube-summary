@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0b0f17" media="(prefers-color-scheme: dark)" />
-<title>소제목 구분선·본문 볼드 600 + 2차 다듬기 — 김단테 샘플</title>
+<title>핵심 직행 · 4단 압축 — 김단테 샘플 3차</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <link rel="stylesheet" href="assets/style.css?v=20261129d1" />
@@ -21,26 +21,96 @@
   })();
 </script>
 <style>
-  /* ══ 이 샘플의 디자인 변경 — 소제목과 본문 굵은 글씨의 위계 분리 ══
-     소제목의 크기·간격·자간은 사이트 assets/style.css 그대로 쓰고(16.5px · 26px 0 11px),
-     아래에 아주 연한 1px 실선만 그어 '구획 제목'의 경계를 세운다. */
+  /* ══ 3차 샘플 — 소제목 위계·간격, 첫 줄 고정 막대, 본문 리듬 ══
+     본 사이트 assets/style.css는 건드리지 않고 이 페이지에서만 덮어쓴다. */
 
+  /* 소제목: 구분선 없이 크기와 위 여백으로 구획을 나눈다.
+     위 34px로 앞 단락과 확실히 떨어지고, 아래 10px로 첫 문단에 붙는다. */
   .card-body .section-title {
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+    margin: 34px 0 10px;
+    font-size: 18.5px;
+    font-weight: 750;
+    line-height: 1.42;
+    letter-spacing: -0.45px;
+    padding-bottom: 0;
+    border-bottom: 0;
   }
-  /* 다크 모드에서는 같은 선이 배경에 묻히지 않게 한 단계만 밝힌다 */
-  [data-theme="dark"] .card-body .section-title {
-    border-bottom-color: color-mix(in srgb, var(--border-strong) 62%, transparent);
+  /* 두 줄 소제목이어도 막대는 첫 줄 왼쪽에만 붙는다 (줄 높이 1.42em의 가운데) */
+  .card-body .section-title::before {
+    flex: 0 0 4px;
+    height: 1.05em;
+    margin-top: 0.2em;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: none;
   }
 
-  /* 본문 굵은 글씨 — 800 → 600(SemiBold)으로 한 단계 힘을 빼서
-     첫 줄이 볼드로 시작해도 소제목과 헷갈리지 않게 한다.
-     (형광펜 안팎의 볼드, 배경 없는 볼드 모두 같은 무게로 맞춘다) */
-  .card-body strong,
-  .card-body mark strong,
-  .card-body mark:not(.hl) strong,
-  .card-body mark.hl-half strong { font-weight: 600; }
+  /* 본문: 16px · 28px 줄 높이, 문단 사이는 14px로 조금 더 이어지게 */
+  .card-body {
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  .card-body p {
+    margin: 0 0 14px;
+  }
+  /* 본문 볼드 650 — 소제목 750/18.5px과 분명히 갈라지게.
+     형광펜 안의 주제어는 700으로 한 단계만 남겨 강조를 살린다. */
+  .card-body strong { font-weight: 650; }
+  .card-body mark:not(.hl) strong { font-weight: 700; }
+
+  /* 상세본 접기 토글 */
+  .detail-full {
+    margin-top: 30px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+  .detail-full > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 2px 10px;
+    list-style: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-sub);
+    word-break: keep-all;
+  }
+  .detail-full > summary::-webkit-details-marker { display: none; }
+  .detail-full > summary::before {
+    content: "";
+    flex: 0 0 6px;
+    width: 6px;
+    height: 6px;
+    margin: 0 2px 2px 3px;
+    border-right: 1.6px solid currentColor;
+    border-bottom: 1.6px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.18s ease;
+  }
+  .detail-full[open] > summary::before { transform: rotate(45deg); margin-bottom: -2px; }
+  .detail-full > summary:hover { color: var(--text); }
+  .detail-full > summary:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; border-radius: 6px; }
+  .detail-full .df-meta {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+  /* 상세본은 한 단계 작은 보조 레이어로 */
+  .detail-inner { padding-top: 2px; }
+  .detail-inner .section-title {
+    margin: 26px 0 9px;
+    font-size: 16.5px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .detail-inner > .section-title:first-child { margin-top: 8px; }
+  .detail-inner .section-title::before { margin-top: 0.18em; }
+  .detail-inner p { font-size: 15.5px; line-height: 1.74; margin-bottom: 13px; }
 
   /* 이 페이지 전용 크롬 */
   .sp-top {
@@ -58,14 +128,20 @@
     color: var(--text-faint); word-break: keep-all;
   }
   .sp-note em { font-style: normal; font-weight: 700; color: var(--text-sub); }
+
+  @media (min-width: 600px) {
+    .card-body .section-title { font-size: 20px; margin: 34px 0 10px; }
+    .detail-inner .section-title { font-size: 17px; }
+    .detail-inner p { font-size: 16px; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="sp-top">
-    <span><b>소제목 구분선 · 볼드 600 샘플 (2차)</b></span>
+    <span><b>핵심 직행 · 4단 압축 샘플 (3차)</b></span>
     <span class="sp-sep">·</span>
-    <span>소제목 10 · 문단 41 · 형광펜 16</span>
+    <span>소제목 4 · 문단 34 · 형광펜 12</span>
     <a href="./index.html">사이트로</a>
     <button class="btn" id="themeBtn" type="button" title="테마 전환">
       <svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M15.8 12.6A6.5 6.5 0 0 1 7.4 4.2a6.5 6.5 0 1 0 8.4 8.4Z"/></svg>
@@ -73,9 +149,9 @@
     </button>
   </div>
   <div class="sp-note">
-    <em>소제목 16.5px · 800 + 1px 구분선</em> vs <em>본문 볼드 600</em> — 소제목 크기·간격은 사이트 기준 그대로 두고,
-    아래 얇은 선과 본문 굵기 한 단계 낮추기로 층을 나눴습니다.
-    본문은 화자 코멘트·구어체 정리·다음 편 예고는 살리고, 같은 말 반복·진행 멘트·구독 요청만 덜어낸 판본입니다(문단 49 → 41).
+    <em>첫 문단에서 쟁점·답·변수부터</em> — 펀드 소개와 반복 설명을 덜고, 레오폴드의 판단과 근거, 판단이 달라질 조건을 네 흐름으로 압축했습니다.
+    소제목 18.5px/750 · 위 34px, 초록 막대는 첫 줄 고정, 본문 16px/28px.
+    2차 상세본(소제목 10 · 문단 41)은 본문 맨 아래에서 펼쳐 볼 수 있습니다.
   </div>
 
   <article class="card" id="v-QQixhCWJ0oE">
@@ -104,6 +180,53 @@
 
     <div class="card-body">
       <div class="body-inner">
+
+        <div class="section-title">레오폴드는 왜 메모리 호황이 더 간다고 보나</div>
+        <p>지난번엔 트렌드포스가 메모리 슈퍼사이클이 끝났다고 본 리포트를 말씀드렸는데, 오늘 보는 레오폴드 아셴브레너의 <strong>3분기 투자 서한</strong>은 정반대입니다. AI가 오래 일할수록 그동안 한 작업을 기억할 메모리가 더 필요하다는 거예요. <mark class="hl-half">제가 보기에 두 전망이 갈리는 지점은 AI 기업들이 비싼 메모리를 계속 살 만큼 돈을 벌 수 있느냐입니다.</mark></p>
+        <p>시츄에이셔널 어웨어니스는 레오폴드 아셴브레너로 유명한 헤지펀드입니다. 167페이지짜리 편지라 전부 볼 수는 없고, 오늘은 결론과 메모리·낸드 주장 두 가지만 봅니다. 특히 하이닉스 얘기가 흥미롭습니다.</p>
+        <p>서한의 결론은 2027년부터 28년까지 AI 발전 속도를 세 시나리오로 나눈 겁니다. 보수적으로는 1년에 과거 1.8년치, 중간은 2027년 한 해에 과거 3년치, 낙관적으로는 1년에 과거 6.2년치를 발전한다고 봅니다.</p>
+        <p>가속의 원동력은 <strong>AI 그 자체</strong>입니다. 2027년엔 AI가 진짜로 AI를 개발하는 시대라서 빨라진다는 거죠.</p>
+        <p>이미 알고리즘 발전 속도가 기존의 두세 배이고, 앤트로픽은 연구원 한 시간당 AI 에이전트 19시간을 돌립니다. 엔지니어당 코드 생산량은 45배 넘게 늘었습니다.</p>
+        <p>코드가 많아진다고 연구 성과가 1대1로 이어지는 건 아니지만, 그만큼 빨라졌다는 건 분명합니다. 병목은 아이디어의 질과 컴퓨팅 자원으로 남아 있는데, 그래도 2027년 말엔 인간 최고 수준을 넘는 AI 연구원이, 2028년엔 <strong>초지능</strong>이 나온다고 봅니다.</p>
+        <p>반면 시장이 반영한 속도는 기존의 0.3에서 0.6배, 둔화 쪽입니다. <mark class="hl-half">시장은 브레이크를 밟는데, 이 사람은 2027년에 평균 세 배로 빨라진다고 보는 겁니다.</mark></p>
+        <p>이 사람의 펀드는 수수료 차감 전 연환산 181%를 기록했고, 레버리지를 네 배나 쓴 것으로도 유명합니다. 최근 큰 손실로 상장 주식이 청산당할 뻔했고, 한 분기에는 67%가 빠지기도 했죠. 그래도 지난 분기에 큰 손실을 겪었다고 이분 얘기가 무조건 틀렸다고 하는 건 섣부른 판단입니다.</p>
+        <p><mark class="hl-half">큰 손실을 겪은 사람의 글을 읽을 때는 배운다는 마음으로 봐야 합니다.</mark> 저도 그런 마음으로 한번 읽어 봤습니다.</p>
+
+        <div class="section-title">강화 학습의 엔비디아로 꼽은 SK하이닉스</div>
+        <p>이유는 <strong>GPU가 데이터를 기다리는 시간</strong>입니다. 일부 강화 학습 작업에서는 메모리가 데이터를 제때 보내지 못해 GPU 연산 활용률이 5%도 안 됩니다.</p>
+        <p>AI의 중심이 사전 학습에서 강화 학습과 에이전트로 넘어가면서, <strong>핵심 병목이 GPU 연산에서 메모리 대역폭과 용량으로 옮겨간다는 판단</strong>입니다. 2025년 첫 서한에서도 같은 주장을 했으니, 이번이 처음은 아닙니다.</p>
+        <p>에이전트 작업 시간은 몇 분에서 몇 시간, 몇 주로 늘었고, 처리하는 토큰도 수백 개에서 수백만 개로 늘었습니다. 그동안 무슨 일을 해 왔는지 기억하려고 <strong>KV 캐시</strong>에 컨텍스트를 저장하는데, 여기에 메모리가 필수입니다. <mark class="hl-half">AI가 더 오래 생각하고 복잡한 일을 할수록 메모리가 더 많이 필요해지는 구조라는 겁니다.</mark></p>
+        <p><strong>구글</strong>이 최근 HBM 관련 발표를 했고 <strong>아마존 트레이니엄</strong> 같은 맞춤형 AI 반도체도 늘고 있지만, 그 회사들이 메모리를 직접 만들 수는 없습니다. 메모리 회사를 건너뛰고는 AI 칩을 만들 수 없다는 뜻이죠. 에이전트를 돌리려면 <strong>CPU 서버</strong>도 필요하고 거기에도 메모리가 들어가서, HBM과 일반 서버 D램 수요가 함께 커집니다.</p>
+        <p>2024년만 해도 컴퓨팅 대부분이 사전 학습에 쓰였는데, 지금은 강화 학습과 후속 학습이 대부분입니다. 강화 학습과 후속 학습의 주인공이 메모리인 만큼, <strong>D램 공급의 75%</strong>를 AI가 요구할 것이라고 봅니다.</p>
+        <p>공급이 빨리 안 늘어나는 건 메모리 업체들이 AI 수요가 얼마나 지속될지 확신하지 못해 신규 팹을 지어도 1년 안에 투자금을 회수하겠다는 정도로 신중하기 때문입니다. 반대로 이 회사는 AI 투자 수익이 충분히 크면 고객사가 더 비싼 메모리 값을 지불할 수 있다고 봅니다. <mark class="hl-half">AI 투자 수익이 정말 크냐는 점에서 시장과 이 사람의 근본 가정이 갈립니다.</mark></p>
+        <p><strong>SK하이닉스</strong>는 2024년 말 18만 원, 시가총액 1,000억 달러, 우리 돈 140조 원쯤에 매수를 시작했고, 강세 시나리오로 2027년 주가 200만 원, 시가총액 1조 달러를 제시했습니다. 한때 하이닉스가 그걸 훨씬 넘어선 시점도 있었습니다. 근거는 HBM 기술력과 수율 우위, D램 공급 부족, 마이크론 대비 밸류에이션 할인이었습니다.</p>
+        <p><mark class="hl-half">서한의 이익 추정대로라면 2027년 예상 PER은 2배입니다.</mark> 2027년 말 예상 PBR은 1배라서, 지금 사는 건 순자산과 똑같은 가치에 사는 셈이죠.</p>
+        <p>2027년 말까지 현재 시가총액의 절반이 넘는 자사주를 살 수 있는 현금 창출력도 전망합니다. 실제로 사겠다는 게 아니라 그만큼 벌 수 있다는 추정이에요.</p>
+        <p>장기 계약에서도 다른 시각을 냈습니다. 일부 업체는 선수금을 받고 하한선을 확보하는 대신 상한선이 있는 계약을 했는데, 이들은 가격이 계속 오를 거라 보고 상한이 있는 계약은 하지 말라고 하이닉스 경영진에 조언했습니다.</p>
+        <p>그 조언이 반영됐는지 최근 계약은 하한선은 두되 상한선이 없습니다. <mark class="hl-half">가격이 더 오르면 그만큼 이익을 계속 챙길 수 있는 구조입니다.</mark></p>
+
+        <div class="section-title">낸드와 키옥시아까지 보는 이유</div>
+        <p><strong>낸드</strong>는 시장의 주인공도 아니고 인정도 못 받아 가격이 D램의 40분의 1이었습니다. 그런데 비트 기준 생산 능력은 D램의 25배인 아주 저렴한 저장 장치입니다.</p>
+        <p>D램이 부족해지면 AI 개발자 입장에서는 싸고 생산량도 많으면서, 메모리보다 느려도 하드디스크보다는 빠른 낸드를 쓸 유인이 커집니다. <mark class="hl-half">D램이 모자랄수록 상대적으로 싼 낸드로 눈을 돌리는 수요가 생긴다는 겁니다.</mark></p>
+        <p>대표적인 게 <strong>KV 캐시 오프로딩</strong>입니다. 메모리에 모든 걸 들고 있을 수 없으니 일부를 낸드로 옮기는 거죠. 세션을 재개할 때 생기는 수요도 있고, 아직 실현되지 않았지만 HBM처럼 낸드 플래시를 설계하는 <strong>HBF</strong>도 있습니다.</p>
+        <p><mark class="hl-half">낸드의 가치가 사진 저장용에서 AI가 더 오래 작업하고 기억하기 위한 핵심 자원으로 바뀌는 겁니다.</mark> GPU와 D램 사용 비용을 낮추는 수단이기도 하고요.</p>
+        <p>요즘 낸드 현물가가 꺾여서 걱정이 많은데, 이들은 공급 부족이 계속된다고 봅니다. D램과 낸드를 같이 만드는 회사들이 D램을 우선시해 낸드를 더 공급하지 않겠다는 입장이고, 신규 팹은 짓는 데 4년이 걸립니다.</p>
+        <p>그래서 <strong>키옥시아</strong>와 <strong>샌디스크</strong>에 투자합니다. 2025년 9월 샌디스크를 처음 매수했고, 2026년 1월 두 회사 비중을 대폭 확대했습니다. 샌디스크는 최초 매수가 대비 27배 이상 올랐고, 키옥시아는 그 후 고점 대비 80% 하락했습니다.</p>
+        <p><mark class="hl-half">서한의 이익 추정대로라면 2027년 예상 PER이 1배 미만입니다.</mark> PER 1배 미만은 진짜 말이 안 되는 수치죠.</p>
+        <p>시가총액이 2027년과 2028년을 합산한 예상 순익의 0.2배라는 겁니다. 28년에 훨씬 더 많이 버니까요.</p>
+        <p>2027년 말까지 현재 시가총액의 약 75%에 해당하는 현금을 창출한다고 봅니다. 벌어들이는 현금으로 회사를 다 사면 주식의 75%를 살 수 있다는 얘기죠. 그래서 키옥시아를 다시 비대칭적인 투자 기회로 평가하고, 지금도 펀드의 최대 포지션 중 하나로 들고 있습니다.</p>
+
+        <div class="section-title">비관론이 반영된 가격, 남은 건 AI 매출</div>
+        <p>하이닉스도, 삼성전자도, 키옥시아도 고점 대비 45에서 80% 하락했습니다. 메모리 주식에 대한 비관론이 그만큼 강하다는 거죠. 시장이 걱정하는 건 2027년 말쯤 AI 인프라 투자가 급감하고 공급 과잉으로 가격이 폭락하는 시나리오인데, 이들은 그게 이미 주가에 반영됐다고 봅니다.</p>
+        <p><mark class="hl-half">그래서 메모리 회사 투자는 사실상 공짜 콜옵션이라는 표현을 씁니다.</mark> 지금 가격은 2028년부터 메모리 사업이 망한다고 가정한 가격이라는 거죠. 메모리 회사 대부분은 2027년 주문을 확보했고, 2028년 이후에도 AI 투자가 이어져 가격이 지금 수준을 유지할 가능성이 높다고 봅니다.</p>
+        <p>결국 남는 질문은 <strong>오픈AI</strong>와 <strong>앤트로픽</strong>이 내년에 연환산 매출 1조 달러까지 갈 수 있느냐입니다. 앤트로픽의 2026년 10월 연환산 매출은 810억 달러쯤이고, 시장은 내년에 두 배에서 네 배를 봅니다.</p>
+        <p>이 사람은 두 회사 합산으로 1조 달러를 넘을 수 있다고 봅니다. <mark class="hl-half">그러면 올해 기준 일곱 배에서 여덟 배는 올라야 한다는 얘기입니다.</mark> 그게 가능한지를 두고 시장과 시각이 갈리는 거죠.</p>
+        <p>왜 그렇게 보는지는 서한에서 길게 설명하는데, 자료가 너무 길어서 오늘은 여기서 한 번 끊겠습니다. 다음 영상에서 이어가겠습니다.</p>
+
+
+        <details class="detail-full">
+          <summary>전체 상세 요약 펼쳐보기<span class="df-meta">2차 상세본 · 소제목 10 · 문단 41</span></summary>
+          <div class="detail-inner">
 
         <div class="section-title">167페이지 투자 서한에서 오늘은 결론과 메모리 두 가지를 봅니다</div>
         <p>오늘은 <strong>시츄에이셔널 어웨어니스(Situational Awareness)</strong>의 <strong>3분기 투자 서한</strong>을 봅니다. <strong>레오폴드 아셴브레너</strong>로 유명한 헤지펀드죠. 이분이 최근 큰 손실로 상장 주식이 청산당할 뻔했고, 레버리지를 네 배나 쓴 것으로 알려지면서 화제가 됐습니다.</p>
@@ -165,6 +288,10 @@
         <p>결국 메모리·낸드 투자를 믿느냐는 AI 발전 속도를 믿느냐, 더 나아가 오픈AI나 앤트로픽 같은 프런티어 랩이 내년에 연환산 매출 1조 달러까지 갈 수 있느냐로 좁혀집니다. 앤트로픽의 2026년 10월 연환산 매출은 한 810억 달러입니다.</p>
         <p>시장은 내년에 두 배에서 네 배를 보는데, 이 사람은 오픈AI와 앤트로픽 합산으로 1조 달러를 넘을 수 있다고 봅니다. <mark class="hl-half">그러면 올해 기준 일곱 배에서 여덟 배는 올라야 한다는 얘기입니다. 그게 가능한지를 두고 시장과 시각이 갈리는 거죠.</mark></p>
         <p>왜 그렇게 보는지는 서한에서 길게 설명하는데, 자료가 너무 길어서 오늘은 여기서 한 번 끊겠습니다. 다음 영상에서 이어가겠습니다.</p>
+
+
+          </div>
+        </details>
 
       </div>
     </div>
