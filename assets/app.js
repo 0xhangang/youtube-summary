@@ -385,6 +385,8 @@
         lb.classList.toggle('liked', likeNow);
         lb.setAttribute('aria-pressed', likeNow ? 'true' : 'false');
       }
+      var lchip = card.querySelector('.liked-chip');
+      if (lchip) lchip.hidden = !likeNow;
       if ((hideRead && readNow) || (state.readOnly && !readNow) || (state.favOnly && !likeNow)) {
         if (card.parentNode) card.parentNode.removeChild(card);
       }
@@ -1967,6 +1969,16 @@
       tag.textContent = s.categoryLabel;
       topMeta.appendChild(tag);
     }
+
+    /* 좋아요 표시 — 제목 위 메타 줄에 작은 하트만 (좋아요일 때만 보인다) */
+    var likeMark = document.createElement('span');
+    likeMark.className = 'liked-chip';
+    likeMark.title = '좋아요로 표시한 영상';
+    likeMark.setAttribute('aria-label', '좋아요로 표시한 영상');
+    likeMark.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16.6s-5.9-3.7-5.9-8.2A3.45 3.45 0 0 1 10 5.9a3.45 3.45 0 0 1 5.9 2.5c0 4.5-5.9 8.2-5.9 8.2Z"/></svg>';
+    likeMark.hidden = !isLiked(id);
+    topMeta.appendChild(likeMark);
+
     main.appendChild(topMeta);
 
     var h = document.createElement('h2');
@@ -2114,6 +2126,7 @@
       var on = toggleLike(id);
       likeBtn.classList.toggle('liked', on);
       likeBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      likeMark.hidden = !on;
       if (state.favOnly && !on) {
         apply();
       } else {
@@ -2177,7 +2190,207 @@
     actions.appendChild(shareBtn);
 
     card.appendChild(actions);
+
+    /* 스와이프 구조: 카드 뒤에 액션 배지 레이어, 그 위에 콘텐츠 래퍼.
+       카드 자체의 overflow: clip과 안쪽 sticky 읽기 바는 그대로 살린다. */
+    var inner = document.createElement('div');
+    inner.className = 'card-inner';
+    while (card.firstChild) inner.appendChild(card.firstChild);
+    card.appendChild(buildSwipeLayer());
+    card.appendChild(inner);
+
     return card;
+  }
+
+  /* ── 카드 가로 스와이프 (오른쪽 = 읽음 · 왼쪽 = 좋아요) ─────────
+   * · 화면 좌우 가장자리 28px 안에서 시작한 터치는 OS 뒤로가기 제스처와
+   *   부딪히므로 무시한다.
+   * · 이동 방향은 터치마다 한 번만 판별한다. |dx| > 14 이고 |dx| > |dy| * 1.5
+   *   일 때만 가로 모드로 들어가고, 세로로 판별되면 그 터치는 끝까지 가로 금지.
+   * · 카드 콘텐츠(.card-inner)만 옆으로 밀어 뒤의 배지를 드러내고, 임계치를
+   *   넘으면 확정 가능 상태(.is-armed)로 보여 준 뒤 손을 떼면 토글 + 복귀. */
+  var SW_EDGE = 28;
+  var SW_START = 14;
+  var SW_RATIO = 1.5;
+  var SW_THRESHOLD = 80;
+
+  var swipe = {
+    id: 0,
+    card: null,
+    inner: null,
+    mode: '',
+    armed: false,
+    x0: 0,
+    y0: 0,
+    suppressUntil: 0
+  };
+
+  function buildSwipeLayer() {
+    var layer = document.createElement('div');
+    layer.className = 'swipe-layer';
+    layer.setAttribute('aria-hidden', 'true');
+
+    var read = document.createElement('div');
+    read.className = 'swipe-act swipe-act-read';
+    read.innerHTML = '<span class="swipe-mark">' +
+      '<span class="swipe-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.1 12.4 9.6 17 18.9 7.2"/></svg></span>' +
+      '<span class="swipe-lbl">읽음</span></span>';
+
+    var like = document.createElement('div');
+    like.className = 'swipe-act swipe-act-like';
+    like.innerHTML = '<span class="swipe-mark">' +
+      '<span class="swipe-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S5 15.7 5 10.3A4.2 4.2 0 0 1 12 6.8a4.2 4.2 0 0 1 7 3.5c0 5.4-7 9.9-7 9.9Z"/></svg></span>' +
+      '<span class="swipe-lbl">좋아요</span></span>';
+
+    layer.appendChild(read);
+    layer.appendChild(like);
+    return layer;
+  }
+
+  /* 스와이프를 시작할 수 있는 지점인지 — 글자 드래그·버튼·링크·표 안은 제외 */
+  function swipeCardFrom(node) {
+    var el = node && node.nodeType === 1 ? node : (node && node.parentElement);
+    if (!el || !el.closest) return null;
+    if (el.closest('a, button, input, textarea, select, label, summary, [role="button"], [contenteditable="true"], .card-bar, .tbl-wrap')) return null;
+    return el.closest('.card[data-vid]');
+  }
+
+  function onSwipeDown(e) {
+    if (e.pointerType === 'mouse' || e.isPrimary === false) return;
+    if (swipe.card) return;
+    if (e.clientX < SW_EDGE || e.clientX > window.innerWidth - SW_EDGE) return;
+    var card = swipeCardFrom(e.target);
+    if (!card) return;
+    var inner = card.querySelector('.card-inner');
+    if (!inner) return;
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (sel && !sel.isCollapsed && String(sel).length) return;
+    swipe.card = card;
+    swipe.inner = inner;
+    swipe.id = e.pointerId;
+    swipe.mode = '';
+    swipe.armed = false;
+    swipe.x0 = e.clientX;
+    swipe.y0 = e.clientY;
+  }
+
+  function beginSwipeMode(card, dx, clientY) {
+    swipe.mode = dx > 0 ? 'read' : 'like';
+    card.classList.add('is-swiping');
+    card.setAttribute('data-side', swipe.mode);
+    swipe.inner.style.transition = 'none';
+    placeSwipeMark(card, clientY);
+    var id = card.dataset.vid;
+    var rl = card.querySelector('.swipe-act-read .swipe-lbl');
+    if (rl) rl.textContent = isRead(id) ? '안읽음' : '읽음';
+    var ll = card.querySelector('.swipe-act-like .swipe-lbl');
+    if (ll) ll.textContent = isLiked(id) ? '해제' : '좋아요';
+  }
+
+  /* 배지는 카드 세로 한가운데가 아니라 손가락 높이에 붙인다 — 긴 카드에서도 보이게 */
+  function placeSwipeMark(card, clientY) {
+    var rect = card.getBoundingClientRect();
+    var top = Math.round(clientY - rect.top - 34);
+    var max = Math.max(0, rect.height - 76);
+    top = Math.max(8, Math.min(top, max));
+    card.style.setProperty('--swipe-y', top + 'px');
+  }
+
+  function onSwipeMove(e) {
+    if (!swipe.card || e.pointerId !== swipe.id) return;
+    var dx = e.clientX - swipe.x0;
+    var dy = e.clientY - swipe.y0;
+    var adx = Math.abs(dx);
+    var ady = Math.abs(dy);
+
+    if (!swipe.mode) {
+      /* 세로 스크롤로 판별되면 이 터치에서는 가로 스와이프를 포기한다 */
+      if (ady > 10 && ady >= adx) { swipe.card = null; swipe.inner = null; swipe.id = 0; return; }
+      if (adx < SW_START) return;
+      if (adx <= ady * SW_RATIO) return;
+      beginSwipeMode(swipe.card, dx, e.clientY);
+    } else {
+      placeSwipeMark(swipe.card, e.clientY);
+    }
+
+    /* 임계치를 넘긴 뒤에는 저항을 줘서 카드가 덜 따라오게 한다 */
+    var abs = adx > SW_THRESHOLD ? SW_THRESHOLD + (adx - SW_THRESHOLD) * 0.35 : adx;
+    var maxX = Math.min(160, (swipe.card.clientWidth || 360) * 0.45);
+    if (abs > maxX) abs = maxX;
+    swipe.inner.style.transform = 'translate3d(' + Math.round(dx > 0 ? abs : -abs) + 'px,0,0)';
+
+    var panel = swipe.card.querySelector(swipe.mode === 'read' ? '.swipe-act-read' : '.swipe-act-like');
+    var p = Math.max(0, Math.min(1, (abs / SW_THRESHOLD - 0.1) / 0.9));
+    if (panel) panel.style.opacity = String(p);
+
+    var armed = abs >= SW_THRESHOLD;
+    if (armed !== swipe.armed) {
+      swipe.armed = armed;
+      swipe.card.classList.toggle('is-armed', armed);
+    }
+  }
+
+  function finishSwipe(commit) {
+    var card = swipe.card;
+    if (!card) return;
+    var mode = swipe.mode;
+    var armed = swipe.armed;
+    var inner = swipe.inner;
+    swipe.card = null;
+    swipe.inner = null;
+    swipe.mode = '';
+    swipe.armed = false;
+    swipe.id = 0;
+    if (!mode) return;
+
+    var panel = card.querySelector(mode === 'read' ? '.swipe-act-read' : '.swipe-act-like');
+
+    /* 손을 떼면 카드가 부드럽게 원위치로 돌아간다 */
+    inner.style.transition = 'transform 0.26s cubic-bezier(0.22, 1, 0.36, 1)';
+    inner.style.transform = 'translate3d(0,0,0)';
+    card.classList.remove('is-swiping', 'is-armed');
+    if (panel) panel.style.opacity = '0';
+
+    if (commit && armed) {
+      /* 스와이프 직후의 클릭(링크 열림)은 삼키고, 기존 버튼 핸들러로 토글한다 */
+      swipe.suppressUntil = Date.now() + 600;
+      var btn = card.querySelector(mode === 'read' ? '.act-btn[data-act="read"]' : '.act-btn[data-act="like"]');
+      if (btn) btn.click();
+    }
+
+    setTimeout(function () {
+      if (card.classList.contains('is-swiping')) return;
+      inner.style.transition = '';
+      inner.style.transform = '';
+      card.removeAttribute('data-side');
+      card.style.removeProperty('--swipe-y');
+      if (panel) panel.style.opacity = '';
+    }, 300);
+  }
+
+  function onSwipeClick(e) {
+    if (!e.isTrusted || !swipe.suppressUntil) return;
+    if (Date.now() > swipe.suppressUntil) return;
+    swipe.suppressUntil = 0;
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function initSwipe() {
+    if (!dom.feed) return;
+    dom.feed.addEventListener('pointerdown', onSwipeDown, { passive: true });
+    window.addEventListener('pointermove', onSwipeMove, { passive: true });
+    window.addEventListener('pointerup', function (e) {
+      if (e.pointerId === swipe.id) finishSwipe(true);
+    }, { passive: true });
+    window.addEventListener('pointercancel', function (e) {
+      if (e.pointerId === swipe.id) finishSwipe(false);
+    }, { passive: true });
+    /* 가로 스와이프가 확정된 동안에는 브라우저 스크롤·뒤로가기 제스처를 막는다 */
+    window.addEventListener('touchmove', function (e) {
+      if (swipe.card && swipe.mode && e.cancelable) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('click', onSwipeClick, true);
   }
 
   /* ── 렌더 ──────────────────────────────────────────── */
@@ -2833,6 +3046,7 @@
 
     initReadingBar();
     initTabScroll();
+    initSwipe();
   }
 
   /* ── 카드 일체형 읽기 바 ────────────────────────────────

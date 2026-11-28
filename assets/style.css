@@ -911,6 +911,10 @@ button.btn.is-on {
 
 /* ── 카드 ─────────────────────────────────────────────── */
 .card {
+  position: relative;
+  /* 세로 스크롤은 브라우저에 맡기고 가로 이동만 스크립트가 받는다 —
+     가로로 미는 순간 브라우저가 스크롤을 잡아 pointercancel을 보내는 것을 막는다. */
+  touch-action: pan-y;
   margin: 0 0 22px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1869,6 +1873,112 @@ mark.hl {
   border-color: rgba(52, 211, 153, 0.32);
   background: rgba(52, 211, 153, 0.1);
 }
+/* 좋아요 표시 칩 — 제목 위 메타 줄, 좋아요일 때만 작은 하트 하나 */
+.liked-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--like-soft);
+  color: var(--like);
+}
+.liked-chip[hidden] { display: none; }
+.liked-chip svg { width: 11px; height: 11px; fill: currentColor; stroke: none; display: block; }
+
+/* ── 카드 가로 스와이프 (뒤쪽 액션 배지) ───────────────────
+   카드 콘텐츠(.card-inner)만 옆으로 밀리고 그 뒤의 배지가 드러난다.
+   오른쪽으로 밀면 왼쪽에서 초록 읽음, 왼쪽으로 밀면 오른쪽에서 코랄 좋아요.
+   카드 자체의 overflow: clip과 안쪽 sticky 읽기 바(.card-bar)는 그대로 둔다. */
+.card-inner {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+}
+.card.is-swiping .card-inner { will-change: transform; }
+
+.swipe-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: clip;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.swipe-act {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.card.is-swiping .swipe-act { transition: none; }
+/* 배지(아이콘+라벨)는 --swipe-y 위치에 붙는다 — 손가락 높이를 따라간다 */
+.swipe-mark {
+  position: absolute;
+  top: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(var(--swipe-y, 0px));
+}
+.swipe-act-read .swipe-mark { left: 18px; }
+.swipe-act-like .swipe-mark { right: 18px; }
+.swipe-act-read {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 24%, transparent),
+    color-mix(in srgb, var(--accent) 9%, transparent) 42%,
+    transparent 72%);
+  color: var(--accent-strong);
+}
+.swipe-act-like {
+  background: linear-gradient(270deg,
+    color-mix(in srgb, var(--like) 22%, transparent),
+    color-mix(in srgb, var(--like) 8%, transparent) 42%,
+    transparent 72%);
+  color: var(--like);
+}
+[data-theme="dark"] .swipe-act-read { color: var(--accent); }
+
+.swipe-ico {
+  flex: 0 0 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: inherit;
+  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.2), 0 0 0 1px color-mix(in srgb, currentColor 16%, transparent);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease;
+}
+[data-theme="dark"] .swipe-ico { background: var(--surface-3); }
+.swipe-ico svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.swipe-lbl {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  color: inherit;
+  white-space: nowrap;
+}
+/* 임계치를 넘겼을 때 — 놓으면 바로 확정된다는 표시 */
+.card.is-armed .swipe-ico {
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px -2px color-mix(in srgb, currentColor 36%, transparent), 0 0 0 3px color-mix(in srgb, currentColor 15%, transparent);
+}
+.card.is-armed[data-side="like"] .swipe-ico svg { fill: currentColor; }
+
 .card.is-read {
   animation: none;
   opacity: 0.45 !important;
@@ -1906,6 +2016,7 @@ mark.hl {
 
 .top-btn {
   position: fixed;
+  z-index: 30; /* 카드 콘텐츠(.card-inner, z 1) 위에 놓인다 — 동기화 모달(90)보다는 아래 */
   right: 16px;
   bottom: 20px;
   width: 42px;
