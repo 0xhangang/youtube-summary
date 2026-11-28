@@ -633,6 +633,26 @@
       });
     });
   }
+  // 16차 표준 글 — 소제목(h)·문단(p)만으로 쓰고 ==형광펜== 문법을 쓰는 글은
+  // 이미 한 문단 = 한 논점(2~3문장)으로 끊겨 저장돼 있으므로 그 경계를 그대로 렌더한다.
+  // 구형 글(레거시 블록이 있거나 형광펜 없이 적재된 글)은 한 p에 여러 문장이 뭉쳐 있어 지금처럼 자동 분할한다.
+  var NATIVE_P_CUTOVER = '2026-11-28T22:00:00+09:00';
+  function keepsNativeParagraphs(s) {
+    var blocks = (s && s.blocks) || [];
+    if (!blocks.length) return false;
+    var hasMark = false;
+    for (var i = 0; i < blocks.length; i++) {
+      var b = blocks[i];
+      if (!b) continue;
+      // callout·ul·stats·donut·compare·flow·timeline 같은 레거시 블록은 구형 글의 표식
+      if (b.type !== 'h' && b.type !== 'p') return false;
+      if (!hasMark && /==((?:[^=]|=(?!=))+?)==/.test(b.text || '')) hasMark = true;
+    }
+    if (hasMark) return true;
+    // 형광펜이 없는 글은 16차 확정 이후에 적재된 것만 새 형식으로 본다(그 전 적재분은 구형 문단 뭉치)
+    var added = Date.parse((s && s.addedAt) || '');
+    return !isNaN(added) && added >= Date.parse(NATIVE_P_CUTOVER);
+  }
   function fmtDateLabel(iso) {
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
     if (!m) return iso || '';
@@ -1989,6 +2009,7 @@
     body.className = 'card-body';
     var inner = document.createElement('div');
     inner.className = 'body-inner';
+    var keepNative = keepsNativeParagraphs(s);
 
     (s.blocks || []).forEach(function (b) {
       if (!b) return;
@@ -2047,7 +2068,7 @@
       } else if (b.type === 'svg') {
         inner.appendChild(buildSvg(b, q));
       } else {
-        splitParagraph(b.text || '').forEach(function (chunk) {
+        (keepNative ? [String(b.text || '')] : splitParagraph(b.text || '')).forEach(function (chunk) {
           var p = document.createElement('p');
           p.innerHTML = rich(chunk, q);
           inner.appendChild(p);
