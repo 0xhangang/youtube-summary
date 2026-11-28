@@ -129,6 +129,61 @@
   }
   .sp-note em { font-style: normal; font-weight: 700; color: var(--text-sub); }
 
+  /* 다른 AI 검토용 변경 이력 블록 */
+  .sp-history {
+    margin: 0 6px 14px;
+    padding: 11px 13px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    font-size: 11.5px;
+    line-height: 1.62;
+    color: var(--text-faint);
+    word-break: keep-all;
+  }
+  .sp-history > summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
+    list-style: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    color: var(--text-sub);
+  }
+  .sp-history > summary::-webkit-details-marker { display: none; }
+  .sp-history > summary::before {
+    content: "";
+    flex: 0 0 5px;
+    width: 5px;
+    height: 5px;
+    margin: 0 2px 2px 2px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.18s ease;
+  }
+  .sp-history[open] > summary { margin-bottom: 8px; }
+  .sp-history[open] > summary::before { transform: rotate(45deg); margin-bottom: -2px; }
+  .sp-history > summary:hover { color: var(--text); }
+  .sp-history > summary:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; border-radius: 6px; }
+  .sp-history ol { margin: 0; padding-left: 15px; }
+  .sp-history li { margin: 0 0 5px; }
+  .sp-history li:last-child { margin-bottom: 0; }
+  .sp-history li::marker { color: var(--accent-strong); font-weight: 700; }
+  [data-theme="dark"] .sp-history li::marker { color: var(--accent); }
+  .sp-history strong { font-weight: 700; color: var(--text-sub); }
+  .sp-history em { font-style: normal; color: var(--text-sub); font-weight: 600; }
+  .sp-history .sh-now {
+    display: block;
+    margin-top: 7px;
+    padding-top: 7px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+  }
+
   @media (min-width: 600px) {
     .card-body .section-title { font-size: 20px; margin: 34px 0 10px; }
     .detail-inner .section-title { font-size: 17px; }
@@ -148,11 +203,15 @@
       <span class="btn-lbl" id="themeLbl">다크</span>
     </button>
   </div>
-  <div class="sp-note">
-    <em>첫 문단에서 쟁점·답·변수부터</em> — 펀드 소개와 반복 설명을 덜고, 레오폴드의 판단과 근거, 판단이 달라질 조건을 네 흐름으로 압축했습니다.
-    소제목 18.5px/750 · 위 34px, 초록 막대는 첫 줄 고정, 본문 16px/28px.
-    2차 상세본(소제목 10 · 문단 41)은 본문 맨 아래에서 펼쳐 볼 수 있습니다.
-  </div>
+  <details class="sp-history" open>
+    <summary>이 샘플의 변경 이력 — 다른 AI 검토용</summary>
+    <ol>
+      <li><strong>원본 문제</strong> — <em>QQixhCWJ0oE</em>(18:10) 요약이 49문단·5,770자+로 길고, 메모리 이야기가 14문단 뒤에야 나왔습니다. 소제목(16.5px/800)과 본문 볼드(800)도 무게가 같아 위계가 헷갈렸습니다.</li>
+      <li><strong>1~2차 실험</strong> — 사담·반복은 덜되 화자 코멘트("저도 그런 마음으로 한번 읽어 봤습니다")와 비유는 유지했습니다. 소제목 19px·위 여백 36px 확대와 1px 구분선은 과하거나 불필요하다는 피드백으로 기각했습니다.</li>
+      <li><strong>3차 반영</strong> — 디자인은 구분선 제거, 소제목 모바일 18.5px(PC 20px)·750·위 34px·아래 10px, 문단 사이 14px, 본문 16px/28px, 볼드 650, 초록 막대는 빛 번짐 없이 첫 줄 왼쪽 단색으로 바꿨습니다. 구성은 첫 화면에서 핵심 질문(트렌드포스 vs 레오폴드, AI 수익성 변수)에 답하고 4대 흐름(시장과 다른 이유 → SK하이닉스 → 낸드·키옥시아 → AI 1조 달러 조건)으로 압축했습니다. 단서("일부 강화 학습 작업에서", "서한의 이익 추정대로라면")와 수치·화자 태도는 보존하고, 볼드는 중후반까지 고르게, 형광펜은 1~2줄 안팎으로 줄였습니다. 2차 상세본은 본문 맨 아래 접기로 남겼습니다.</li>
+    </ol>
+    <span class="sh-now">이번 3차 분량: 소제목 4 · 문단 34 · 형광펜 12 · 약 4,000자 / 상세본 41문단.</span>
+  </details>
 
   <article class="card" id="v-QQixhCWJ0oE">
     <header class="card-header">
