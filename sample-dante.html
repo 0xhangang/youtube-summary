@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0b0f17" media="(prefers-color-scheme: dark)" />
+<title>소제목·볼드 위계 분리 + 사담 덜어내기 — 김단테 샘플</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="assets/style.css?v=20261129d1" />
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('yts.theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+    } catch (e) {}
+  })();
+</script>
+<style>
+  /* ══ 이 샘플의 유일한 변경 — 소제목(구획 제목)과 본문 굵은 글씨(주제어)의 위계 분리 ══
+     사이트 style.css는 그대로 두고, 이 페이지 안에서만 오버라이드한다. */
+
+  /* 1) 소제목 — 크기·여백·자간을 키워 '구획 제목'으로서 존재감을 준다 */
+  .card-body .section-title {
+    margin: 36px 0 14px;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .card-body .section-title::before {
+    flex: 0 0 5px;
+    height: 1.15em;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #10b981, #84cc16);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.28);
+  }
+  .card-body .body-inner > .section-title:first-child { margin-top: 4px; }
+
+  /* 2) 본문 굵은 글씨 — 800 → 600(SemiBold)으로 힘을 빼서
+        문단 첫 줄이 볼드로 시작해도 소제목과 절대 헷갈리지 않게 한다 */
+  .card-body strong,
+  .card-body mark.hl-half strong { font-weight: 600; }
+
+  @media (min-width: 600px) {
+    .card-body .section-title { font-size: 20px; margin: 40px 0 16px; }
+  }
+
+  /* 이 페이지 전용 크롬 */
+  .sp-top {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 4px 6px 10px; font-size: 11.5px; line-height: 1.55;
+    color: var(--text-faint); word-break: keep-all;
+  }
+  .sp-top b { color: var(--accent-strong); font-weight: 800; }
+  [data-theme="dark"] .sp-top b { color: var(--accent); }
+  .sp-top .sp-sep { color: var(--border-strong); }
+  .sp-top a { color: var(--text-faint); text-decoration: none; border-bottom: 1px solid var(--border-strong); }
+  .sp-top .btn { margin-left: auto; }
+  .sp-note {
+    margin: 0 6px 14px; font-size: 11.5px; line-height: 1.6;
+    color: var(--text-faint); word-break: keep-all;
+  }
+  .sp-note em { font-style: normal; font-weight: 700; color: var(--text-sub); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="sp-top">
+    <span><b>소제목 · 볼드 위계 분리 샘플</b></span>
+    <span class="sp-sep">·</span>
+    <span>소제목 10 · 문단 37 · 형광펜 16</span>
+    <a href="./index.html">사이트로</a>
+    <button class="btn" id="themeBtn" type="button" title="테마 전환">
+      <svg class="btn-svg" viewBox="0 0 20 20" aria-hidden="true"><path d="M15.8 12.6A6.5 6.5 0 0 1 7.4 4.2a6.5 6.5 0 1 0 8.4 8.4Z"/></svg>
+      <span class="btn-lbl" id="themeLbl">다크</span>
+    </button>
+  </div>
+  <div class="sp-note">
+    <em>소제목 19px · 800</em> vs <em>본문 볼드 600</em> — 첫 줄 볼드와 소제목이 섞이지 않게 층을 나눴습니다.
+    본문은 사담·추임새·반복만 덜어낸 판본입니다(문단 49 → 37, 6,002자 → 4,910자, −18%).
+  </div>
+
+  <article class="card" id="v-QQixhCWJ0oE">
+    <header class="card-header">
+      <a class="thumb" href="https://www.youtube.com/watch?v=QQixhCWJ0oE" target="_blank" rel="noopener" aria-label="유튜브에서 영상 열기: AI 천재투자자 레오폴드 메모리 슈퍼사이클 안끝났다">
+        <img class="thumb-img" src="https://i.ytimg.com/vi/QQixhCWJ0oE/hqdefault.jpg" alt="영상 썸네일" loading="eager" decoding="async" referrerpolicy="no-referrer" />
+      </a>
+      <div class="yt-info">
+        <div class="yt-head-row">
+          <a class="ch-av-link" href="https://www.youtube.com/channel/UCKTMvIu9a4VGSrpWy-8bUrQ" target="_blank" rel="noopener" title="내일은 투자왕 - 김단테 채널로 이동">
+            <span class="ch-av"><img src="https://yt3.googleusercontent.com/ytc/AIdro_m8mCuv6xqV2e5munuXeAIpHNnXDvwd1pSet1_iFvoQWi8=s900-c-k-c0x00ffffff-no-rj" alt="내일은 투자왕 - 김단테" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></span>
+          </a>
+          <div class="card-main">
+            <div class="meta-row">
+              <a class="channel-name ch-link" href="https://www.youtube.com/channel/UCKTMvIu9a4VGSrpWy-8bUrQ" target="_blank" rel="noopener">내일은 투자왕 - 김단테</a>
+              <span class="cat-tag cat-stock">증시</span>
+            </div>
+            <h2 class="video-title"><a href="https://www.youtube.com/watch?v=QQixhCWJ0oE" target="_blank" rel="noopener">AI 천재투자자 레오폴드 "메모리 슈퍼사이클 안끝났다!" (Situational Awareness 3분기 투자서한 리뷰) (18:10)</a></h2>
+          </div>
+        </div>
+        <div class="meta-line yt-time-row">
+          <span class="mi mi-pub">11. 28. 18:12</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="card-body">
+      <div class="body-inner">
+
+        <div class="section-title">167페이지 투자 서한에서 오늘은 결론과 메모리 두 가지를 봅니다</div>
+        <p>오늘은 <strong>시츄에이셔널 어웨어니스(Situational Awareness)</strong>의 <strong>3분기 투자 서한</strong>을 봅니다. <strong>레오폴드 아셴브레너</strong>로 유명한 헤지펀드죠. 이분이 최근 큰 손실로 상장 주식이 청산당할 뻔했고, 레버리지를 네 배나 쓴 것으로 알려지면서 화제가 됐습니다.</p>
+        <p>지난 영상에서는 트렌드포스가 메모리 슈퍼사이클이 끝났다고 본 리포트를 말씀드렸는데, 오늘은 완전 반대 이야기예요. <mark class="hl-half">저는 이런 반대편 이야기까지 양쪽을 다 들어봐야 진실에 더 가까이 갈 수 있다고 생각합니다.</mark></p>
+        <p>서한이 167페이지라 전부 볼 수는 없고, 오늘은 전체 편지의 결론과 메모리·낸드 주장 두 가지만 봅니다. 특히 하이닉스 얘기가 흥미롭습니다.</p>
+        <div class="section-title">성적표는 연환산 181%였고, 분기마다 +338%와 -67%를 오갔습니다</div>
+        <p>2024년 4분기부터 2026년 3분기까지 알려진 수익률인데, 338%가 나온 분기도, 67%가 빠진 분기도 있습니다. 누적은 수수료 차감 전 690%, 차감 후 477%이고, 차감 전 기준 연평균 181%니까 2024년 이후 투자자 중 최상위권입니다.</p>
+        <p><mark class="hl-half">그래서 지난 분기에 큰 손실을 겪었다고 이분 얘기가 무조건 틀렸다고 하는 건 섣부른 판단입니다.</mark> 지금까지 맞아떨어진 게 많으니까요.</p>
+        <div class="section-title">결론은 2027년부터 2028년까지 AI 발전 속도 세 시나리오입니다</div>
+        <p>결론은 2027~28년 <strong>세 개의 시나리오</strong>이고, 기준은 <strong>AI의 발전 속도</strong>입니다. 보수적으로는 1년에 과거 1.8년치, 중간은 2027년 한 해에 과거 3년치, 낙관적으로는 1년에 과거 6.2년치 발전을 한다고 봅니다.</p>
+        <p>가속의 원동력은 <strong>AI 그 자체</strong>입니다. 2027년은 AI가 진짜로 AI를 개발하는 시대라서 빨라진다는 거죠. AI가 코드를 쓰고 실험을 대신하고 연구를 지원하는데, 이미 알고리즘 발전 속도가 기존의 두세 배이고, 앤트로픽은 연구원 한 시간당 AI 에이전트 19시간을 돌린다고 합니다. 연구원 한 명이 에이전트 19개를 부리는 셈이죠.</p>
+        <p>앤트로픽의 엔지니어당 코드 생산량은 45배 이상 늘었습니다. <mark class="hl-half">코드가 많아진다고 연구 성과가 1대1로 이어지는 건 아니지만, 그만큼 빨라졌다는 건 분명합니다.</mark></p>
+        <p>병목은 <strong>아이디어의 질</strong>, 그러니까 유망한 연구 방향을 찾는 일과 <strong>컴퓨팅 자원</strong>입니다. 그런데도 2027년 말이면 인간 최고 수준을 뛰어넘는 AI 연구원이 나오고, 2028년에는 <strong>초지능</strong>에 도달한다고 봅니다.</p>
+        <p>반면 지금 시장이 반영한 속도는 기존의 0.3에서 0.6배, 둔화 쪽입니다. <mark class="hl-half">시장은 브레이크를 밟고 있는데, 이 사람은 2027년에 평균 세 배로 빨라져 역사상 가장 빠른 발전이 온다고 보는 겁니다.</mark></p>
+        <div class="section-title">강화 학습 시대의 엔비디아는 SK하이닉스라는 주장부터 봅니다</div>
+        <p>그의 가장 놀라운 주장 중 하나는 강화 학습 시대의 엔비디아가 바로 <strong>SK하이닉스</strong>라는 겁니다. 사전 학습이 학생이 수능 문제집을 계속 푸는 거라면, 강화 학습은 모의고사를 잘 보면 용돈을 주고 못 보면 아프게 때리는 겁니다. 2025년 첫 투자자 서한에서도 한 기업을 강화 학습 시대의 엔비디아라고 표현했는데, 그게 SK하이닉스였어요.</p>
+        <p><mark class="hl-half">AI의 중심이 사전 학습에서 강화 학습과 에이전트로 넘어가면서, 핵심 병목이 GPU 연산에서 메모리 대역폭과 용량으로 옮겨간다는 판단입니다.</mark></p>
+        <p>일부 강화 학습 작업에서는 GPU 연산 활용률이 5% 미만입니다. 계산을 하려 해도 메모리에서 데이터를 빨리 못 갖고 오는 게 더 큰 병목이라는 거죠. 에이전트 작업 시간은 몇 분에서 몇 시간, 몇 주로 늘었고, 처리하는 토큰도 수백 개에서 수백만 개로 늘었습니다.</p>
+        <p>에이전트가 그동안 무슨 일을 해 왔는지 기억하려고 <strong>KV 캐시</strong>에 컨텍스트를 저장하는데, 여기에 메모리가 필수입니다. <mark class="hl-half">AI가 더 오래 생각하고 복잡한 일을 할수록 메모리가 더 많이 필요해지는 구조라는 겁니다.</mark></p>
+        <div class="section-title">커스텀 칩이 늘어도 메모리는 하이닉스와 삼성으로 올 수밖에 없습니다</div>
+        <p>이미 GPU 경쟁에서 메모리 경쟁으로 넘어가고 있습니다. 구글이 최근 HBM 관련해서 발표했고, 아마존 <strong>트레이니엄</strong> 같은 맞춤형 AI 반도체도 늘고 있죠. 그런데 어떤 칩이 나오든 그 회사들이 메모리를 직접 만들 수는 없습니다. <mark class="hl-half">메모리 회사를 건너뛰고는 AI 칩을 만들 수 없다는 뜻이죠.</mark> 결국 하이닉스나 삼성전자로 옵니다.</p>
+        <p>에이전트를 돌리려면 결국 AI가 일반 컴퓨터를 쓰는 거라 CPU 서버가 필요하고, 거기에도 메모리가 들어갑니다. HBM과 일반 서버 D램 수요가 함께 커진다는 겁니다.</p>
+        <p>2024년만 해도 컴퓨팅 대부분이 사전 학습에 쓰였는데, 지금은 강화 학습과 후속 학습이 대부분입니다. 강화 학습과 후속 학습의 주인공이 메모리인 만큼, 2027년에는 D램 공급의 75%를 AI가 요구할 것이라고 봅니다.</p>
+        <p>공급이 빨리 안 늘어나는 건 메모리 업체들이 AI 수요가 얼마나 지속될지 확신하지 못하고, 신규 팹을 지으면 1년 안에 투자금을 회수하겠다는 정도로 신중해지기 때문입니다. 반대로 이 회사는 AI 투자 수익이 충분히 크면 고객사들이 더 비싼 메모리 값을 지불할 수 있다고 봅니다. <mark class="hl-half">여기가 중요한데, AI 투자 수익이 정말 크냐는 점에서 시장과 이 사람의 근본 가정이 갈립니다.</mark></p>
+        <div class="section-title">SK하이닉스 18만 원에 사서 200만 원 시나리오를 제시했습니다</div>
+        <p>2024년 말 매수 시작 당시 주가가 18만 원, 시가총액이 1,000억 달러, 우리 돈으로 140조 원쯤이었고, 강세 시나리오로 2027년 주가 200만 원, 시가총액 1조 달러를 제시했습니다. 한때 그걸 훨씬 넘어선 시점도 있었죠. 근거는 HBM 기술력과 수율 우위, D램 공급 부족, 마이크론 대비 밸류에이션 할인이었습니다.</p>
+        <p>지금도 긍정적입니다. <mark class="hl-half">그가 잡은 이익 가정대로면 2027년 예상 PER이 2배밖에 안 되고, 2027년 말 예상 PBR은 1배입니다. 지금 하이닉스를 사는 건 순자산과 똑같은 가치에 사는 셈이죠.</mark></p>
+        <p>2027년 말까지 현재 시가총액의 절반이 넘는 자사주를 살 수 있는 현금 창출력도 전망합니다. 실제로 사겠다는 게 아니라 그만큼 현금을 벌 수 있다는 추정이에요.</p>
+        <p>장기 공급 계약에서도 다른 시각을 냈습니다. 일부 업체는 선수금을 받고 하한선을 확보하는 대신 상한선이 있는 계약을 했는데, 이들은 가격이 계속 오를 거라 보고 상한이 있는 계약은 하지 말라고 하이닉스 경영진에 조언했습니다. 그 조언이 반영됐는지 최근 하이닉스 계약은 하한선은 두되 상한선은 없는 조건이라고 해요. <mark class="hl-half">가격이 더 오르면 그만큼 이익을 계속 챙길 수 있는 구조입니다.</mark></p>
+        <div class="section-title">다음 타깃은 낸드이고, 낸드는 AI가 더 오래 기억하기 위한 자원이 됩니다</div>
+        <p>다음 주목한 건 <strong>낸드</strong>입니다. 시장의 주인공도 아니고 인정도 못 받아서 가격이 D램의 40분의 1 수준이었지만, 비트 기준 생산 능력은 D램의 25배나 되는 아주 저렴한 저장 장치입니다.</p>
+        <p>D램 공급이 부족해지면 AI 개발자로서는 싸고 생산량도 많으면서, 메모리보다 느려도 하드디스크보다는 빠른 낸드를 쓸 유인이 커집니다. <mark class="hl-half">D램이 모자랄수록 상대적으로 싼 낸드로 눈을 돌리는 수요가 생긴다는 겁니다.</mark></p>
+        <p><strong>KV 캐시 오프로딩</strong>이 대표적입니다. 메모리에 모든 걸 들고 있을 수 없으니 일부를 낸드로 옮기는 거죠. 세션을 재개할 때 생기는 수요도 있고, 아직 실현되지 않았지만 HBM처럼 낸드 플래시를 설계하는 <strong>HBF</strong>도 있습니다.</p>
+        <p><mark class="hl-half">낸드의 가치가 바뀌는 겁니다. 스마트폰 사진을 더 많이 저장하는 제품에서, AI가 더 오래 작업하고 기억하기 위한 핵심 자원이자 GPU와 D램 사용 비용을 낮추는 수단이 되는 거죠.</mark></p>
+        <p>요즘 낸드 현물가가 꺾여서 걱정이 많은데, 이들은 공급 부족이 계속된다고 봅니다. D램과 낸드를 같이 만드는 회사들이 D램을 우선시해 낸드를 더 공급하지 않겠다는 입장이고, 신규 팹은 짓는 데 4년이 걸리니까요.</p>
+        <div class="section-title">키옥시아와 샌디스크에 투자했고 키옥시아는 PER 1배 미만입니다</div>
+        <p>그래서 <strong>키옥시아</strong>와 <strong>샌디스크</strong>에 투자합니다. 2025년 9월 샌디스크를 처음 매수했고, 2026년 1월 두 회사 비중을 대폭 확대했습니다. 샌디스크는 최초 매수가 대비 27배 이상 올랐고, 키옥시아는 그 후 고점 대비 80% 하락했습니다.</p>
+        <p>시츄에이셔널이 보기에 키옥시아 2027년 예상 PER이 1배 미만입니다. <mark class="hl-half">PER 1배 미만은 진짜 말이 안 되는 수치예요.</mark> 시가총액이 2027년과 2028년을 합산한 예상 순익의 0.2배라는 겁니다. 28년에 훨씬 더 많이 버니까요.</p>
+        <p>2027년 말까지 현재 시가총액의 약 75%에 해당하는 현금을 창출한다고도 봅니다. 벌어들이는 현금으로 회사를 다 사면 주식의 75%를 살 수 있다는 얘기죠.</p>
+        <p><mark class="hl-half">그래서 키옥시아를 다시 비대칭적인 투자 기회로 평가하고, 지금도 펀드의 최대 포지션 중 하나로 들고 있습니다.</mark></p>
+        <div class="section-title">메모리 비관론이 너무 강하고, 지금 가격은 2028년 이후를 공짜로 줍니다</div>
+        <p>메모리 주식 비관론이 너무 강합니다. 하이닉스도, 삼성전자도, 키옥시아도 고점 대비 45에서 80% 하락했습니다. 시장이 걱정하는 건 2027년 말쯤 AI 인프라 투자가 급감하고 공급 과잉으로 가격이 폭락해 이익이 크게 줄 거라는 시나리오인데, 이들은 그게 이미 주가에 반영돼 있다고 봅니다.</p>
+        <p><mark class="hl-half">그래서 메모리 회사 투자는 사실상 공짜 콜옵션이라는 표현을 씁니다. 지금 가격은 2028년부터 메모리 사업이 망한다고 가정한 가격이라는 거죠.</mark></p>
+        <p>2027년 주문은 대부분 확보했고, 2028년 이후에도 AI 투자가 이어져 가격이 지금 수준을 유지할 가능성이 높다고 봅니다. 그때 벌 이익을 현재 주가가 충분히 반영하지 않았다는 겁니다.</p>
+        <div class="section-title">결국 오픈AI와 앤트로픽의 매출 1조 달러를 믿느냐로 좁혀집니다</div>
+        <p>결국 메모리·낸드 투자를 믿느냐는 AI 발전 속도를 믿느냐, 더 나아가 오픈AI나 앤트로픽 같은 프런티어 랩이 내년에 연환산 매출 1조 달러까지 갈 수 있느냐로 좁혀집니다.</p>
+        <p>앤트로픽의 2026년 10월 연환산 매출은 한 810억 달러입니다. 시장은 내년에 두 배에서 네 배를 보는데, 이 사람은 오픈AI와 앤트로픽 합산으로 1조 달러를 넘을 수 있다고 봅니다. <mark class="hl-half">그러면 올해 기준 일곱 배에서 여덟 배는 올라야 한다는 얘기입니다. 그게 가능한지를 두고 시장과 시각이 갈리는 거죠.</mark></p>
+        <p>왜 그렇게 보는지는 서한에서 길게 설명하는데, 자료가 너무 길어서 오늘은 여기서 끊고 다음 영상에서 이어가겠습니다.</p>
+
+      </div>
+    </div>
+  </article>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('themeBtn');
+    var lbl = document.getElementById('themeLbl');
+    function sync() {
+      var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (lbl) lbl.textContent = dark ? '라이트' : '다크';
+      if (btn) btn.setAttribute('aria-label', dark ? '라이트 모드로 전환' : '다크 모드로 전환');
+    }
+    sync();
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('yts.theme', next); } catch (e) {}
+        sync();
+      });
+    }
+  })();
+</script>
+</body>
+</html>
