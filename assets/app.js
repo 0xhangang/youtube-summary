@@ -1909,8 +1909,10 @@
       thumbLink.target = '_blank';
       thumbLink.rel = 'noopener';
       thumbLink.setAttribute('aria-label', '유튜브에서 영상 열기: ' + (s.title || ''));
+      thumbLink.draggable = false;
 
       var img = document.createElement('img');
+      img.draggable = false;
       img.className = 'thumb-img';
       img.alt = (s.title || '영상') + ' 썸네일';
       img.loading = 'lazy';
@@ -1988,6 +1990,7 @@
     titleLink.href = url;
     titleLink.target = '_blank';
     titleLink.rel = 'noopener';
+    titleLink.draggable = false;
     titleLink.innerHTML = q ? highlightHtml(esc(s.title || '(제목 없음)'), q) : esc(s.title || '(제목 없음)');
     h.appendChild(titleLink);
     main.appendChild(h);
@@ -2222,7 +2225,8 @@
     armed: false,
     x0: 0,
     y0: 0,
-    suppressUntil: 0
+    suppressUntil: 0,
+    suppressCard: null
   };
 
   function buildSwipeLayer() {
@@ -2247,11 +2251,14 @@
     return layer;
   }
 
-  /* 스와이프를 시작할 수 있는 지점인지 — 글자 드래그·버튼·링크·표 안은 제외 */
+  /* 스와이프를 시작할 수 있는 지점인지 — 폼 요소·버튼·표 안만 제외.
+     썸네일·제목·채널 링크(a)와 상단 읽기 바(.card-bar)는 카드 어디를 밀어도
+     스와이프가 되도록 허용한다. 단순 탭은 그대로 링크·버튼 동작을 한다.
+     .card-bar는 <button>이므로 button 예외에서 빼 준다(:not(.card-bar)). */
   function swipeCardFrom(node) {
     var el = node && node.nodeType === 1 ? node : (node && node.parentElement);
     if (!el || !el.closest) return null;
-    if (el.closest('a, button, input, textarea, select, label, summary, [role="button"], [contenteditable="true"], .card-bar, .tbl-wrap')) return null;
+    if (el.closest('button:not(.card-bar), input, textarea, select, label, summary, [role="button"], [contenteditable="true"], .tbl-wrap')) return null;
     return el.closest('.card[data-vid]');
   }
 
@@ -2351,9 +2358,13 @@
     card.classList.remove('is-swiping', 'is-armed');
     if (panel) panel.style.opacity = '0';
 
+    /* 가로 스와이프가 한 번이라도 발동했으면(임계치 미달 포함) 손을 뗄 때
+       브라우저가 만들 수 있는 click으로 썸네일·제목 링크가 열리지 않게 막는다. */
+    swipe.suppressUntil = Date.now() + 600;
+    swipe.suppressCard = card;
+
     if (commit && armed) {
       /* 스와이프 직후의 클릭(링크 열림)은 삼키고, 기존 버튼 핸들러로 토글한다 */
-      swipe.suppressUntil = Date.now() + 600;
       var btn = card.querySelector(mode === 'read' ? '.act-btn[data-act="read"]' : '.act-btn[data-act="like"]');
       if (btn) btn.click();
     }
@@ -2371,13 +2382,23 @@
   function onSwipeClick(e) {
     if (!e.isTrusted || !swipe.suppressUntil) return;
     if (Date.now() > swipe.suppressUntil) return;
+    var card = swipe.suppressCard;
     swipe.suppressUntil = 0;
+    swipe.suppressCard = null;
+    /* 스와이프한 카드 밖에서 난 클릭은 그대로 통과시킨다 */
+    if (card && !(card.contains && card.contains(e.target))) return;
     e.preventDefault();
     e.stopPropagation();
   }
 
   function initSwipe() {
     if (!dom.feed) return;
+    /* 썸네일 이미지·링크의 브라우저 기본 끌기(드래그)는 카드 안에서 끈다 —
+       가로로 미는 동작이 링크 드래그로 새지 않게 하는 두 번째 방어선이다. */
+    dom.feed.addEventListener('dragstart', function (e) {
+      var t = e.target;
+      if (t && t.closest && t.closest('.card')) e.preventDefault();
+    });
     dom.feed.addEventListener('pointerdown', onSwipeDown, { passive: true });
     window.addEventListener('pointermove', onSwipeMove, { passive: true });
     window.addEventListener('pointerup', function (e) {

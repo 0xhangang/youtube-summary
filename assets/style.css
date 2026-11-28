@@ -974,6 +974,14 @@ button.btn.is-on {
 }
 .card.no-thumb .thumb { display: none; }
 
+/* 카드 안 링크·이미지는 브라우저 기본 끌기를 끈다 — 썸네일·제목 위에서
+   가로로 밀어도 링크/이미지 드래그가 끼어들지 않고 스와이프만 받는다. */
+.card a,
+.card a img,
+.card .thumb-img {
+  -webkit-user-drag: none;
+}
+
 .yt-info {
   display: flex;
   flex-direction: column;
