@@ -491,5 +491,15 @@
     "channelUrl": "https://www.youtube.com/channel/UCWmuhz6LZ8u7QNYkITlNcpQ",
     "avatar": "https://yt3.googleusercontent.com/a373T6MfZ36eNA998DT5xDjLqjX34I04OmZF6Xmi--tuomWLm7NvFEkME3nEt47etLH0Ahov=s900-c-k-c0x00ffffff-no-rj",
     "watched": false
+  },
+  "hoho": {
+    "avatar": "https://yt3.googleusercontent.com/koAIl_-WhqiINIbxgN6Yy-70sBLImCnVLyC8afztv_GhKaSOcyH7fcFt_miG6Wm1u_7rOvWh=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/@hoho20125",
+    "watched": false
+  },
+  "고군 작가 - 막사는 40대 파이어 은퇴생활": {
+    "avatar": "https://yt3.googleusercontent.com/kf983isx5lp71x-gwvk6Dzu2pVvSqqJCW8V17zdqgHe8kSQuJFZfaGTB8ElSOiSUcFTF-2DI=s900-c-k-c0x00ffffff-no-rj",
+    "url": "https://www.youtube.com/@%EA%B3%A0%EA%B5%B0%EC%9E%91%EA%B0%80",
+    "watched": false
   }
 }
